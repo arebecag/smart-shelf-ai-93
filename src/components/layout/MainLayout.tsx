@@ -36,7 +36,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/">TabloideAI</BreadcrumbLink>
+                  <BreadcrumbLink href="/">Sugestão Inteligente</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>

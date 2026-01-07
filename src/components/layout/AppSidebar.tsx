@@ -19,11 +19,11 @@ import {
   Settings, 
   Star,
   BarChart3,
-  Sparkles,
   GitCompare,
   HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoCondor from "@/assets/logo-condor.png";
 
 const mainMenuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -74,13 +74,18 @@ export function AppSidebar() {
           "flex items-center gap-3",
           collapsed && "justify-center"
         )}>
-          <div className="p-2 rounded-lg gradient-primary">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
+          <img 
+            src={logoCondor} 
+            alt="Logo Condor" 
+            className={cn(
+              "object-contain",
+              collapsed ? "w-8 h-8" : "w-12 h-12"
+            )}
+          />
           {!collapsed && (
             <div>
-              <h1 className="font-bold text-lg text-foreground">TabloideAI</h1>
-              <p className="text-xs text-muted-foreground">Sugestão Inteligente</p>
+              <h1 className="font-bold text-lg text-foreground">Sugestão Inteligente</h1>
+              <p className="text-xs text-muted-foreground">Sistema de Tabloides</p>
             </div>
           )}
         </div>
@@ -124,7 +129,7 @@ export function AppSidebar() {
       <SidebarFooter className="p-4">
         {!collapsed && (
           <div className="text-xs text-muted-foreground text-center">
-            © 2025 TabloideAI
+            © 2025 Rede Condor
           </div>
         )}
       </SidebarFooter>
