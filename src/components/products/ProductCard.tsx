@@ -1,26 +1,64 @@
 import { useState } from 'react';
-import { Product, FilterState, ScoreResult } from '@/types/product';
+import { Product, FilterState } from '@/types/product';
 import { calculateScore, getWeights } from '@/utils/scoreCalculator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronDown, ChevronUp, TrendingUp, BarChart2, ShoppingCart, Tv, Sparkles } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  TrendingUp, 
+  BarChart2, 
+  ShoppingCart, 
+  Tv, 
+  Sparkles,
+  Star,
+  GitCompare,
+  AlertTriangle,
+  CheckCircle2
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFavorites } from '@/contexts/FavoritesContext';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProductCardProps {
   product: Product;
   filters: FilterState;
+  showFullReason?: boolean;
 }
 
-export const ProductCard = ({ product, filters }: ProductCardProps) => {
+export const ProductCard = ({ product, filters, showFullReason = true }: ProductCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const scoreResult = calculateScore(product, filters);
   const weights = getWeights(filters);
+  const { addFavorite, removeFavorite, isFavorite, addToCompare, removeFromCompare, isInCompare } = useFavorites();
 
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-green-600';
     if (score >= 50) return 'text-yellow-600';
     return 'text-red-500';
+  };
+
+  const getScoreBg = (score: number) => {
+    if (score >= 70) return 'bg-green-100 border-green-200';
+    if (score >= 50) return 'bg-yellow-100 border-yellow-200';
+    return 'bg-red-100 border-red-200';
+  };
+
+  const handleFavoriteClick = () => {
+    if (isFavorite(product.id)) {
+      removeFavorite(product.id);
+    } else {
+      addFavorite(product);
+    }
+  };
+
+  const handleCompareClick = () => {
+    if (isInCompare(product.id)) {
+      removeFromCompare(product.id);
+    } else {
+      addToCompare(product);
+    }
   };
 
   return (
@@ -32,18 +70,70 @@ export const ProductCard = ({ product, filters }: ProductCardProps) => {
       <div className="p-5">
         {/* Header */}
         <div className="flex gap-4">
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-20 h-20 rounded-lg object-contain bg-secondary border border-border"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg';
-            }}
-          />
+          <div className="relative">
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-20 h-20 rounded-lg object-contain bg-secondary border border-border"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg';
+              }}
+            />
+            {product.isRepeated && (
+              <div className="absolute -top-2 -right-2">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="bg-warning text-warning-foreground rounded-full p-1">
+                      <AlertTriangle className="w-3 h-3" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Produto já encartado anteriormente</TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+          </div>
           
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-foreground truncate">{product.name}</h4>
-            <p className="text-sm text-muted-foreground mb-2">#{product.id}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h4 className="font-semibold text-foreground truncate">{product.name}</h4>
+                <p className="text-sm text-muted-foreground mb-2">#{product.id}</p>
+              </div>
+              <div className="flex gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleFavoriteClick}
+                    >
+                      <Star className={cn(
+                        "w-4 h-4",
+                        isFavorite(product.id) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                      )} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isFavorite(product.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleCompareClick}
+                    >
+                      <GitCompare className={cn(
+                        "w-4 h-4",
+                        isInCompare(product.id) ? "text-primary" : "text-muted-foreground"
+                      )} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isInCompare(product.id) ? "Remover da comparação" : "Adicionar para comparar"}</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
             
             <div className="flex gap-2 mb-2">
               <span title="Nielsen" className="text-lg opacity-75">📊</span>
@@ -56,38 +146,61 @@ export const ProductCard = ({ product, filters }: ProductCardProps) => {
               Preço: <span className="font-semibold text-foreground">R$ {product.price.toFixed(2)}</span>
               {' • '}
               Estoque: {product.stock}
+              {' • '}
+              Margem: {(product.margin * 100).toFixed(0)}%
             </p>
-            
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm">Score IA:</span>
-              <span className={cn("font-bold", getScoreColor(scoreResult.score))}>
-                {scoreResult.score}/100
-              </span>
-              <span className="text-xs text-muted-foreground truncate">
-                {scoreResult.shortReason}
-              </span>
-            </div>
-            
-            <Button
-              variant="default"
-              size="sm"
-              className="mt-3 gradient-primary text-primary-foreground"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="w-4 h-4 mr-1" />
-                  Ocultar Detalhes
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4 mr-1" />
-                  Ver Detalhes
-                </>
-              )}
-            </Button>
           </div>
         </div>
+
+        {/* Score Section */}
+        <div className={cn(
+          "mt-4 p-3 rounded-lg border",
+          getScoreBg(scoreResult.score)
+        )}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="font-medium text-sm">Score IA</span>
+            </div>
+            <span className={cn("text-xl font-bold", getScoreColor(scoreResult.score))}>
+              {scoreResult.score}/100
+            </span>
+          </div>
+          
+          {showFullReason && (
+            <div className="space-y-1.5">
+              {scoreResult.detailedReasons.map((reason, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-sm">
+                  {reason.startsWith('⚠') ? (
+                    <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  )}
+                  <span className="text-muted-foreground">{reason.replace('⚠ ', '')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Action Button */}
+        <Button
+          variant="outline"
+          className="w-full mt-3"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? (
+            <>
+              <ChevronUp className="w-4 h-4 mr-1" />
+              Ocultar Fontes de Dados
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-4 h-4 mr-1" />
+              Ver Fontes de Dados
+            </>
+          )}
+        </Button>
 
         {/* Expanded Details */}
         {isExpanded && (
@@ -211,18 +324,18 @@ export const ProductCard = ({ product, filters }: ProductCardProps) => {
                     </div>
                     
                     <div>
-                      <span className="font-semibold">Pesos:</span>{' '}
-                      <span className="text-muted-foreground">
-                        Qtd {Math.round(weights.qty * 100)}% · 
-                        Margem {Math.round(weights.margin * 100)}% · 
-                        Venda {Math.round(weights.sales * 100)}% · 
-                        Competitiv. {Math.round(weights.competitiveness * 100)}% · 
-                        Cresc. {Math.round(weights.growth * 100)}%
-                      </span>
+                      <span className="font-semibold">Pesos Aplicados:</span>
+                      <div className="grid grid-cols-2 gap-1 mt-1 text-muted-foreground">
+                        <span>• Quantidade: {Math.round(weights.qty * 100)}%</span>
+                        <span>• Margem: {Math.round(weights.margin * 100)}%</span>
+                        <span>• Vendas: {Math.round(weights.sales * 100)}%</span>
+                        <span>• Competitividade: {Math.round(weights.competitiveness * 100)}%</span>
+                        <span>• Crescimento: {Math.round(weights.growth * 100)}%</span>
+                      </div>
                     </div>
                     
                     <div>
-                      <span className="font-semibold">Motivos:</span>
+                      <span className="font-semibold">Motivos da Recomendação:</span>
                       <ul className="mt-1 ml-4 list-disc space-y-1 text-muted-foreground">
                         {scoreResult.detailedReasons.map((reason, idx) => (
                           <li key={idx}>{reason}</li>
@@ -230,7 +343,7 @@ export const ProductCard = ({ product, filters }: ProductCardProps) => {
                       </ul>
                     </div>
                     
-                    <p className="text-xs text-muted-foreground mt-3">
+                    <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
                       Fontes: DW Condor (vendas/estoque/margem), Shopping Brasil & Prixsia (concorrência), Global Segmentos (mídia).
                     </p>
                   </div>
