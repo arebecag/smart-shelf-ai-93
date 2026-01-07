@@ -20,7 +20,8 @@ import {
   Star,
   BarChart3,
   GitCompare,
-  HelpCircle
+  HelpCircle,
+  ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoCondor from "@/assets/logo-condor.png";
@@ -30,6 +31,7 @@ const mainMenuItems = [
   { title: "Buscar Produtos", url: "/buscar", icon: Search },
   { title: "Favoritos", url: "/favoritos", icon: Star },
   { title: "Comparar", url: "/comparar", icon: GitCompare },
+  { title: "Aprovações", url: "/aprovacoes", icon: ClipboardCheck },
 ];
 
 const analysisMenuItems = [
