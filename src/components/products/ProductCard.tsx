@@ -4,6 +4,16 @@ import { calculateScore, getWeights } from '@/utils/scoreCalculator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -15,10 +25,14 @@ import {
   Star,
   GitCompare,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  XCircle,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useApprovals } from '@/contexts/ApprovalsContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProductCardProps {
@@ -29,9 +43,14 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, filters, showFullReason = true }: ProductCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const scoreResult = calculateScore(product, filters);
   const weights = getWeights(filters);
   const { addFavorite, removeFavorite, isFavorite, addToCompare, removeFromCompare, isInCompare } = useFavorites();
+  const { approveProduct, rejectProduct, isApproved, isRejected, getApprovalStatus, removeApproval } = useApprovals();
+
+  const approvalStatus = getApprovalStatus(product.id);
 
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-green-600';
@@ -59,6 +78,22 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
     } else {
       addToCompare(product);
     }
+  };
+
+  const handleApprove = () => {
+    approveProduct(product);
+  };
+
+  const handleReject = () => {
+    if (rejectReason.trim()) {
+      rejectProduct(product, rejectReason.trim());
+      setShowRejectDialog(false);
+      setRejectReason('');
+    }
+  };
+
+  const handleUndoApproval = () => {
+    removeApproval(product.id);
   };
 
   return (
@@ -182,6 +217,65 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
             </div>
           )}
         </div>
+
+        {/* Approval Status Badge */}
+        {approvalStatus && (
+          <div className={cn(
+            "mt-3 p-2 rounded-lg flex items-center justify-between",
+            approvalStatus.status === 'approved' 
+              ? "bg-green-100 border border-green-200" 
+              : "bg-red-100 border border-red-200"
+          )}>
+            <div className="flex items-center gap-2">
+              {approvalStatus.status === 'approved' ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700">Aprovado</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-4 h-4 text-red-600" />
+                  <div>
+                    <span className="text-sm font-medium text-red-700">Reprovado</span>
+                    {approvalStatus.reason && (
+                      <p className="text-xs text-red-600 mt-0.5">{approvalStatus.reason}</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleUndoApproval}
+              className="h-7 text-xs"
+            >
+              Desfazer
+            </Button>
+          </div>
+        )}
+
+        {/* Approval Buttons */}
+        {!approvalStatus && (
+          <div className="mt-3 flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+              onClick={handleApprove}
+            >
+              <ThumbsUp className="w-4 h-4 mr-2" />
+              Aprovar
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
+              onClick={() => setShowRejectDialog(true)}
+            >
+              <ThumbsDown className="w-4 h-4 mr-2" />
+              Reprovar
+            </Button>
+          </div>
+        )}
 
         {/* Action Button */}
         <Button
@@ -353,6 +447,41 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
           </div>
         )}
       </div>
+
+      {/* Reject Dialog */}
+      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-red-600" />
+              Reprovar Produto
+            </DialogTitle>
+            <DialogDescription>
+              Informe o motivo da reprovação do produto "{product.name}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              placeholder="Digite o motivo da reprovação..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={!rejectReason.trim()}
+            >
+              Confirmar Reprovação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
