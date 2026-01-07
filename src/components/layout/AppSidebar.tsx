@@ -79,7 +79,7 @@ export function AppSidebar() {
             alt="Logo Condor" 
             className={cn(
               "object-contain",
-              collapsed ? "w-8 h-8" : "w-12 h-12"
+              collapsed ? "w-10 h-10" : "w-24 h-16"
             )}
           />
           {!collapsed && (
