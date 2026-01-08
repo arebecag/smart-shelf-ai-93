@@ -103,6 +103,21 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
       "flex-1 min-w-[340px] max-w-[600px]"
     )}>
       <div className="p-5">
+        {/* Price Alert */}
+        {product.price > product.prixsia.minPrice && (
+          <div className="flex items-center gap-2 p-2 bg-orange-100 border border-orange-300 rounded-lg mb-3">
+            <AlertTriangle className="w-4 h-4 text-orange-600 shrink-0" />
+            <div className="text-sm">
+              <span className="font-medium text-orange-800">Preço menor na concorrência!</span>
+              <p className="text-orange-700 text-xs">
+                {product.prixsia.competitors.find(c => c.price === product.prixsia.minPrice)?.name || 'Concorrente'} 
+                {' '}está com R$ {product.prixsia.minPrice.toFixed(2)} 
+                {' '}(economia de R$ {(product.price - product.prixsia.minPrice).toFixed(2)})
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex gap-4">
           <div className="relative">

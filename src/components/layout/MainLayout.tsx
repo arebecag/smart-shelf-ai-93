@@ -14,6 +14,8 @@ const routeNames: Record<string, string> = {
   "/buscar": "Buscar Produtos",
   "/favoritos": "Favoritos",
   "/comparar": "Comparar Produtos",
+  "/aprovacoes": "Aprovações",
+  "/tv": "Apresentação TV",
   "/estatisticas": "Estatísticas",
   "/historico": "Histórico",
   "/configuracoes": "Configurações",
