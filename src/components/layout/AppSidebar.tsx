@@ -21,7 +21,8 @@ import {
   BarChart3,
   GitCompare,
   HelpCircle,
-  ClipboardCheck
+  ClipboardCheck,
+  Tv
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoCondor from "@/assets/logo-condor.png";
@@ -32,6 +33,7 @@ const mainMenuItems = [
   { title: "Favoritos", url: "/favoritos", icon: Star },
   { title: "Comparar", url: "/comparar", icon: GitCompare },
   { title: "Aprovações", url: "/aprovacoes", icon: ClipboardCheck },
+  { title: "Apresentação TV", url: "/tv", icon: Tv },
 ];
 
 const analysisMenuItems = [

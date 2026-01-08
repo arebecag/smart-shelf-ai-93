@@ -13,6 +13,7 @@ import Compare from "./pages/Compare";
 import Statistics from "./pages/Statistics";
 import History from "./pages/History";
 import Approvals from "./pages/Approvals";
+import TVPresentation from "./pages/TVPresentation";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/favoritos" element={<Favorites />} />
                 <Route path="/comparar" element={<Compare />} />
                 <Route path="/aprovacoes" element={<Approvals />} />
+                <Route path="/tv" element={<TVPresentation />} />
                 <Route path="/estatisticas" element={<Statistics />} />
                 <Route path="/historico" element={<History />} />
                 <Route path="/configuracoes" element={<Settings />} />
