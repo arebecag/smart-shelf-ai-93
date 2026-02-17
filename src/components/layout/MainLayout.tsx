@@ -20,6 +20,7 @@ const routeNames: Record<string, string> = {
   "/historico": "Histórico",
   "/configuracoes": "Configurações",
   "/ajuda": "Ajuda",
+  "/assistente": "Assistente IA",
 };
 
 export function MainLayout({ children }: MainLayoutProps) {
