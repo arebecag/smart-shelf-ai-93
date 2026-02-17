@@ -16,6 +16,7 @@ import Approvals from "./pages/Approvals";
 import TVPresentation from "./pages/TVPresentation";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import AIAssistant from "./pages/AIAssistant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="/historico" element={<History />} />
                 <Route path="/configuracoes" element={<Settings />} />
                 <Route path="/ajuda" element={<Help />} />
+                <Route path="/assistente" element={<AIAssistant />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </MainLayout>

@@ -22,7 +22,8 @@ import {
   GitCompare,
   HelpCircle,
   ClipboardCheck,
-  Tv
+  Tv,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoCondor from "@/assets/logo-condor.png";
@@ -34,6 +35,7 @@ const mainMenuItems = [
   { title: "Comparar", url: "/comparar", icon: GitCompare },
   { title: "Aprovações", url: "/aprovacoes", icon: ClipboardCheck },
   { title: "Apresentação TV", url: "/tv", icon: Tv },
+  { title: "Assistente IA", url: "/assistente", icon: Sparkles },
 ];
 
 const analysisMenuItems = [
