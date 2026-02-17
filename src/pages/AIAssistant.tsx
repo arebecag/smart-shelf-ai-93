@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bot, Send, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Bot, Send, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles, TrendingUp, DollarSign, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { mockProducts } from "@/data/mockData";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -29,17 +31,39 @@ export default function AIAssistant() {
     }
   }, [messages]);
 
-  // Speech synthesis
+  // Speech synthesis - better voice selection and accent support
   const speak = useCallback((text: string) => {
     if (!voiceEnabled || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Clean markdown and special chars for better speech
+    const cleanText = text
+      .replace(/[#*_`~\[\]()>|]/g, '')
+      .replace(/\n{2,}/g, '. ')
+      .replace(/\n/g, ', ')
+      .replace(/R\$/g, 'reais ')
+      .replace(/(\d+)\.(\d+)/g, '$1 vírgula $2')
+      .replace(/%/g, ' por cento')
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = "pt-BR";
-    utterance.rate = 1.05;
-    utterance.pitch = 1;
+    utterance.rate = 1.15;
+    utterance.pitch = 1.05;
+    utterance.volume = 1;
+
+    // Pick best pt-BR voice (prefer Google or Microsoft voices for quality)
     const voices = window.speechSynthesis.getVoices();
-    const ptVoice = voices.find(v => v.lang.startsWith("pt"));
-    if (ptVoice) utterance.voice = ptVoice;
+    const preferredVoices = [
+      voices.find(v => v.name.includes("Google") && v.lang === "pt-BR"),
+      voices.find(v => v.name.includes("Microsoft") && v.lang === "pt-BR"),
+      voices.find(v => v.lang === "pt-BR" && v.localService === false),
+      voices.find(v => v.lang === "pt-BR"),
+      voices.find(v => v.lang.startsWith("pt")),
+    ];
+    const bestVoice = preferredVoices.find(Boolean);
+    if (bestVoice) utterance.voice = bestVoice;
+    
     window.speechSynthesis.speak(utterance);
   }, [voiceEnabled]);
 
@@ -218,6 +242,46 @@ export default function AIAssistant() {
                     {q}
                   </Button>
                 ))}
+              </div>
+
+              {/* Product cards */}
+              <div className="mt-6 w-full max-w-2xl">
+                <p className="text-xs font-medium text-muted-foreground mb-3">Produtos em destaque — clique para perguntar</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {mockProducts.slice(0, 6).map(product => (
+                    <Card
+                      key={product.id}
+                      className="cursor-pointer hover:shadow-md transition-all hover:border-primary/30 group"
+                      onClick={() => sendMessage(`Analise o produto ${product.name} (preço R$${product.price.toFixed(2)}, margem ${(product.margin * 100).toFixed(0)}%, vendas ${product.sales} un). Vale colocar no tabloide?`)}
+                    >
+                      <CardContent className="p-3 flex flex-col items-center gap-2">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-14 h-14 object-contain rounded-lg bg-muted/50 p-1"
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                        />
+                        <span className="text-xs font-medium text-foreground text-center line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                          {product.name}
+                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
+                            <DollarSign className="h-2.5 w-2.5" />
+                            R${product.price.toFixed(2)}
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                            <TrendingUp className="h-2.5 w-2.5" />
+                            {(product.margin * 100).toFixed(0)}%
+                          </Badge>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1 text-muted-foreground">
+                          <Package className="h-2.5 w-2.5" />
+                          {product.sales} vendas
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </div>
           )}
