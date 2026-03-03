@@ -7,6 +7,7 @@ import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { ApprovalsProvider } from "@/contexts/ApprovalsContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
+import WeeklyComparison from "./pages/WeeklyComparison";
 import SearchProducts from "./pages/SearchProducts";
 import Favorites from "./pages/Favorites";
 import Compare from "./pages/Compare";
@@ -33,6 +34,7 @@ const App = () => (
             <MainLayout>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/semanal" element={<WeeklyComparison />} />
                 <Route path="/buscar" element={<SearchProducts />} />
                 <Route path="/favoritos" element={<Favorites />} />
                 <Route path="/comparar" element={<Compare />} />
