@@ -73,7 +73,6 @@ export interface FilterState {
   weightCompetitiveness: number;
   weightGrowth: number;
   productCount: number;
-  allowRepetition: string;
   startDate: string;
   endDate: string;
 }
