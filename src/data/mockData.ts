@@ -4,7 +4,7 @@ export const mockProducts: Product[] = [
   {
     id: '127400',
     name: 'cerv.brahma chopp 350ml la',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891991010974/7891991010974_1.png',
+    imageUrl: '/products/brahma-chopp.png',
     price: 3.59,
     stock: 8,
     margin: 0.22,
@@ -47,7 +47,7 @@ export const mockProducts: Product[] = [
   {
     id: '1875939',
     name: 'cerv.brahma duplo malte 350ml la',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891991294942/7891991294942_030920241446_simplus.png',
+    imageUrl: '/products/brahma-duplo.png',
     price: 3.99,
     stock: 12,
     margin: 0.25,
@@ -90,7 +90,7 @@ export const mockProducts: Product[] = [
   {
     id: '1981356',
     name: 'cerv.spaten 350ml la',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891991297424/7891991297424_1.png',
+    imageUrl: '/products/spaten.png',
     price: 4.79,
     stock: 15,
     margin: 0.19,
@@ -133,7 +133,7 @@ export const mockProducts: Product[] = [
   {
     id: '200001',
     name: 'coca-cola original 2l pet',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7894900011517/7894900011517_1.png',
+    imageUrl: '/products/coca-cola.png',
     price: 9.99,
     stock: 25,
     margin: 0.28,
@@ -174,7 +174,7 @@ export const mockProducts: Product[] = [
   {
     id: '200002',
     name: 'guarana antarctica 2l pet',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891991014023/7891991014023_1.png',
+    imageUrl: '/products/guarana.png',
     price: 7.99,
     stock: 30,
     margin: 0.24,
@@ -214,7 +214,7 @@ export const mockProducts: Product[] = [
   {
     id: '300001',
     name: 'leite integral piracanjuba 1l',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7896036095807/7896036095807_1.png',
+    imageUrl: '/products/leite.png',
     price: 5.49,
     stock: 50,
     margin: 0.18,
@@ -254,7 +254,7 @@ export const mockProducts: Product[] = [
   {
     id: '400001',
     name: 'red bull energy drink 250ml',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/90162976/90162976_1.png',
+    imageUrl: '/products/redbull.png',
     price: 8.99,
     stock: 20,
     margin: 0.32,
