@@ -126,7 +126,7 @@ export default function TVPresentation() {
         </div>
       </div>
 
-      <div ref={tableRef} className="p-6 print:p-4">
+      <div ref={tableRef} className="p-3 print:p-2">
         {/* Cabeçalho */}
         <div className="mb-4 text-center">
           <p className="font-bold text-base uppercase tracking-wide">CONDOR SUPER CENTER LTDA.</p>
@@ -361,19 +361,7 @@ export default function TVPresentation() {
           </table>
         </div>
 
-        {/* Assinatura */}
-        <div className="mt-8 grid grid-cols-3 gap-8 text-center text-sm print:mt-16">
-          {['Comprador', 'Gerente', 'Diretor'].map(role => (
-            <div key={role}>
-              <div className="border-t border-gray-400 pt-2 mt-8">
-                <p className="font-medium">{role}</p>
-                <p className="text-gray-500 text-xs">Assinatura e carimbo</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 text-center text-[10px] text-gray-400 print:mt-4">
+        <div className="mt-4 text-center text-[10px] text-gray-400 print:mt-4">
           <p>Documento gerado automaticamente pelo Sistema de Sugestão Inteligente — Rede Condor</p>
           <p className="mt-0.5">Preços em vermelho indicam acima da média de mercado (Prixsia). Score IA: ≥70 verde, 50-69 amarelo, &lt;50 vermelho.</p>
         </div>
