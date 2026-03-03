@@ -4,7 +4,7 @@ export const mockProducts: Product[] = [
   {
     id: '127400',
     name: 'cerv.brahma chopp 350ml la',
-    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891149010509/7891149010509_1_260720241139.png',
+    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891991010974/7891991010974_1.png',
     price: 3.59,
     stock: 8,
     margin: 0.22,
@@ -133,7 +133,7 @@ export const mockProducts: Product[] = [
   {
     id: '200001',
     name: 'coca-cola original 2l pet',
-    imageUrl: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=200&h=200&fit=crop',
+    imageUrl: 'https://sgp.condor.com.br/banco/produto/7894900011517/7894900011517_1.png',
     price: 9.99,
     stock: 25,
     margin: 0.28,
@@ -174,7 +174,7 @@ export const mockProducts: Product[] = [
   {
     id: '200002',
     name: 'guarana antarctica 2l pet',
-    imageUrl: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=200&h=200&fit=crop',
+    imageUrl: 'https://sgp.condor.com.br/banco/produto/7891991014023/7891991014023_1.png',
     price: 7.99,
     stock: 30,
     margin: 0.24,
@@ -214,7 +214,7 @@ export const mockProducts: Product[] = [
   {
     id: '300001',
     name: 'leite integral piracanjuba 1l',
-    imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&h=200&fit=crop',
+    imageUrl: 'https://sgp.condor.com.br/banco/produto/7896036095807/7896036095807_1.png',
     price: 5.49,
     stock: 50,
     margin: 0.18,
@@ -254,7 +254,7 @@ export const mockProducts: Product[] = [
   {
     id: '400001',
     name: 'red bull energy drink 250ml',
-    imageUrl: 'https://images.unsplash.com/photo-1527960471264-932f39eb5846?w=200&h=200&fit=crop',
+    imageUrl: 'https://sgp.condor.com.br/banco/produto/90162976/90162976_1.png',
     price: 8.99,
     stock: 20,
     margin: 0.32,

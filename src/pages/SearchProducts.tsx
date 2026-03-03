@@ -22,7 +22,6 @@ const defaultFilters: FilterState = {
   weightCompetitiveness: 0,
   weightGrowth: 0,
   productCount: 10,
-  allowRepetition: '-',
   startDate: '',
   endDate: '',
 };
@@ -159,20 +158,6 @@ const SearchProducts = () => {
                 <SelectItem value="price">Preço (menor)</SelectItem>
                 <SelectItem value="margin">Margem (maior)</SelectItem>
                 <SelectItem value="name">Nome (A-Z)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground mb-1.5 block">Permitir Repetição</Label>
-            <Select value={filters.allowRepetition} onValueChange={(v) => updateFilter('allowRepetition', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="-" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="-">-</SelectItem>
-                <SelectItem value="Sim">Sim</SelectItem>
-                <SelectItem value="Não">Não</SelectItem>
               </SelectContent>
             </Select>
           </div>

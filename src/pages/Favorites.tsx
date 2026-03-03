@@ -19,7 +19,6 @@ const defaultFilters: FilterState = {
   weightCompetitiveness: 0,
   weightGrowth: 0,
   productCount: 10,
-  allowRepetition: '-',
   startDate: '',
   endDate: '',
 };

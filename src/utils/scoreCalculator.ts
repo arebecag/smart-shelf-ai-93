@@ -64,9 +64,9 @@ export const calculateScore = (product: Product, filters: FilterState): ScoreRes
   // Rentability adjustment
   score += 0.05 * nRentAdj;
 
-  // Repetition penalty
-  if (product.isRepeated && filters.allowRepetition === 'Não') {
-    score -= 0.08;
+  // Repetition penalty (always apply small penalty for repeated products)
+  if (product.isRepeated) {
+    score -= 0.05;
   }
 
   // Ad bonus
