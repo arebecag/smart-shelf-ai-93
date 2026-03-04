@@ -30,12 +30,13 @@ const SearchProducts = () => {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [sortBy, setSortBy] = useState<'score' | 'price' | 'margin' | 'name'>('score');
 
-  // Flatten all products
+  // Flatten all products from all groups (includes açougue, padaria, etc.)
   const allProducts = useMemo(() => {
-    return mockProductGroups.flatMap((group) => 
+    return mockProductGroups.flatMap((group) =>
       group.products.map((product) => ({
         ...product,
         groupName: group.name,
+        groupId: group.id,
       }))
     );
   }, []);
@@ -44,11 +45,23 @@ const SearchProducts = () => {
   const filteredProducts = useMemo(() => {
     let result = allProducts.filter((product) => {
       const searchLower = filters.searchQuery.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
+        !filters.searchQuery ||
         product.name.toLowerCase().includes(searchLower) ||
         product.id.includes(searchLower);
-      
-      return matchesSearch;
+
+      // Section filter
+      const sectionMap: Record<string, string[]> = {
+        'Bebidas': ['80', '81', '85', '88', '93'],
+        'Laticínios': ['82'],
+        'Açougue': ['90'],
+        'Padaria': ['91'],
+      };
+      const matchesSection =
+        !filters.section || filters.section === 'Todas' ||
+        (sectionMap[filters.section] || []).includes(product.groupId);
+
+      return matchesSearch && matchesSection;
     });
 
     // Sort
