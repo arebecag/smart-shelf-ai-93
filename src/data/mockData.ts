@@ -671,6 +671,83 @@ export const mockProducts: Product[] = [
   }
 ];
 
+// Açougue products
+const açougueProducts: Product[] = [
+  {
+    id: '500001', name: 'frango inteiro congelado kg', imageUrl: '/products/cerveja-generica.png',
+    price: 12.90, stock: 40, margin: 0.20, sales: 2800, rentability: 0.17, competitiveness: 0.78, growth: 0.08,
+    isRepeated: false, hasAd: true,
+    nielsen: { marketShare: 18, coreSegment: 'Básico', penetration: 52, regionalRanking: 1 },
+    prixsia: { minPrice: 10.90, avgPrice: 12.20, medianPrice: 12.49, maxPrice: 14.99,
+      competitors: [{ name: 'GIASSI - CENTRO', location: 'JS CENTRO', price: 12.90 }, { name: 'MAX ATAC-JD', location: 'CARVALHO JARDIM', price: 11.49 }] },
+    shoppingBrasil: { link: '', title: 'Frango Inteiro Congelado', adPrice: 11.90, startDate: '01/08/2025', detail: 'Preço por KG.' },
+    globalSegments: [{ competitor: 'Mercado BomPreço', lastCampaign: 'Jornal', campaignDate: 'Jul/25', reach: '200 mil', investment: 'R$ 6.000' }]
+  },
+  {
+    id: '500002', name: 'alcatra bovina kg', imageUrl: '/products/cerveja-generica.png',
+    price: 49.90, stock: 15, margin: 0.22, sales: 680, rentability: 0.19, competitiveness: 0.65, growth: 0.05,
+    isRepeated: false, hasAd: false,
+    nielsen: { marketShare: 12, coreSegment: 'Alto', penetration: 28, regionalRanking: 2 },
+    prixsia: { minPrice: 42.90, avgPrice: 47.50, medianPrice: 48.00, maxPrice: 54.90,
+      competitors: [{ name: 'GIASSI - CENTRO', location: 'JS CENTRO', price: 49.90 }, { name: 'ATACADAO-LONDRINA JD', location: 'SHANGRILA', price: 43.90 }] },
+    shoppingBrasil: { link: '', title: 'Alcatra Bovina', adPrice: 45.90, startDate: '05/08/2025', detail: 'Preço por KG.' },
+    globalSegments: [{ competitor: 'Mercado BomPreço', lastCampaign: 'TV Aberta', campaignDate: 'Jun/25', reach: '150 mil', investment: 'R$ 4.500' }]
+  },
+  {
+    id: '500003', name: 'linguiça toscana perdigao kg', imageUrl: '/products/cerveja-generica.png',
+    price: 18.90, stock: 25, margin: 0.24, sales: 1100, rentability: 0.20, competitiveness: 0.70, growth: 0.10,
+    isRepeated: false, hasAd: true,
+    nielsen: { marketShare: 15, coreSegment: 'Básico', penetration: 38, regionalRanking: 3 },
+    prixsia: { minPrice: 15.90, avgPrice: 17.50, medianPrice: 17.90, maxPrice: 20.90,
+      competitors: [{ name: 'GIASSI - CENTRO', location: 'JS CENTRO', price: 18.90 }, { name: 'MAX ATAC-JD', location: 'CARVALHO JARDIM', price: 16.49 }] },
+    shoppingBrasil: { link: '', title: 'Linguiça Toscana Perdigão', adPrice: 16.90, startDate: '08/08/2025', detail: 'Oferta PR e SC.' },
+    globalSegments: [{ competitor: 'Super Mais Barato', lastCampaign: 'Digital', campaignDate: 'Jun/25', reach: '190 mil', investment: 'R$ 5.000' }]
+  },
+];
+
+// Padaria products
+const padariaProducts: Product[] = [
+  {
+    id: '600001', name: 'pao frances kg', imageUrl: '/products/leite.png',
+    price: 14.90, stock: 60, margin: 0.38, sales: 3500, rentability: 0.34, competitiveness: 0.80, growth: 0.03,
+    isRepeated: true, hasAd: false,
+    nielsen: { marketShare: 25, coreSegment: 'Básico', penetration: 70, regionalRanking: 1 },
+    prixsia: { minPrice: 12.90, avgPrice: 14.20, medianPrice: 14.49, maxPrice: 16.90,
+      competitors: [{ name: 'GIASSI - CENTRO', location: 'JS CENTRO', price: 14.90 }, { name: 'MAX ATAC-JD', location: 'CARVALHO JARDIM', price: 13.49 }] },
+    shoppingBrasil: { link: '', title: 'Pão Francês', adPrice: 13.90, startDate: '01/08/2025', detail: 'Preço por KG.' },
+    globalSegments: [{ competitor: 'Mercado BomPreço', lastCampaign: 'Jornal', campaignDate: 'Jul/25', reach: '110 mil', investment: 'R$ 2.000' }]
+  },
+  {
+    id: '600002', name: 'bolo formigueiro bauducco 500g', imageUrl: '/products/leite.png',
+    price: 12.49, stock: 30, margin: 0.30, sales: 1200, rentability: 0.26, competitiveness: 0.72, growth: 0.08,
+    isRepeated: false, hasAd: true,
+    nielsen: { marketShare: 14, coreSegment: 'Médio', penetration: 35, regionalRanking: 2 },
+    prixsia: { minPrice: 10.49, avgPrice: 11.80, medianPrice: 11.99, maxPrice: 13.99,
+      competitors: [{ name: 'GIASSI - CENTRO', location: 'JS CENTRO', price: 12.49 }, { name: 'ATACADAO-LONDRINA JD', location: 'SHANGRILA', price: 10.99 }] },
+    shoppingBrasil: { link: '', title: 'Bolo Formigueiro Bauducco 500g', adPrice: 11.49, startDate: '05/08/2025', detail: 'Promoção nacional.' },
+    globalSegments: [{ competitor: 'Super Mais Barato', lastCampaign: 'Digital', campaignDate: 'Jun/25', reach: '250 mil', investment: 'R$ 8.000' }]
+  },
+  {
+    id: '600003', name: 'biscoito maizena estrela 400g', imageUrl: '/products/leite.png',
+    price: 4.99, stock: 45, margin: 0.28, sales: 1800, rentability: 0.24, competitiveness: 0.76, growth: 0.05,
+    isRepeated: true, hasAd: false,
+    nielsen: { marketShare: 16, coreSegment: 'Básico', penetration: 48, regionalRanking: 2 },
+    prixsia: { minPrice: 3.99, avgPrice: 4.60, medianPrice: 4.79, maxPrice: 5.49,
+      competitors: [{ name: 'GIASSI - CENTRO', location: 'JS CENTRO', price: 4.99 }, { name: 'MAX ATAC-JD', location: 'CARVALHO JARDIM', price: 4.29 }] },
+    shoppingBrasil: { link: '', title: 'Biscoito Maizena Estrela 400g', adPrice: 4.49, startDate: '03/08/2025', detail: 'Oferta Sul.' },
+    globalSegments: [{ competitor: 'Mercado BomPreço', lastCampaign: 'TV Aberta', campaignDate: 'Jun/25', reach: '300 mil', investment: 'R$ 7.000' }]
+  },
+];
+
+// section tag used for filtering in Dashboard
+export const SECTION_GROUP_MAP: Record<string, string[]> = {
+  'Todas': [],
+  'Bebidas': ['80', '81', '85', '88', '93'],
+  'Laticínios': ['82'],
+  'Açougue': ['90'],
+  'Padaria': ['91'],
+};
+
 export const mockProductGroups: ProductGroup[] = [
   {
     id: '80',
@@ -707,6 +784,18 @@ export const mockProductGroups: ProductGroup[] = [
     name: '93-Suco Pronto',
     percentage: 3.8,
     products: []
+  },
+  {
+    id: '90',
+    name: '90-Açougue',
+    percentage: 12.1,
+    products: açougueProducts
+  },
+  {
+    id: '91',
+    name: '91-Padaria',
+    percentage: 8.7,
+    products: padariaProducts
   }
 ];
 

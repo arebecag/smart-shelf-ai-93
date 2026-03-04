@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { FilterState } from '@/types/product';
-import { mockProductGroups } from '@/data/mockData';
+import { mockProductGroups, SECTION_GROUP_MAP } from '@/data/mockData';
 import { FilterPanel } from '@/components/filters/FilterPanel';
 import { GroupsChart } from '@/components/charts/GroupsChart';
 import { GroupAccordion } from '@/components/products/GroupAccordion';
@@ -44,6 +44,15 @@ const Dashboard = () => {
   const handleGroupToggle = useCallback((groupId: string) => {
     setExpandedGroupId((prev) => (prev === groupId ? null : groupId));
   }, []);
+
+  // Filter groups by section
+  const filteredGroups = useMemo(() => {
+    const section = filters.section;
+    if (!section || section === 'Todas') return groups;
+    const allowedIds = SECTION_GROUP_MAP[section];
+    if (!allowedIds || allowedIds.length === 0) return groups;
+    return groups.filter(g => allowedIds.includes(g.id));
+  }, [groups, filters.section]);
 
   // Stats
   const totalProducts = groups.reduce((acc, g) => acc + g.products.length, 0);
@@ -116,19 +125,34 @@ const Dashboard = () => {
 
       {/* Chart */}
       <GroupsChart
-        groups={groups}
+        groups={filteredGroups}
         onGroupClick={handleGroupClick}
       />
 
       {/* Product Groups Accordion */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Grupos de Produtos</h2>
-        <GroupAccordion
-          groups={groups}
-          filters={filters}
-          expandedGroupId={expandedGroupId}
-          onGroupToggle={handleGroupToggle}
-        />
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Grupos de Produtos</h2>
+          {filters.section && filters.section !== 'Todas' && (
+            <span className="text-sm text-muted-foreground bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">
+              Seção: {filters.section}
+            </span>
+          )}
+        </div>
+        {filteredGroups.length > 0 ? (
+          <GroupAccordion
+            groups={filteredGroups}
+            filters={filters}
+            expandedGroupId={expandedGroupId}
+            onGroupToggle={handleGroupToggle}
+          />
+        ) : (
+          <div className="bg-card rounded-xl shadow-card p-12 text-center">
+            <Package className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Nenhum grupo para esta seção</h3>
+            <p className="text-muted-foreground">Selecione outra seção ou "Todas"</p>
+          </div>
+        )}
       </div>
     </div>
   );
