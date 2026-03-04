@@ -9,12 +9,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { mockProducts } from "@/data/mockData";
-import { TrendingUp, Calendar, BarChart3, Lightbulb, Star, Send } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Calendar, BarChart3, Lightbulb, Star, Send, Flame, DollarSign, Zap } from "lucide-react";
 import { useApprovals } from "@/contexts/ApprovalsContext";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/types/product";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+const DAY_CONTEXTS: Record<string, string> = {
+  "Seg": "Reposição pós-fds • foco em básicos",
+  "Ter": "Giro médio • boa margem",
+  "Qua": "Pico mid-week • impulso promoções",
+  "Qui": "Antecipa fds • destaque premium",
+  "Sex": "Alta demanda • bebidas e frios",
+  "Sáb": "Pico de vendas • tudo vende",
+  "Dom": "Família em casa • laticínios e bebidas",
+};
 
 const SECTIONS: Record<string, string[]> = {
   "Cervejas": ["1", "2", "3"],
@@ -23,15 +33,28 @@ const SECTIONS: Record<string, string[]> = {
   "Energéticos": ["7"],
 };
 
-function generateWeeklyData(productId: string, baseSales: number) {
+// Deterministic but varied: each product has unique curve per day
+function generateWeeklyData(productId: string, baseSales: number, margin: number, growth: number) {
   const seed = productId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  // Different products have different peak days based on seed
+  const peakDay = seed % 7;
   return DAYS.map((day, i) => {
-    const variation = ((seed * (i + 3)) % 40) - 20;
-    const weekend = i >= 5 ? 1.35 : 1;
+    const distFromPeak = Math.abs(i - peakDay);
+    const peakBoost = Math.max(0, 1.4 - distFromPeak * 0.15);
+    const weekend = i >= 5 ? 1.25 : 1;
+    const variation = ((seed * (i + 7) * 13) % 30) - 15; // -15% to +15%
+    const raw = Math.round(baseSales * weekend * peakBoost * (1 + variation / 100) / 7);
+    // Composite score: sales weight + margin boost + growth signal
+    const baseScore = 45 + ((seed * (i + 2) * 17) % 30);
+    const marginBoost = Math.round(margin * 40);
+    const growthBoost = Math.round(growth * 25);
+    const dayBoost = i === peakDay ? 8 : i === (peakDay + 1) % 7 || i === (peakDay + 6) % 7 ? 4 : 0;
     return {
       day,
-      vendas: Math.round(baseSales * weekend * (1 + variation / 100) / 7),
-      score: Math.min(100, Math.max(40, 60 + ((seed * (i + 1)) % 35))),
+      vendas: Math.max(20, raw),
+      score: Math.min(98, baseScore + marginBoost + growthBoost + dayBoost),
+      trending: i === peakDay ? "peak" : i === (peakDay + 1) % 7 ? "falling" : i === (peakDay + 6) % 7 ? "rising" : "stable",
+      marginPct: Math.round(margin * 100),
     };
   });
 }
@@ -82,25 +105,36 @@ function getProductsForSection(sectionName: string): Product[] {
   return slice.length > 0 ? slice : [mockProducts[sIdx % mockProducts.length]];
 }
 
-// Returns top N products for a section on a specific day
-function getTopForSection(sectionName: string, dayIdx: number, n = 2): { product: Product; vendas: number }[] {
+type DayEntry = { day: string; vendas: number; score: number; trending: string; marginPct: number };
+
+// Returns top N products for a section on a specific day, ranked by composite score
+function getTopForSection(sectionName: string, dayIdx: number, n = 2): { product: Product; data: DayEntry; compositeScore: number }[] {
   return getProductsForSection(sectionName)
-    .map(p => ({ product: p, vendas: generateWeeklyData(p.id, p.sales)[dayIdx].vendas }))
-    .sort((a, b) => b.vendas - a.vendas)
+    .map(p => {
+      const data = generateWeeklyData(p.id, p.sales, p.margin, p.growth)[dayIdx];
+      // Composite: 50% sales velocity, 30% IA score, 20% margin
+      const salesNorm = Math.min(1, data.vendas / 500);
+      const scoreNorm = data.score / 100;
+      const marginNorm = Math.min(1, p.margin / 0.4);
+      const compositeScore = Math.round((salesNorm * 50 + scoreNorm * 30 + marginNorm * 20) * 100) / 100;
+      return { product: p, data, compositeScore };
+    })
+    .sort((a, b) => b.compositeScore - a.compositeScore)
     .slice(0, n);
 }
 
-// Best product per section by weekly average
-function getBestPerSectionWeekly(): { section: string; product: Product; avgVendas: number }[] {
+// Best product per section by weekly average composite
+function getBestPerSectionWeekly(): { section: string; product: Product; avgVendas: number; avgScore: number }[] {
   return Object.keys(SECTIONS).map(section => {
     const sectionProducts = getProductsForSection(section);
     const best = sectionProducts
       .map(p => {
-        const weekly = generateWeeklyData(p.id, p.sales);
-        const avg = Math.round(weekly.reduce((a, d) => a + d.vendas, 0) / 7);
-        return { product: p, avgVendas: avg };
+        const weekly = generateWeeklyData(p.id, p.sales, p.margin, p.growth);
+        const avgVendas = Math.round(weekly.reduce((a, d) => a + d.vendas, 0) / 7);
+        const avgScore = Math.round(weekly.reduce((a, d) => a + d.score, 0) / 7);
+        return { product: p, avgVendas, avgScore };
       })
-      .sort((a, b) => b.avgVendas - a.avgVendas)[0];
+      .sort((a, b) => (b.avgVendas + b.avgScore) - (a.avgVendas + a.avgScore))[0];
     return { section, ...best };
   });
 }
@@ -126,14 +160,14 @@ export default function WeeklyComparison() {
   const combinedData = DAYS.map((day, i) => {
     const row: Record<string, any> = { day };
     selectedProducts.forEach((p) => {
-      const weekly = generateWeeklyData(p.id, p.sales);
+      const weekly = generateWeeklyData(p.id, p.sales, p.margin, p.growth);
       row[p.id] = weekly[i][metric];
     });
     return row;
   });
 
   const bestDays = selectedProducts.map((p) => {
-    const weekly = generateWeeklyData(p.id, p.sales);
+    const weekly = generateWeeklyData(p.id, p.sales, p.margin, p.growth);
     const best = weekly.reduce((a, b) => (a[metric] > b[metric] ? a : b));
     const total = weekly.reduce((a, b) => a + b[metric], 0);
     const avg = Math.round(total / 7);
@@ -298,7 +332,7 @@ export default function WeeklyComparison() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {selectedProducts.map((p) => {
-                    const weekly = generateWeeklyData(p.id, p.sales);
+                    const weekly = generateWeeklyData(p.id, p.sales, p.margin, p.growth);
                     const radarRows = weekly.map((d) => ({ day: d.day, value: d[metric] }));
                     return (
                       <div key={p.id} className="text-center">
@@ -326,48 +360,53 @@ export default function WeeklyComparison() {
         </TabsContent>
 
         {/* ======= ABA SUGESTÕES POR DIA ======= */}
-        <TabsContent value="sugestoes" className="space-y-6">
+        <TabsContent value="sugestoes" className="space-y-5">
 
-          {/* Sugestões Inteligentes — melhores da semana por seção */}
-          <Card className="border-primary/30 bg-primary/5">
+          {/* Sugestões Inteligentes */}
+          <Card className="border-primary/20 bg-primary/[0.03]">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-500 fill-yellow-400" />
-                Sugestões Inteligentes — Melhores da Semana por Seção
+                Destaques da Semana por Seção
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Produto com maior média de vendas semanal por seção. Clique para sugerir para o tabloide de aprovação.
+                Melhor custo-benefício composto (vendas + score IA + margem) — envie diretamente para aprovação.
               </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {smartSuggestions.map(({ section, product, avgVendas }) => {
+                {smartSuggestions.map(({ section, product, avgVendas, avgScore }) => {
                   const already = isApproved(product.id);
+                  const marginPct = Math.round(product.margin * 100);
                   return (
-                    <div
-                      key={section}
-                      className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-sm"
-                      style={{ borderTop: `3px solid ${SECTION_COLORS[section]}` }}
-                    >
+                    <div key={section} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 shadow-sm">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border">
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary">{section}</span>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <img src={product.imageUrl} alt={product.name} className="w-10 h-10 object-contain"
+                        <img src={product.imageUrl} alt={product.name} className="w-10 h-10 object-contain flex-shrink-0"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                        <div>
-                          <p className="text-[11px] font-bold text-muted-foreground uppercase">{section}</p>
-                          <p className="text-xs font-semibold text-foreground leading-tight">{shortName(product.name)}</p>
+                        <p className="text-xs font-semibold text-foreground leading-snug">{shortName(product.name)}</p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 text-center">
+                        <div className="bg-muted/40 rounded-lg px-1 py-1.5">
+                          <Flame className="h-3 w-3 mx-auto text-orange-500 mb-0.5" />
+                          <p className="text-[10px] font-bold text-foreground">{avgVendas}</p>
+                          <p className="text-[9px] text-muted-foreground">un/dia</p>
+                        </div>
+                        <div className="bg-muted/40 rounded-lg px-1 py-1.5">
+                          <Zap className="h-3 w-3 mx-auto text-primary mb-0.5" />
+                          <p className="text-[10px] font-bold text-foreground">{avgScore}</p>
+                          <p className="text-[9px] text-muted-foreground">score</p>
+                        </div>
+                        <div className="bg-muted/40 rounded-lg px-1 py-1.5">
+                          <DollarSign className="h-3 w-3 mx-auto text-green-600 mb-0.5" />
+                          <p className="text-[10px] font-bold text-foreground">{marginPct}%</p>
+                          <p className="text-[9px] text-muted-foreground">margem</p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Média semanal</span>
-                        <span className="font-bold text-foreground">{avgVendas} un.</span>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="w-full text-xs h-7"
-                        variant={already ? "secondary" : "default"}
-                        disabled={already}
-                        onClick={() => handleSuggest(product)}
-                      >
+                      <Button size="sm" className="w-full text-xs h-7" variant={already ? "secondary" : "default"}
+                        disabled={already} onClick={() => handleSuggest(product)}>
                         <Send className="h-3 w-3 mr-1" />
                         {already ? "Já no tabloide" : "Sugerir para Tabloide"}
                       </Button>
@@ -378,65 +417,68 @@ export default function WeeklyComparison() {
             </CardContent>
           </Card>
 
-          {/* Top produtos por dia da semana */}
-          <div className="space-y-4">
+          {/* Top por dia — grid compacto com contexto e indicadores */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
             {DAYS.map((day, dayIdx) => (
-              <Card key={day}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    {day} — Melhores por Seção
-                  </CardTitle>
+              <Card key={day} className="overflow-hidden">
+                <CardHeader className="pb-2 pt-3 px-4 bg-muted/20 border-b border-border">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <CardTitle className="text-sm font-bold text-foreground">{day}</CardTitle>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{DAY_CONTEXTS[day]}</p>
+                    </div>
+                    <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {Object.keys(SECTIONS).map(section => {
-                      const top = getTopForSection(section, dayIdx, 2);
-                      return (
-                        <div key={section} className="rounded-lg border border-border bg-muted/30 p-2">
-                          <p
-                            className="text-[10px] font-bold uppercase mb-2 pb-1 border-b border-border"
-                            style={{ color: SECTION_COLORS[section] }}
-                          >
-                            {section}
-                          </p>
-                          <div className="space-y-2">
-                            {top.map(({ product, vendas }, rank) => {
-                              const already = isApproved(product.id);
-                              return (
-                                <div key={product.id} className="flex items-center gap-2">
-                                  <span className={`text-[10px] font-bold w-4 text-center rounded-full ${rank === 0 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
-                                    {rank + 1}
-                                  </span>
-                                  <img src={product.imageUrl} alt={product.name} className="w-7 h-7 object-contain flex-shrink-0"
-                                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] font-medium text-foreground truncate">{shortName(product.name)}</p>
-                                    <p className="text-[10px] text-muted-foreground">{vendas} un.</p>
+                <CardContent className="p-3 space-y-3">
+                  {Object.keys(SECTIONS).map(section => {
+                    const top = getTopForSection(section, dayIdx, 2);
+                    return (
+                      <div key={section}>
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: SECTION_COLORS[section] }} />
+                          {section}
+                        </p>
+                        <div className="space-y-1.5">
+                          {top.map(({ product, data, compositeScore: _cs }, rank) => {
+                            const already = isApproved(product.id);
+                            const TrendIcon = data.trending === "peak" ? Flame : data.trending === "rising" ? TrendingUp : data.trending === "falling" ? TrendingDown : Minus;
+                            const trendColor = data.trending === "peak" ? "text-orange-500" : data.trending === "rising" ? "text-green-600" : data.trending === "falling" ? "text-red-500" : "text-muted-foreground";
+                            return (
+                              <div key={product.id} className={`flex items-center gap-2 rounded-lg p-2 transition-colors ${rank === 0 ? 'bg-primary/5 border border-primary/15' : 'bg-muted/20'}`}>
+                                <div className="flex-shrink-0 w-4 text-center">
+                                  {rank === 0
+                                    ? <span className="text-[10px] font-black text-yellow-600">①</span>
+                                    : <span className="text-[10px] font-bold text-muted-foreground">②</span>
+                                  }
+                                </div>
+                                <img src={product.imageUrl} alt={product.name} className="w-7 h-7 object-contain flex-shrink-0"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{shortName(product.name)}</p>
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="text-[9px] text-muted-foreground">{data.vendas} un</span>
+                                    <span className="text-[9px] text-muted-foreground">·</span>
+                                    <span className="text-[9px] font-medium text-primary">{data.score}pts</span>
+                                    <span className="text-[9px] text-muted-foreground">·</span>
+                                    <span className="text-[9px] font-medium text-green-600">{data.marginPct}%mg</span>
                                   </div>
-                                  <button
-                                    onClick={() => handleSuggest(product)}
-                                    disabled={already}
+                                </div>
+                                <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                                  <TrendIcon className={`h-3 w-3 ${trendColor}`} />
+                                  <button onClick={() => handleSuggest(product)} disabled={already}
                                     title={already ? "Já no tabloide" : "Sugerir para tabloide"}
-                                    className={`flex-shrink-0 p-1 rounded-full transition-colors ${
-                                      already
-                                        ? 'text-green-500 cursor-default'
-                                        : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
-                                    }`}
-                                  >
-                                    {already
-                                      ? <CheckIcon />
-                                      : <Send className="h-3 w-3" />
-                                    }
+                                    className={`p-0.5 rounded-full transition-colors ${already ? 'text-green-500 cursor-default' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}>
+                                    {already ? <CheckIcon /> : <Send className="h-2.5 w-2.5" />}
                                   </button>
                                 </div>
-                              );
-                            })}
-                          </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             ))}
@@ -454,3 +496,5 @@ function CheckIcon() {
     </svg>
   );
 }
+
+
