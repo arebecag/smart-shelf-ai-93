@@ -131,7 +131,7 @@ function topBySection(stats: ProductStats[], section: string, n = 3): ProductSta
 }
 
 // Produto destaque do dia: cruza boosted sections com melhor score
-function getDayHighlights(stats: ProductStats[], day: string, perSection = 2) {
+function getDayHighlights(stats: ProductStats[], day: string, perSection = 4) {
   const boosted = DAY_SECTION_BOOST[day] || [];
   const result: { section: string; items: ProductStats[] }[] = [];
   for (const section of boosted) {
@@ -383,7 +383,7 @@ export default function WeeklyComparison() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {activeSections.map(section => {
-              const top = topBySection(allStats, section, 4);
+              const top = topBySection(allStats, section, 6);
               if (!top.length) return null;
               return (
                 <Card key={section}>
