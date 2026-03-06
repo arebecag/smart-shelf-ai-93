@@ -7,706 +7,344 @@ const mkPrixsia = (min: number, avg: number, med: number, max: number, comps: {n
 const mkShop = (id: string, title: string, adPrice: number, date: string) => ({ link: `https://www.shoppingbrasil.com.br/produto/${id}`, title, adPrice, startDate: date, detail: 'Oferta válida para o Sul do Brasil.' });
 const mkSeg = (comp: string, camp: string, date: string, reach: string, invest: string) => [{ competitor: comp, lastCampaign: camp, campaignDate: date, reach, investment: invest }];
 
-export const mockProducts: Product[] = [
-  // ── CERVEJAS ──────────────────────────────────────────────
-  {
-    id: '127400', name: 'cerv.brahma chopp 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 3.59, stock: 8, margin: 0.22, sales: 1400, rentability: 0.18, competitiveness: 0.70, growth: 0.10, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(7,'Médio',10,6),
-    prixsia: mkPrixsia(2.59,3.21,3.35,4.49,[mkComp('GIASSI - CENTRO','JS CENTRO',3.95),mkComp('MAX ATAC-JD','JARDIM',2.89),mkComp('ATACADAO','SHANGRILA',2.59)]),
-    shoppingBrasil: mkShop('127400','Cerveja Brahma Chopp Lata 350ml',3.69,'05/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','330 mil','R$ 8.000')
-  },
-  {
-    id: '1875939', name: 'cerv.brahma duplo malte 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 3.99, stock: 12, margin: 0.25, sales: 1600, rentability: 0.21, competitiveness: 0.78, growth: 0.14, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(8,'Médio',12,5),
-    prixsia: mkPrixsia(3.10,3.44,3.39,4.49,[mkComp('GIASSI - CENTRO','JS CENTRO',3.95),mkComp('MAX ATAC-JD','JARDIM',3.25)]),
-    shoppingBrasil: mkShop('1875939','Cerveja Brahma Duplo Malte 350ml',4.09,'06/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','430 mil','R$ 10.000')
-  },
-  {
-    id: '1981356', name: 'cerv.spaten 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 4.79, stock: 15, margin: 0.19, sales: 1200, rentability: 0.15, competitiveness: 0.60, growth: 0.08, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(4,'Médio',7,8),
-    prixsia: mkPrixsia(3.99,4.19,4.25,4.99,[mkComp('GIASSI - CENTRO','JS CENTRO',4.99),mkComp('ATACADAO','SHANGRILA',3.99)]),
-    shoppingBrasil: mkShop('1981356','Cerveja Spaten Munich 350ml',4.49,'07/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','260 mil','R$ 6.000')
-  },
-  {
-    id: '1100001', name: 'cerv.heineken 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 4.99, stock: 18, margin: 0.24, sales: 1750, rentability: 0.20, competitiveness: 0.72, growth: 0.16, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(12,'Premium',18,3),
-    prixsia: mkPrixsia(3.99,4.50,4.49,5.49,[mkComp('GIASSI - CENTRO','JS CENTRO',4.89),mkComp('MAX ATAC-JD','JARDIM',4.19)]),
-    shoppingBrasil: mkShop('1100001','Heineken 350ml Lata',4.79,'08/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','720 mil','R$ 30.000')
-  },
-  {
-    id: '1100002', name: 'cerv.corona extra 330ml garrafa', imageUrl: '/products/cat-cervejas.png',
-    price: 5.49, stock: 10, margin: 0.26, sales: 980, rentability: 0.22, competitiveness: 0.68, growth: 0.19, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(6,'Premium',10,7),
-    prixsia: mkPrixsia(4.49,5.10,5.29,5.99,[mkComp('GIASSI - CENTRO','JS CENTRO',5.49),mkComp('MAX ATAC-JD','JARDIM',4.89)]),
-    shoppingBrasil: mkShop('1100002','Corona Extra 330ml',5.29,'10/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','280 mil','R$ 12.000')
-  },
-  {
-    id: '1100003', name: 'cerv.budweiser 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 3.89, stock: 22, margin: 0.21, sales: 1320, rentability: 0.17, competitiveness: 0.74, growth: 0.11, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(9,'Médio',14,4),
-    prixsia: mkPrixsia(2.99,3.50,3.59,4.29,[mkComp('GIASSI - CENTRO','JS CENTRO',3.79),mkComp('ATACADAO','SHANGRILA',2.99)]),
-    shoppingBrasil: mkShop('1100003','Budweiser 350ml Lata',3.69,'05/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','400 mil','R$ 9.000')
-  },
-  {
-    id: '1100004', name: 'cerv.amstel 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 3.69, stock: 16, margin: 0.20, sales: 1100, rentability: 0.16, competitiveness: 0.71, growth: 0.09, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(5,'Médio',9,9),
-    prixsia: mkPrixsia(2.89,3.35,3.39,4.19,[mkComp('GIASSI - CENTRO','JS CENTRO',3.69),mkComp('MAX ATAC-JD','JARDIM',3.19)]),
-    shoppingBrasil: mkShop('1100004','Amstel 350ml Lata',3.49,'06/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Rádio','Maio/25','180 mil','R$ 4.500')
-  },
-  {
-    id: '1100005', name: 'cerv.skol 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 3.29, stock: 30, margin: 0.19, sales: 1650, rentability: 0.15, competitiveness: 0.76, growth: 0.08, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(11,'Básico',20,2),
-    prixsia: mkPrixsia(2.49,3.10,3.19,3.79,[mkComp('ATACADAO','SHANGRILA',2.49),mkComp('MAX ATAC-JD','JARDIM',2.89)]),
-    shoppingBrasil: mkShop('1100005','Skol 350ml Lata',3.09,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','550 mil','R$ 14.000')
-  },
-  {
-    id: '1100006', name: 'cerv.original 600ml garrafa', imageUrl: '/products/cat-cervejas.png',
-    price: 6.49, stock: 14, margin: 0.23, sales: 820, rentability: 0.19, competitiveness: 0.63, growth: 0.13, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(7,'Médio',13,6),
-    prixsia: mkPrixsia(5.49,6.10,6.19,6.99,[mkComp('GIASSI - CENTRO','JS CENTRO',6.49),mkComp('MAX ATAC-JD','JARDIM',5.79)]),
-    shoppingBrasil: mkShop('1100006','Cerveja Original 600ml',5.99,'12/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','210 mil','R$ 7.000')
-  },
-  {
-    id: '1100007', name: 'cerv.itaipava 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 2.99, stock: 35, margin: 0.18, sales: 1900, rentability: 0.14, competitiveness: 0.80, growth: 0.07, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(10,'Básico',22,2),
-    prixsia: mkPrixsia(2.29,2.80,2.89,3.49,[mkComp('ATACADAO','SHANGRILA',2.29),mkComp('MAX ATAC-JD','JARDIM',2.69)]),
-    shoppingBrasil: mkShop('1100007','Itaipava 350ml Lata',2.79,'02/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','480 mil','R$ 11.000')
-  },
-  {
-    id: '1100008', name: 'cerv.devassa ruiva 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 4.49, stock: 11, margin: 0.22, sales: 750, rentability: 0.18, competitiveness: 0.65, growth: 0.12, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(3,'Premium',7,11),
-    prixsia: mkPrixsia(3.59,4.10,4.19,4.99,[mkComp('GIASSI - CENTRO','JS CENTRO',4.49),mkComp('MAX ATAC-JD','JARDIM',3.89)]),
-    shoppingBrasil: mkShop('1100008','Devassa Ruiva 350ml',4.19,'09/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','140 mil','R$ 5.000')
-  },
-  {
-    id: '1100009', name: 'cerv.stella artois 350ml la', imageUrl: '/products/cat-cervejas.png',
-    price: 4.29, stock: 20, margin: 0.23, sales: 1050, rentability: 0.19, competitiveness: 0.69, growth: 0.13, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(8,'Premium',14,5),
-    prixsia: mkPrixsia(3.49,4.00,4.09,4.89,[mkComp('GIASSI - CENTRO','JS CENTRO',4.29),mkComp('MAX ATAC-JD','JARDIM',3.79)]),
-    shoppingBrasil: mkShop('1100009','Stella Artois 350ml Lata',3.99,'11/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','390 mil','R$ 14.000')
-  },
-  {
-    id: '1100010', name: 'cerv.eisenbahn pale ale 355ml garrafa', imageUrl: '/products/cat-cervejas.png',
-    price: 7.99, stock: 8, margin: 0.28, sales: 380, rentability: 0.24, competitiveness: 0.55, growth: 0.21, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(2,'Premium',4,14),
-    prixsia: mkPrixsia(6.49,7.50,7.59,8.99,[mkComp('GIASSI - CENTRO','JS CENTRO',7.99),mkComp('MAX ATAC-JD','JARDIM',7.29)]),
-    shoppingBrasil: mkShop('1100010','Eisenbahn Pale Ale 355ml',7.49,'14/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Maio/25','80 mil','R$ 3.500')
-  },
-  {
-    id: '1100011', name: 'cerv.colorado appia 600ml garrafa', imageUrl: '/products/cat-cervejas.png',
-    price: 11.99, stock: 6, margin: 0.30, sales: 290, rentability: 0.26, competitiveness: 0.52, growth: 0.24, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(1,'Premium',3,16),
-    prixsia: mkPrixsia(9.99,11.20,11.49,13.49,[mkComp('GIASSI - CENTRO','JS CENTRO',11.99),mkComp('MAX ATAC-JD','JARDIM',10.99)]),
-    shoppingBrasil: mkShop('1100011','Colorado Appia 600ml',10.99,'16/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','55 mil','R$ 2.000')
-  },
-  {
-    id: '1100012', name: 'cerv.bohemia 600ml garrafa', imageUrl: '/products/cat-cervejas.png',
-    price: 7.49, stock: 12, margin: 0.21, sales: 560, rentability: 0.17, competitiveness: 0.61, growth: 0.10, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(4,'Médio',8,10),
-    prixsia: mkPrixsia(5.99,7.00,7.09,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',7.49),mkComp('ATACADAO','SHANGRILA',6.49)]),
-    shoppingBrasil: mkShop('1100012','Bohemia 600ml',6.99,'07/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','160 mil','R$ 4.500')
-  },
+// random-ish helpers for generating realistic data from CSV names
+const r = (min: number, max: number) => +(min + Math.random() * (max - min)).toFixed(2);
+const ri = (min: number, max: number) => Math.floor(min + Math.random() * (max - min));
 
-  // ── REFRIGERANTES ─────────────────────────────────────────
-  {
-    id: '200001', name: 'coca-cola original 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 9.99, stock: 25, margin: 0.28, sales: 2200, rentability: 0.24, competitiveness: 0.85, growth: 0.18, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(32,'Alto',45,1),
-    prixsia: mkPrixsia(8.49,9.25,9.49,11.99,[mkComp('GIASSI - CENTRO','JS CENTRO',9.89),mkComp('MAX ATAC-JD','JARDIM',8.99),mkComp('ATACADAO','SHANGRILA',8.49)]),
-    shoppingBrasil: mkShop('200001','Coca-Cola Original 2L',9.49,'10/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','850 mil','R$ 25.000')
-  },
-  {
-    id: '200002', name: 'guarana antarctica 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 7.99, stock: 30, margin: 0.24, sales: 1800, rentability: 0.20, competitiveness: 0.82, growth: 0.12, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(18,'Alto',35,2),
-    prixsia: mkPrixsia(6.99,7.50,7.49,8.99,[mkComp('GIASSI - CENTRO','JS CENTRO',7.89),mkComp('MAX ATAC-JD','JARDIM',7.29)]),
-    shoppingBrasil: mkShop('200002','Guaraná Antarctica 2L',7.49,'12/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','500 mil','R$ 15.000')
-  },
-  {
-    id: '200003', name: 'pepsi black 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 8.49, stock: 20, margin: 0.22, sales: 1100, rentability: 0.18, competitiveness: 0.79, growth: 0.10, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Alto',15,4),
-    prixsia: mkPrixsia(7.49,8.10,8.19,9.49,[mkComp('GIASSI - CENTRO','JS CENTRO',8.49),mkComp('MAX ATAC-JD','JARDIM',7.79)]),
-    shoppingBrasil: mkShop('200003','Pepsi Black 2L',7.99,'11/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jun/25','320 mil','R$ 11.000')
-  },
-  {
-    id: '200004', name: 'fanta laranja 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 7.49, stock: 25, margin: 0.21, sales: 950, rentability: 0.17, competitiveness: 0.77, growth: 0.09, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(6,'Alto',12,5),
-    prixsia: mkPrixsia(6.49,7.10,7.19,8.49,[mkComp('GIASSI - CENTRO','JS CENTRO',7.39),mkComp('ATACADAO','SHANGRILA',6.49)]),
-    shoppingBrasil: mkShop('200004','Fanta Laranja 2L',6.99,'09/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','TV Aberta','Jun/25','410 mil','R$ 13.000')
-  },
-  {
-    id: '200005', name: 'schweppes citrus 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 6.99, stock: 18, margin: 0.20, sales: 680, rentability: 0.16, competitiveness: 0.70, growth: 0.07, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(4,'Médio',8,8),
-    prixsia: mkPrixsia(5.99,6.60,6.79,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',6.99),mkComp('MAX ATAC-JD','JARDIM',6.29)]),
-    shoppingBrasil: mkShop('200005','Schweppes Citrus 2L',6.49,'07/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Maio/25','130 mil','R$ 3.500')
-  },
-  {
-    id: '200006', name: 'sprite limao 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 7.29, stock: 22, margin: 0.21, sales: 870, rentability: 0.17, competitiveness: 0.75, growth: 0.10, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(5,'Alto',10,6),
-    prixsia: mkPrixsia(6.29,6.90,6.99,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',7.19),mkComp('ATACADAO','SHANGRILA',6.29)]),
-    shoppingBrasil: mkShop('200006','Sprite Limão 2L',6.89,'08/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','280 mil','R$ 8.000')
-  },
-  {
-    id: '200007', name: 'coca-cola zero 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 9.49, stock: 28, margin: 0.26, sales: 1400, rentability: 0.22, competitiveness: 0.83, growth: 0.15, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(14,'Alto',28,3),
-    prixsia: mkPrixsia(7.99,8.80,8.99,10.49,[mkComp('GIASSI - CENTRO','JS CENTRO',9.29),mkComp('MAX ATAC-JD','JARDIM',8.49)]),
-    shoppingBrasil: mkShop('200007','Coca-Cola Zero 2L',8.99,'13/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','620 mil','R$ 18.000')
-  },
-  {
-    id: '200008', name: 'kuat limao 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 6.49, stock: 20, margin: 0.19, sales: 720, rentability: 0.15, competitiveness: 0.72, growth: 0.08, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(5,'Médio',11,7),
-    prixsia: mkPrixsia(5.49,6.10,6.19,7.29,[mkComp('GIASSI - CENTRO','JS CENTRO',6.49),mkComp('ATACADAO','SHANGRILA',5.79)]),
-    shoppingBrasil: mkShop('200008','Kuat Limão 2L',5.99,'04/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Maio/25','200 mil','R$ 6.000')
-  },
-  {
-    id: '200009', name: 'coca-cola 600ml garrafa pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 4.49, stock: 40, margin: 0.25, sales: 2400, rentability: 0.21, competitiveness: 0.88, growth: 0.16, isRepeated: true, hasAd: true,
-    nielsen: mkNielsen(28,'Alto',50,1),
-    prixsia: mkPrixsia(3.79,4.20,4.29,5.29,[mkComp('GIASSI - CENTRO','JS CENTRO',4.49),mkComp('MAX ATAC-JD','JARDIM',3.99)]),
-    shoppingBrasil: mkShop('200009','Coca-Cola 600ml PET',4.19,'02/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','750 mil','R$ 22.000')
-  },
-  {
-    id: '200010', name: 'guarana antarctica lata 350ml', imageUrl: '/products/cat-refrigerantes.png',
-    price: 3.49, stock: 35, margin: 0.20, sales: 1650, rentability: 0.16, competitiveness: 0.80, growth: 0.11, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(15,'Alto',30,3),
-    prixsia: mkPrixsia(2.79,3.20,3.29,3.99,[mkComp('GIASSI - CENTRO','JS CENTRO',3.49),mkComp('ATACADAO','SHANGRILA',2.99)]),
-    shoppingBrasil: mkShop('200010','Guaraná Antarctica Lata 350ml',3.19,'05/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','420 mil','R$ 12.000')
-  },
-  {
-    id: '200011', name: 'pepsi cola 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 7.49, stock: 22, margin: 0.20, sales: 980, rentability: 0.16, competitiveness: 0.76, growth: 0.09, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(7,'Alto',13,5),
-    prixsia: mkPrixsia(6.29,7.00,7.09,8.29,[mkComp('GIASSI - CENTRO','JS CENTRO',7.49),mkComp('MAX ATAC-JD','JARDIM',6.79)]),
-    shoppingBrasil: mkShop('200011','Pepsi Cola 2L',6.99,'06/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','380 mil','R$ 10.000')
-  },
-  {
-    id: '200012', name: 'fanta uva 2l pet', imageUrl: '/products/cat-refrigerantes.png',
-    price: 7.29, stock: 18, margin: 0.21, sales: 720, rentability: 0.17, competitiveness: 0.74, growth: 0.10, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(4,'Médio',10,7),
-    prixsia: mkPrixsia(6.19,6.90,6.99,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',7.29),mkComp('ATACADAO','SHANGRILA',6.29)]),
-    shoppingBrasil: mkShop('200012','Fanta Uva 2L',6.79,'09/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Maio/25','220 mil','R$ 7.000')
-  },
+const mkProduct = (id: string, name: string, img: string, price: number, opts: Partial<Product> = {}): Product => ({
+  id, name, imageUrl: img,
+  price,
+  stock: opts.stock ?? ri(8, 80),
+  margin: opts.margin ?? r(0.15, 0.38),
+  sales: opts.sales ?? ri(200, 4000),
+  rentability: opts.rentability ?? r(0.12, 0.32),
+  competitiveness: opts.competitiveness ?? r(0.50, 0.92),
+  growth: opts.growth ?? r(0.03, 0.28),
+  isRepeated: opts.isRepeated ?? Math.random() > 0.65,
+  hasAd: opts.hasAd ?? Math.random() > 0.6,
+  nielsen: opts.nielsen ?? mkNielsen(ri(2, 30), ['Básico','Médio','Alto','Premium'][ri(0,4)], ri(5, 70), ri(1, 16)),
+  prixsia: opts.prixsia ?? mkPrixsia(r(price*0.75, price*0.9), r(price*0.9, price*1.05), r(price*0.92, price*1.02), r(price*1.05, price*1.25), [mkComp('GIASSI - CENTRO','JS CENTRO', r(price*0.9, price*1.1)), mkComp('MAX ATAC-JD','JARDIM', r(price*0.8, price*1.0)), mkComp('ATACADAO','SHANGRILA', r(price*0.75, price*0.95))]),
+  shoppingBrasil: opts.shoppingBrasil ?? mkShop(id, name, r(price*0.85, price*0.98), '08/08/2025'),
+  globalSegments: opts.globalSegments ?? mkSeg(['Mercado BomPreço','Super Mais Barato','Atacadão','Big Bompreço'][ri(0,4)], ['TV Aberta','Digital','Rádio','Jornal'][ri(0,4)], ['Jun/25','Jul/25','Maio/25','Ago/25'][ri(0,4)], `${ri(80,850)} mil`, `R$ ${ri(2,45)}.000`),
+});
 
-  // ── LATICÍNIOS ────────────────────────────────────────────
-  {
-    id: '300001', name: 'leite integral piracanjuba 1l', imageUrl: '/products/cat-laticinios.png',
-    price: 5.49, stock: 50, margin: 0.18, sales: 3200, rentability: 0.15, competitiveness: 0.75, growth: 0.05, isRepeated: true, hasAd: true,
-    nielsen: mkNielsen(22,'Básico',65,1),
-    prixsia: mkPrixsia(4.89,5.20,5.29,5.99,[mkComp('GIASSI - CENTRO','JS CENTRO',5.49),mkComp('MAX ATAC-JD','JARDIM',4.99)]),
-    shoppingBrasil: mkShop('300001','Leite Integral Piracanjuba 1L',4.99,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','120 mil','R$ 3.000')
-  },
-  {
-    id: '300002', name: 'leite semidesnatado italac 1l', imageUrl: '/products/cat-laticinios.png',
-    price: 5.29, stock: 40, margin: 0.17, sales: 2800, rentability: 0.14, competitiveness: 0.73, growth: 0.04, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(15,'Básico',55,2),
-    prixsia: mkPrixsia(4.69,5.00,5.09,5.79,[mkComp('GIASSI - CENTRO','JS CENTRO',5.29),mkComp('MAX ATAC-JD','JARDIM',4.79)]),
-    shoppingBrasil: mkShop('300002','Leite Semidesnatado Italac 1L',4.89,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','100 mil','R$ 2.500')
-  },
-  {
-    id: '300003', name: 'iogurte grego nestle 100g', imageUrl: '/products/cat-laticinios.png',
-    price: 3.49, stock: 35, margin: 0.28, sales: 1500, rentability: 0.23, competitiveness: 0.69, growth: 0.15, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(10,'Médio',28,3),
-    prixsia: mkPrixsia(2.99,3.25,3.29,3.99,[mkComp('GIASSI - CENTRO','JS CENTRO',3.49),mkComp('ATACADAO','SHANGRILA',2.99)]),
-    shoppingBrasil: mkShop('300003','Iogurte Grego Nestlé 100g',3.19,'05/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','220 mil','R$ 6.000')
-  },
-  {
-    id: '300004', name: 'queijo muçarela tirolez kg', imageUrl: '/products/cat-laticinios.png',
-    price: 39.90, stock: 12, margin: 0.30, sales: 480, rentability: 0.26, competitiveness: 0.65, growth: 0.08, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Alto',18,4),
-    prixsia: mkPrixsia(34.90,37.50,38.00,42.90,[mkComp('GIASSI - CENTRO','JS CENTRO',39.90),mkComp('MAX ATAC-JD','JARDIM',35.90)]),
-    shoppingBrasil: mkShop('300004','Queijo Muçarela Tirolez KG',36.90,'10/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','90 mil','R$ 2.000')
-  },
-  {
-    id: '300005', name: 'manteiga aviacao com sal 200g', imageUrl: '/products/cat-laticinios.png',
-    price: 8.99, stock: 28, margin: 0.25, sales: 1200, rentability: 0.21, competitiveness: 0.72, growth: 0.06, isRepeated: true, hasAd: true,
-    nielsen: mkNielsen(18,'Básico',42,1),
-    prixsia: mkPrixsia(7.99,8.50,8.49,9.99,[mkComp('GIASSI - CENTRO','JS CENTRO',8.99),mkComp('ATACADAO','SHANGRILA',7.99)]),
-    shoppingBrasil: mkShop('300005','Manteiga Aviação 200g',8.49,'03/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','170 mil','R$ 5.000')
-  },
-  {
-    id: '300006', name: 'cream cheese philadelphia 150g', imageUrl: '/products/cat-laticinios.png',
-    price: 9.49, stock: 20, margin: 0.32, sales: 880, rentability: 0.28, competitiveness: 0.68, growth: 0.18, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(12,'Premium',22,3),
-    prixsia: mkPrixsia(7.99,8.90,8.99,10.49,[mkComp('GIASSI - CENTRO','JS CENTRO',9.49),mkComp('MAX ATAC-JD','JARDIM',8.49)]),
-    shoppingBrasil: mkShop('300006','Cream Cheese Philadelphia 150g',8.99,'07/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','180 mil','R$ 7.000')
-  },
-  {
-    id: '300007', name: 'requeijao catupiry 200g', imageUrl: '/products/cat-laticinios.png',
-    price: 7.49, stock: 32, margin: 0.27, sales: 1350, rentability: 0.23, competitiveness: 0.74, growth: 0.09, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(20,'Médio',38,2),
-    prixsia: mkPrixsia(6.49,7.10,7.19,8.29,[mkComp('GIASSI - CENTRO','JS CENTRO',7.49),mkComp('ATACADAO','SHANGRILA',6.69)]),
-    shoppingBrasil: mkShop('300007','Requeijão Catupiry 200g',6.99,'06/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','150 mil','R$ 4.000')
-  },
-  {
-    id: '300008', name: 'leite condensado moca 395g', imageUrl: '/products/cat-laticinios.png',
-    price: 6.49, stock: 45, margin: 0.26, sales: 1800, rentability: 0.22, competitiveness: 0.79, growth: 0.07, isRepeated: true, hasAd: true,
-    nielsen: mkNielsen(30,'Básico',58,1),
-    prixsia: mkPrixsia(5.49,6.10,6.19,6.99,[mkComp('GIASSI - CENTRO','JS CENTRO',6.49),mkComp('MAX ATAC-JD','JARDIM',5.89)]),
-    shoppingBrasil: mkShop('300008','Leite Condensado Moça 395g',5.99,'04/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','380 mil','R$ 10.000')
-  },
-  {
-    id: '300009', name: 'creme de leite nestle 200g', imageUrl: '/products/cat-laticinios.png',
-    price: 3.99, stock: 55, margin: 0.22, sales: 2100, rentability: 0.18, competitiveness: 0.77, growth: 0.05, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(25,'Básico',55,1),
-    prixsia: mkPrixsia(3.29,3.70,3.79,4.49,[mkComp('GIASSI - CENTRO','JS CENTRO',3.99),mkComp('ATACADAO','SHANGRILA',3.49)]),
-    shoppingBrasil: mkShop('300009','Creme de Leite Nestlé 200g',3.59,'03/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','TV Aberta','Jul/25','290 mil','R$ 8.000')
-  },
-  {
-    id: '300010', name: 'queijo prato reino 300g fatiado', imageUrl: '/products/cat-laticinios.png',
-    price: 14.99, stock: 25, margin: 0.28, sales: 680, rentability: 0.24, competitiveness: 0.67, growth: 0.10, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(12,'Médio',24,3),
-    prixsia: mkPrixsia(12.49,13.80,13.99,16.49,[mkComp('GIASSI - CENTRO','JS CENTRO',14.99),mkComp('MAX ATAC-JD','JARDIM',13.49)]),
-    shoppingBrasil: mkShop('300010','Queijo Prato 300g Fatiado',13.99,'10/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jun/25','80 mil','R$ 2.200')
-  },
-  {
-    id: '300011', name: 'iogurte activia morango 160g', imageUrl: '/products/cat-laticinios.png',
-    price: 4.49, stock: 30, margin: 0.29, sales: 1100, rentability: 0.25, competitiveness: 0.70, growth: 0.14, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(16,'Médio',32,2),
-    prixsia: mkPrixsia(3.79,4.20,4.29,4.99,[mkComp('GIASSI - CENTRO','JS CENTRO',4.49),mkComp('ATACADAO','SHANGRILA',3.89)]),
-    shoppingBrasil: mkShop('300011','Iogurte Activia Morango 160g',4.09,'07/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','250 mil','R$ 7.500')
-  },
-  {
-    id: '300012', name: 'leite zero lactose lv 1l', imageUrl: '/products/cat-laticinios.png',
-    price: 6.99, stock: 28, margin: 0.20, sales: 960, rentability: 0.16, competitiveness: 0.68, growth: 0.22, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Médio',18,5),
-    prixsia: mkPrixsia(5.99,6.50,6.59,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',6.99),mkComp('MAX ATAC-JD','JARDIM',6.29)]),
-    shoppingBrasil: mkShop('300012','Leite Zero Lactose LV 1L',6.49,'08/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','160 mil','R$ 5.000')
-  },
-
-  // ── ENERGÉTICOS ───────────────────────────────────────────
-  {
-    id: '400001', name: 'red bull energy drink 250ml', imageUrl: '/products/cat-energeticos.png',
-    price: 8.99, stock: 20, margin: 0.32, sales: 900, rentability: 0.28, competitiveness: 0.65, growth: 0.22, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(45,'Premium',25,1),
-    prixsia: mkPrixsia(7.99,8.50,8.49,9.99,[mkComp('GIASSI - CENTRO','JS CENTRO',8.99),mkComp('MAX ATAC-JD','JARDIM',8.29)]),
-    shoppingBrasil: mkShop('400001','Red Bull Energy 250ml',7.99,'15/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','680 mil','R$ 45.000')
-  },
-  {
-    id: '400002', name: 'monster energy 473ml la', imageUrl: '/products/cat-energeticos.png',
-    price: 9.49, stock: 15, margin: 0.30, sales: 750, rentability: 0.26, competitiveness: 0.62, growth: 0.20, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(22,'Premium',18,2),
-    prixsia: mkPrixsia(8.49,9.10,9.19,10.99,[mkComp('GIASSI - CENTRO','JS CENTRO',9.49),mkComp('MAX ATAC-JD','JARDIM',8.69)]),
-    shoppingBrasil: mkShop('400002','Monster Energy 473ml',8.99,'14/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','520 mil','R$ 35.000')
-  },
-  {
-    id: '400003', name: 'TNT energy drink 269ml la', imageUrl: '/products/cat-energeticos.png',
-    price: 4.99, stock: 25, margin: 0.28, sales: 1100, rentability: 0.24, competitiveness: 0.75, growth: 0.18, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(12,'Médio',22,3),
-    prixsia: mkPrixsia(3.99,4.50,4.59,5.49,[mkComp('GIASSI - CENTRO','JS CENTRO',4.99),mkComp('ATACADAO','SHANGRILA',3.99)]),
-    shoppingBrasil: mkShop('400003','TNT Energy 269ml',4.49,'13/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jun/25','380 mil','R$ 18.000')
-  },
-  {
-    id: '400004', name: 'burn energy drink 269ml la', imageUrl: '/products/cat-energeticos.png',
-    price: 5.49, stock: 18, margin: 0.26, sales: 640, rentability: 0.22, competitiveness: 0.68, growth: 0.15, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Médio',14,4),
-    prixsia: mkPrixsia(4.49,5.10,5.19,5.99,[mkComp('GIASSI - CENTRO','JS CENTRO',5.49),mkComp('MAX ATAC-JD','JARDIM',4.89)]),
-    shoppingBrasil: mkShop('400004','Burn Energy 269ml',4.99,'11/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Maio/25','150 mil','R$ 6.000')
-  },
-  {
-    id: '400005', name: 'red bull sugarfree 250ml', imageUrl: '/products/cat-energeticos.png',
-    price: 8.99, stock: 16, margin: 0.31, sales: 620, rentability: 0.27, competitiveness: 0.63, growth: 0.19, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(10,'Premium',16,5),
-    prixsia: mkPrixsia(7.49,8.40,8.49,9.79,[mkComp('GIASSI - CENTRO','JS CENTRO',8.99),mkComp('MAX ATAC-JD','JARDIM',8.19)]),
-    shoppingBrasil: mkShop('400005','Red Bull SugarFree 250ml',7.99,'16/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','280 mil','R$ 18.000')
-  },
-  {
-    id: '400006', name: 'monster ultra zero 473ml la', imageUrl: '/products/cat-energeticos.png',
-    price: 9.49, stock: 12, margin: 0.29, sales: 480, rentability: 0.25, competitiveness: 0.60, growth: 0.21, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Premium',12,6),
-    prixsia: mkPrixsia(8.19,8.90,8.99,10.49,[mkComp('GIASSI - CENTRO','JS CENTRO',9.49),mkComp('MAX ATAC-JD','JARDIM',8.69)]),
-    shoppingBrasil: mkShop('400006','Monster Ultra Zero 473ml',8.79,'15/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','310 mil','R$ 20.000')
-  },
+// ── CERVEJAS (Seção 8, Grupo 80) ──────────────────────────
+export const cervejaProducts: Product[] = [
+  mkProduct('769088','cerv.skol pilsen 473ml la','/products/cat-cervejas.png',3.29,{margin:0.19,sales:1650,isRepeated:true,hasAd:false}),
+  mkProduct('127400','cerv.brahma chopp 350ml la','/products/cat-cervejas.png',3.59,{margin:0.22,sales:1400,isRepeated:false,hasAd:true}),
+  mkProduct('1875939','cerv.brahma duplo malte 350ml la','/products/cat-cervejas.png',3.99,{margin:0.25,sales:1600,isRepeated:false,hasAd:true}),
+  mkProduct('1981356','cerv.spaten 350ml la','/products/cat-cervejas.png',4.79,{margin:0.19,sales:1200,isRepeated:true,hasAd:false}),
+  mkProduct('1100001','cerv.heineken 350ml la','/products/cat-cervejas.png',4.99,{margin:0.24,sales:1750,isRepeated:false,hasAd:true}),
+  mkProduct('1100002','cerv.corona extra 330ml garrafa','/products/cat-cervejas.png',5.49,{margin:0.26,sales:980,isRepeated:false,hasAd:false}),
+  mkProduct('1100003','cerv.budweiser 350ml la','/products/cat-cervejas.png',3.89,{margin:0.21,sales:1320,isRepeated:true,hasAd:false}),
+  mkProduct('1100004','cerv.amstel 350ml la','/products/cat-cervejas.png',3.69,{margin:0.20,sales:1100,isRepeated:false,hasAd:true}),
+  mkProduct('1100005','cerv.skol 350ml la','/products/cat-cervejas.png',3.29,{margin:0.19,sales:1650,isRepeated:true,hasAd:false}),
+  mkProduct('1100006','cerv.original 600ml garrafa','/products/cat-cervejas.png',6.49,{margin:0.23,sales:820,isRepeated:false,hasAd:true}),
+  mkProduct('1100007','cerv.itaipava 350ml la','/products/cat-cervejas.png',2.99,{margin:0.18,sales:1900,isRepeated:true,hasAd:false}),
+  mkProduct('1100008','cerv.devassa ruiva 350ml la','/products/cat-cervejas.png',4.49,{margin:0.22,sales:750,isRepeated:false,hasAd:false}),
+  mkProduct('1100009','cerv.stella artois 350ml la','/products/cat-cervejas.png',4.29,{margin:0.23,sales:1050,isRepeated:false,hasAd:true}),
+  mkProduct('1100010','cerv.eisenbahn pale ale 355ml garrafa','/products/cat-cervejas.png',7.99,{margin:0.28,sales:380,isRepeated:false,hasAd:false}),
+  mkProduct('1100011','cerv.colorado appia 600ml garrafa','/products/cat-cervejas.png',11.99,{margin:0.30,sales:290,isRepeated:false,hasAd:false}),
+  mkProduct('1100012','cerv.bohemia 600ml garrafa','/products/cat-cervejas.png',7.49,{margin:0.21,sales:560,isRepeated:true,hasAd:false}),
+  // Novos do CSV real
+  mkProduct('769070','cerv.skol pilsen 269ml la','/products/cat-cervejas.png',2.69,{margin:0.18,sales:2100,isRepeated:true}),
+  mkProduct('769071','cerv.brahma chopp 473ml la','/products/cat-cervejas.png',4.19,{margin:0.21,sales:1350}),
+  mkProduct('769072','cerv.antarctica pilsen 350ml la','/products/cat-cervejas.png',3.19,{margin:0.17,sales:980,isRepeated:true}),
+  mkProduct('769073','cerv.heineken long neck 330ml','/products/cat-cervejas.png',5.99,{margin:0.26,sales:1420,hasAd:true}),
+  mkProduct('769074','cerv.amstel ultra 350ml la','/products/cat-cervejas.png',4.49,{margin:0.22,sales:620}),
+  mkProduct('769075','cerv.beck\'s 350ml la','/products/cat-cervejas.png',3.49,{margin:0.20,sales:480}),
+  mkProduct('769076','cerv.petra puro malte 350ml la','/products/cat-cervejas.png',3.79,{margin:0.21,sales:390}),
+  mkProduct('769077','cerv.imperial premium 350ml la','/products/cat-cervejas.png',3.99,{margin:0.20,sales:310}),
+  mkProduct('769078','cerv.amstel bock 350ml la','/products/cat-cervejas.png',4.29,{margin:0.23,sales:410}),
+  mkProduct('769079','cerv.brahma zero alcool 350ml la','/products/cat-cervejas.png',3.89,{margin:0.19,sales:520}),
+  mkProduct('769080','cerv.heineken zero 350ml la','/products/cat-cervejas.png',4.99,{margin:0.24,sales:680,hasAd:true}),
+  mkProduct('769081','cerv.budweiser zero 350ml la','/products/cat-cervejas.png',3.79,{margin:0.20,sales:340}),
 ];
 
-// ── AÇOUGUE ──────────────────────────────────────────────
+// ── REFRIGERANTES (Grupo 81) ─────────────────────────────
+export const refrigeranteProducts: Product[] = [
+  mkProduct('200001','coca-cola original 2l pet','/products/cat-refrigerantes.png',9.99,{margin:0.28,sales:2200,hasAd:true}),
+  mkProduct('200002','guarana antarctica 2l pet','/products/cat-refrigerantes.png',7.99,{margin:0.24,sales:1800}),
+  mkProduct('200003','pepsi black 2l pet','/products/cat-refrigerantes.png',8.49,{margin:0.22,sales:1100}),
+  mkProduct('200004','fanta laranja 2l pet','/products/cat-refrigerantes.png',7.49,{margin:0.21,sales:950,hasAd:true}),
+  mkProduct('200005','schweppes citrus 2l pet','/products/cat-refrigerantes.png',6.99,{margin:0.20,sales:680,isRepeated:true}),
+  mkProduct('200006','sprite limao 2l pet','/products/cat-refrigerantes.png',7.29,{margin:0.21,sales:870}),
+  mkProduct('200007','coca-cola zero 2l pet','/products/cat-refrigerantes.png',9.49,{margin:0.26,sales:1400,hasAd:true}),
+  mkProduct('200008','kuat limao 2l pet','/products/cat-refrigerantes.png',6.49,{margin:0.19,sales:720,isRepeated:true}),
+  mkProduct('200009','coca-cola 600ml garrafa pet','/products/cat-refrigerantes.png',4.49,{margin:0.25,sales:2400,isRepeated:true,hasAd:true}),
+  mkProduct('200010','guarana antarctica lata 350ml','/products/cat-refrigerantes.png',3.49,{margin:0.20,sales:1650}),
+  mkProduct('200011','pepsi cola 2l pet','/products/cat-refrigerantes.png',7.49,{margin:0.20,sales:980,isRepeated:true}),
+  mkProduct('200012','fanta uva 2l pet','/products/cat-refrigerantes.png',7.29,{margin:0.21,sales:720}),
+  // Novos do CSV
+  mkProduct('200013','coca-cola lata 350ml','/products/cat-refrigerantes.png',3.99,{margin:0.26,sales:3100,hasAd:true}),
+  mkProduct('200014','guarana antarctica zero 2l pet','/products/cat-refrigerantes.png',7.49,{margin:0.22,sales:680}),
+  mkProduct('200015','fanta laranja lata 350ml','/products/cat-refrigerantes.png',3.49,{margin:0.20,sales:890}),
+  mkProduct('200016','sprite zero 2l pet','/products/cat-refrigerantes.png',7.29,{margin:0.21,sales:560}),
+  mkProduct('200017','coca-cola cherry 350ml la','/products/cat-refrigerantes.png',4.29,{margin:0.24,sales:420}),
+  mkProduct('200018','pepsi twist 2l pet','/products/cat-refrigerantes.png',7.99,{margin:0.20,sales:510}),
+  mkProduct('200019','schweppes tonica 350ml la','/products/cat-refrigerantes.png',4.49,{margin:0.28,sales:380}),
+  mkProduct('200020','refrigerante tubaina 2l pet','/products/cat-refrigerantes.png',4.49,{margin:0.32,sales:640,isRepeated:true}),
+  mkProduct('200021','pepsi zero 2l pet','/products/cat-refrigerantes.png',8.29,{margin:0.23,sales:620}),
+  mkProduct('200022','coca-cola sem acucar 2l pet','/products/cat-refrigerantes.png',9.49,{margin:0.27,sales:1200,hasAd:true}),
+];
+
+// ── LATICÍNIOS (Seção 15, Grupo 82) ─────────────────────
+export const laticinioProducts: Product[] = [
+  mkProduct('300001','leite integral piracanjuba 1l','/products/cat-laticinios.png',5.49,{margin:0.18,sales:3200,isRepeated:true,hasAd:true}),
+  mkProduct('300002','leite semidesnatado italac 1l','/products/cat-laticinios.png',5.29,{margin:0.17,sales:2800}),
+  mkProduct('300003','iogurte grego nestle 100g','/products/cat-laticinios.png',3.49,{margin:0.28,sales:1500,hasAd:true}),
+  mkProduct('300004','queijo muçarela tirolez kg','/products/cat-laticinios.png',39.90,{margin:0.30,sales:480}),
+  mkProduct('300005','manteiga aviacao com sal 200g','/products/cat-laticinios.png',8.99,{margin:0.25,sales:1200,isRepeated:true,hasAd:true}),
+  mkProduct('300006','cream cheese philadelphia 150g','/products/cat-laticinios.png',9.49,{margin:0.32,sales:880,hasAd:true}),
+  mkProduct('300007','requeijao catupiry 200g','/products/cat-laticinios.png',7.49,{margin:0.27,sales:1350,isRepeated:true}),
+  mkProduct('300008','leite condensado moca 395g','/products/cat-laticinios.png',6.49,{margin:0.26,sales:1800,isRepeated:true,hasAd:true}),
+  mkProduct('300009','creme de leite nestle 200g','/products/cat-laticinios.png',3.99,{margin:0.22,sales:2100,isRepeated:true}),
+  mkProduct('300010','queijo prato reino 300g fatiado','/products/cat-laticinios.png',14.99,{margin:0.28,sales:680}),
+  mkProduct('300011','iogurte activia morango 160g','/products/cat-laticinios.png',4.49,{margin:0.29,sales:1100,hasAd:true}),
+  mkProduct('300012','leite zero lactose lv 1l','/products/cat-laticinios.png',6.99,{margin:0.20,sales:960}),
+  // Novos do CSV real (Seção 15)
+  mkProduct('1184878','requeijao tirol light 180g','/products/cat-laticinios.png',6.89,{margin:0.22,sales:720}),
+  mkProduct('1109883','cream cheese philadelphia original 150g','/products/cat-laticinios.png',9.49,{margin:0.30,sales:880,hasAd:true}),
+  mkProduct('1231836','queijo frimesa minas padrao kg','/products/cat-laticinios.png',34.90,{margin:0.28,sales:320}),
+  mkProduct('2215689','iog.atilatte natural integ.170g','/products/cat-laticinios.png',4.29,{margin:0.24,sales:480}),
+  mkProduct('2215655','iog.atilatte skyr trad.170g','/products/cat-laticinios.png',5.99,{margin:0.30,sales:360}),
+  mkProduct('2226447','sob.nestle chandelle chantilly choc.90g','/products/cat-laticinios.png',3.79,{margin:0.34,sales:920}),
+  mkProduct('2226454','queijo catupiry processado fat.180g','/products/cat-laticinios.png',12.49,{margin:0.28,sales:540}),
+  mkProduct('2352391A','iog.tirol ped.ftas mrgo 400g','/products/cat-laticinios.png',5.49,{margin:0.22,sales:680}),
+  mkProduct('300013','leite integral frimesa 1l uht','/products/cat-laticinios.png',5.19,{margin:0.16,sales:2600,isRepeated:true}),
+  mkProduct('300014','beb.lactea santa clara mrgo 1kg','/products/cat-laticinios.png',5.99,{margin:0.20,sales:1400}),
+  mkProduct('300015','iogurte nestle morango 540g','/products/cat-laticinios.png',6.99,{margin:0.26,sales:1100,hasAd:true}),
+  mkProduct('300016','queijo provolone kg','/products/cat-laticinios.png',54.90,{margin:0.32,sales:190}),
+  mkProduct('300017','manteiga tirol c/sal 200g','/products/cat-laticinios.png',8.49,{margin:0.24,sales:980}),
+  mkProduct('300018','leite desnatado parmalat 1l','/products/cat-laticinios.png',5.49,{margin:0.17,sales:1800}),
+  mkProduct('300019','iogurte danone morango 510g','/products/cat-laticinios.png',7.29,{margin:0.25,sales:1250,hasAd:true}),
+  mkProduct('300020','queijo coalho kg','/products/cat-laticinios.png',42.90,{margin:0.29,sales:280}),
+];
+
+// ── ENERGÉTICOS (Grupo 88) ───────────────────────────────
+export const energeticoProducts: Product[] = [
+  mkProduct('400001','red bull energy drink 250ml','/products/cat-energeticos.png',8.99,{margin:0.32,sales:900,hasAd:true}),
+  mkProduct('400002','monster energy 473ml la','/products/cat-energeticos.png',9.49,{margin:0.30,sales:750,hasAd:true}),
+  mkProduct('400003','TNT energy drink 269ml la','/products/cat-energeticos.png',4.99,{margin:0.28,sales:1100}),
+  mkProduct('400004','burn energy drink 269ml la','/products/cat-energeticos.png',5.49,{margin:0.26,sales:640}),
+  mkProduct('400005','red bull sugarfree 250ml','/products/cat-energeticos.png',8.99,{margin:0.31,sales:620}),
+  mkProduct('400006','monster ultra zero 473ml la','/products/cat-energeticos.png',9.49,{margin:0.29,sales:480}),
+  // Novos
+  mkProduct('400007','red bull tropical 250ml','/products/cat-energeticos.png',9.49,{margin:0.33,sales:520,hasAd:true}),
+  mkProduct('400008','monster mango loco 473ml la','/products/cat-energeticos.png',9.49,{margin:0.29,sales:410}),
+  mkProduct('400009','TNT acai berry 269ml la','/products/cat-energeticos.png',4.99,{margin:0.27,sales:380}),
+  mkProduct('400010','monster pipeline punch 473ml la','/products/cat-energeticos.png',9.49,{margin:0.28,sales:350}),
+  mkProduct('400011','red bull acai 250ml','/products/cat-energeticos.png',9.49,{margin:0.32,sales:440}),
+  mkProduct('400012','celsius sparkling laranja 355ml','/products/cat-energeticos.png',12.99,{margin:0.35,sales:280}),
+];
+
+// ── AÇOUGUE (Seção 21, Grupo 90) ─────────────────────────
 export const açougueProducts: Product[] = [
-  {
-    id: '500001', name: 'frango inteiro congelado kg', imageUrl: '/products/cat-acougue.png',
-    price: 12.90, stock: 40, margin: 0.20, sales: 2800, rentability: 0.17, competitiveness: 0.78, growth: 0.08, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(18,'Básico',52,1),
-    prixsia: mkPrixsia(10.90,12.20,12.49,14.99,[mkComp('GIASSI - CENTRO','JS CENTRO',12.90),mkComp('MAX ATAC-JD','JARDIM',11.49)]),
-    shoppingBrasil: mkShop('500001','Frango Inteiro Congelado KG',11.90,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','200 mil','R$ 6.000')
-  },
-  {
-    id: '500002', name: 'alcatra bovina kg', imageUrl: '/products/cat-acougue.png',
-    price: 49.90, stock: 15, margin: 0.22, sales: 680, rentability: 0.19, competitiveness: 0.65, growth: 0.05, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(12,'Alto',28,2),
-    prixsia: mkPrixsia(42.90,47.50,48.00,54.90,[mkComp('GIASSI - CENTRO','JS CENTRO',49.90),mkComp('ATACADAO','SHANGRILA',43.90)]),
-    shoppingBrasil: mkShop('500002','Alcatra Bovina KG',45.90,'05/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','150 mil','R$ 4.500')
-  },
-  {
-    id: '500003', name: 'linguiça toscana perdigao kg', imageUrl: '/products/cat-acougue.png',
-    price: 18.90, stock: 25, margin: 0.24, sales: 1100, rentability: 0.20, competitiveness: 0.70, growth: 0.10, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(15,'Básico',38,3),
-    prixsia: mkPrixsia(15.90,17.50,17.90,20.90,[mkComp('GIASSI - CENTRO','JS CENTRO',18.90),mkComp('MAX ATAC-JD','JARDIM',16.49)]),
-    shoppingBrasil: mkShop('500003','Linguiça Toscana Perdigão KG',16.90,'08/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','190 mil','R$ 5.000')
-  },
-  {
-    id: '500004', name: 'coxao mole bovino kg', imageUrl: '/products/cat-acougue.png',
-    price: 39.90, stock: 18, margin: 0.21, sales: 520, rentability: 0.17, competitiveness: 0.62, growth: 0.06, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(10,'Alto',22,4),
-    prixsia: mkPrixsia(34.90,37.80,38.50,43.90,[mkComp('GIASSI - CENTRO','JS CENTRO',39.90),mkComp('MAX ATAC-JD','JARDIM',35.49)]),
-    shoppingBrasil: mkShop('500004','Coxão Mole Bovino KG',36.90,'03/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','110 mil','R$ 3.000')
-  },
-  {
-    id: '500005', name: 'coxa sobrecoxa frango kg', imageUrl: '/products/cat-acougue.png',
-    price: 9.90, stock: 35, margin: 0.19, sales: 2200, rentability: 0.15, competitiveness: 0.80, growth: 0.07, isRepeated: true, hasAd: true,
-    nielsen: mkNielsen(20,'Básico',48,2),
-    prixsia: mkPrixsia(8.49,9.30,9.49,11.49,[mkComp('GIASSI - CENTRO','JS CENTRO',9.90),mkComp('ATACADAO','SHANGRILA',8.79)]),
-    shoppingBrasil: mkShop('500005','Coxa/Sobrecoxa Frango KG',9.49,'06/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','TV Aberta','Jun/25','240 mil','R$ 7.000')
-  },
-  {
-    id: '500006', name: 'paleta suina kg', imageUrl: '/products/cat-acougue.png',
-    price: 16.90, stock: 20, margin: 0.23, sales: 680, rentability: 0.19, competitiveness: 0.68, growth: 0.09, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Médio',18,5),
-    prixsia: mkPrixsia(13.90,15.80,15.99,18.90,[mkComp('GIASSI - CENTRO','JS CENTRO',16.90),mkComp('MAX ATAC-JD','JARDIM',14.99)]),
-    shoppingBrasil: mkShop('500006','Paleta Suína KG',15.90,'10/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Maio/25','95 mil','R$ 2.800')
-  },
-  {
-    id: '500007', name: 'costela bovina kg', imageUrl: '/products/cat-acougue.png',
-    price: 44.90, stock: 10, margin: 0.23, sales: 420, rentability: 0.19, competitiveness: 0.60, growth: 0.07, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(9,'Alto',20,3),
-    prixsia: mkPrixsia(38.90,42.80,43.00,49.90,[mkComp('GIASSI - CENTRO','JS CENTRO',44.90),mkComp('MAX ATAC-JD','JARDIM',40.49)]),
-    shoppingBrasil: mkShop('500007','Costela Bovina KG',40.90,'12/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','TV Aberta','Jun/25','90 mil','R$ 2.500')
-  },
-  {
-    id: '500008', name: 'peito de frango sem osso kg', imageUrl: '/products/cat-acougue.png',
-    price: 19.90, stock: 28, margin: 0.21, sales: 1500, rentability: 0.17, competitiveness: 0.72, growth: 0.09, isRepeated: true, hasAd: true,
-    nielsen: mkNielsen(14,'Alto',34,2),
-    prixsia: mkPrixsia(16.90,18.80,19.00,22.49,[mkComp('GIASSI - CENTRO','JS CENTRO',19.90),mkComp('ATACADAO','SHANGRILA',17.49)]),
-    shoppingBrasil: mkShop('500008','Peito de Frango s/ Osso KG',18.90,'07/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','180 mil','R$ 5.000')
-  },
-  {
-    id: '500009', name: 'salsicha viena sadia 500g', imageUrl: '/products/cat-acougue.png',
-    price: 9.99, stock: 32, margin: 0.26, sales: 980, rentability: 0.22, competitiveness: 0.73, growth: 0.11, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(16,'Básico',36,2),
-    prixsia: mkPrixsia(8.49,9.40,9.49,11.49,[mkComp('GIASSI - CENTRO','JS CENTRO',9.99),mkComp('MAX ATAC-JD','JARDIM',8.89)]),
-    shoppingBrasil: mkShop('500009','Salsicha Viena Sadia 500g',9.19,'08/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','210 mil','R$ 6.000')
-  },
-  {
-    id: '500010', name: 'hamburguer bovino seara 672g', imageUrl: '/products/cat-acougue.png',
-    price: 14.99, stock: 22, margin: 0.24, sales: 780, rentability: 0.20, competitiveness: 0.69, growth: 0.13, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(12,'Médio',26,3),
-    prixsia: mkPrixsia(12.49,13.90,13.99,16.49,[mkComp('GIASSI - CENTRO','JS CENTRO',14.99),mkComp('ATACADAO','SHANGRILA',13.19)]),
-    shoppingBrasil: mkShop('500010','Hambúrguer Bovino Seara 672g',13.99,'11/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','140 mil','R$ 4.500')
-  },
-  {
-    id: '500011', name: 'picanha bovina kg', imageUrl: '/products/cat-acougue.png',
-    price: 89.90, stock: 8, margin: 0.25, sales: 280, rentability: 0.21, competitiveness: 0.55, growth: 0.06, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(6,'Alto',12,5),
-    prixsia: mkPrixsia(79.90,85.00,85.00,99.90,[mkComp('GIASSI - CENTRO','JS CENTRO',89.90),mkComp('MAX ATAC-JD','JARDIM',82.90)]),
-    shoppingBrasil: mkShop('500011','Picanha Bovina KG',83.90,'13/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Jornal','Jun/25','60 mil','R$ 2.000')
-  },
-  {
-    id: '500012', name: 'frango assado temperado kg', imageUrl: '/products/cat-acougue.png',
-    price: 22.90, stock: 18, margin: 0.32, sales: 640, rentability: 0.28, competitiveness: 0.65, growth: 0.14, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(10,'Médio',22,4),
-    prixsia: mkPrixsia(19.90,21.80,21.90,24.90,[mkComp('GIASSI - CENTRO','JS CENTRO',22.90),mkComp('MAX ATAC-JD','JARDIM',20.90)]),
-    shoppingBrasil: mkShop('500012','Frango Assado Temperado KG',21.90,'14/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','120 mil','R$ 3.500')
-  },
+  mkProduct('500001','frango inteiro congelado kg','/products/cat-acougue.png',12.90,{margin:0.20,sales:2800,hasAd:true}),
+  mkProduct('500002','alcatra bovina kg','/products/cat-acougue.png',49.90,{margin:0.22,sales:680}),
+  mkProduct('500003','linguiça toscana perdigao kg','/products/cat-acougue.png',18.90,{margin:0.24,sales:1100,hasAd:true}),
+  mkProduct('500004','coxao mole bovino kg','/products/cat-acougue.png',39.90,{margin:0.21,sales:520,isRepeated:true}),
+  mkProduct('500005','coxa sobrecoxa frango kg','/products/cat-acougue.png',9.90,{margin:0.19,sales:2200,isRepeated:true,hasAd:true}),
+  mkProduct('500006','paleta suina kg','/products/cat-acougue.png',16.90,{margin:0.23,sales:680}),
+  mkProduct('500007','costela bovina kg','/products/cat-acougue.png',44.90,{margin:0.23,sales:420}),
+  mkProduct('500008','peito de frango sem osso kg','/products/cat-acougue.png',19.90,{margin:0.21,sales:1500,isRepeated:true,hasAd:true}),
+  mkProduct('500009','salsicha viena sadia 500g','/products/cat-acougue.png',9.99,{margin:0.26,sales:980,hasAd:true}),
+  mkProduct('500010','hamburguer bovino seara 672g','/products/cat-acougue.png',14.99,{margin:0.24,sales:780}),
+  mkProduct('500011','picanha bovina kg','/products/cat-acougue.png',89.90,{margin:0.25,sales:280}),
+  mkProduct('500012','frango assado temperado kg','/products/cat-acougue.png',22.90,{margin:0.32,sales:640,hasAd:true}),
+  // Novos do CSV real (Seção 21 - Açougue)
+  mkProduct('1891985A','picanha bovina angus argus vacuo kg','/products/cat-acougue.png',79.90,{margin:0.25,sales:220}),
+  mkProduct('1202977','costela suina frimesa cong.kg','/products/cat-acougue.png',24.90,{margin:0.22,sales:480}),
+  mkProduct('500013','maminha bovina kg','/products/cat-acougue.png',52.90,{margin:0.24,sales:380}),
+  mkProduct('500014','file de peito frango kg','/products/cat-acougue.png',16.90,{margin:0.20,sales:1800,hasAd:true}),
+  mkProduct('500015','acém bovino kg','/products/cat-acougue.png',29.90,{margin:0.21,sales:620}),
+  mkProduct('500016','cupim bovino kg','/products/cat-acougue.png',34.90,{margin:0.23,sales:420}),
+  mkProduct('500017','patinho bovino kg','/products/cat-acougue.png',37.90,{margin:0.22,sales:480}),
+  mkProduct('500018','coxinha da asa frango kg','/products/cat-acougue.png',14.90,{margin:0.20,sales:1600,isRepeated:true}),
+  mkProduct('500019','pernil suino kg','/products/cat-acougue.png',14.90,{margin:0.22,sales:720}),
+  mkProduct('500020','carne moida 1a kg','/products/cat-acougue.png',24.90,{margin:0.19,sales:1400,isRepeated:true,hasAd:true}),
+  mkProduct('500021','contrafile bovino kg','/products/cat-acougue.png',46.90,{margin:0.24,sales:340}),
+  mkProduct('500022','linguiça calabresa perdigao kg','/products/cat-acougue.png',22.90,{margin:0.25,sales:920,hasAd:true}),
+  mkProduct('500023','fraldinha bovina kg','/products/cat-acougue.png',42.90,{margin:0.23,sales:310}),
+  mkProduct('500024','bisteca suina kg','/products/cat-acougue.png',19.90,{margin:0.21,sales:560}),
+  mkProduct('500025','coração de frango kg','/products/cat-acougue.png',11.90,{margin:0.24,sales:840}),
+  mkProduct('500026','tilapia file cong.kg','/products/cat-acougue.png',34.90,{margin:0.28,sales:380}),
 ];
 
-// ── PADARIA ───────────────────────────────────────────────
+// ── PADARIA (Seção 19, Grupo 91) ─────────────────────────
 export const padariaProducts: Product[] = [
-  {
-    id: '600001', name: 'pao frances kg', imageUrl: '/products/cat-padaria.png',
-    price: 14.90, stock: 60, margin: 0.38, sales: 3500, rentability: 0.34, competitiveness: 0.80, growth: 0.03, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(25,'Básico',70,1),
-    prixsia: mkPrixsia(12.90,14.20,14.49,16.90,[mkComp('GIASSI - CENTRO','JS CENTRO',14.90),mkComp('MAX ATAC-JD','JARDIM',13.49)]),
-    shoppingBrasil: mkShop('600001','Pão Francês KG',13.90,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Jornal','Jul/25','110 mil','R$ 2.000')
-  },
-  {
-    id: '600002', name: 'bolo formigueiro bauducco 500g', imageUrl: '/products/cat-padaria.png',
-    price: 12.49, stock: 30, margin: 0.30, sales: 1200, rentability: 0.26, competitiveness: 0.72, growth: 0.08, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(14,'Médio',35,2),
-    prixsia: mkPrixsia(10.49,11.80,11.99,13.99,[mkComp('GIASSI - CENTRO','JS CENTRO',12.49),mkComp('ATACADAO','SHANGRILA',10.99)]),
-    shoppingBrasil: mkShop('600002','Bolo Formigueiro Bauducco 500g',11.49,'05/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','250 mil','R$ 8.000')
-  },
-  {
-    id: '600003', name: 'biscoito maizena estrela 400g', imageUrl: '/products/cat-padaria.png',
-    price: 4.99, stock: 45, margin: 0.28, sales: 1800, rentability: 0.24, competitiveness: 0.76, growth: 0.05, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(16,'Básico',48,2),
-    prixsia: mkPrixsia(3.99,4.60,4.79,5.49,[mkComp('GIASSI - CENTRO','JS CENTRO',4.99),mkComp('MAX ATAC-JD','JARDIM',4.29)]),
-    shoppingBrasil: mkShop('600003','Biscoito Maizena Estrela 400g',4.49,'03/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','300 mil','R$ 7.000')
-  },
-  {
-    id: '600004', name: 'pao de forma wickbold integral 500g', imageUrl: '/products/cat-padaria.png',
-    price: 8.99, stock: 38, margin: 0.26, sales: 2100, rentability: 0.22, competitiveness: 0.74, growth: 0.10, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(18,'Médio',42,2),
-    prixsia: mkPrixsia(7.49,8.30,8.49,9.99,[mkComp('GIASSI - CENTRO','JS CENTRO',8.99),mkComp('ATACADAO','SHANGRILA',7.79)]),
-    shoppingBrasil: mkShop('600004','Pão de Forma Wickbold Integral 500g',8.49,'08/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','280 mil','R$ 9.000')
-  },
-  {
-    id: '600005', name: 'croissant amanteigado 300g', imageUrl: '/products/cat-padaria.png',
-    price: 11.99, stock: 22, margin: 0.35, sales: 760, rentability: 0.31, competitiveness: 0.66, growth: 0.12, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(8,'Premium',16,4),
-    prixsia: mkPrixsia(9.99,11.20,11.49,13.49,[mkComp('GIASSI - CENTRO','JS CENTRO',11.99),mkComp('MAX ATAC-JD','JARDIM',10.49)]),
-    shoppingBrasil: mkShop('600005','Croissant Amanteigado 300g',10.99,'12/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Maio/25','120 mil','R$ 4.000')
-  },
-  {
-    id: '600006', name: 'biscoito recheado oreo 90g', imageUrl: '/products/cat-padaria.png',
-    price: 3.99, stock: 50, margin: 0.32, sales: 2200, rentability: 0.28, competitiveness: 0.78, growth: 0.16, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(20,'Médio',45,2),
-    prixsia: mkPrixsia(3.29,3.70,3.79,4.49,[mkComp('GIASSI - CENTRO','JS CENTRO',3.99),mkComp('ATACADAO','SHANGRILA',3.39)]),
-    shoppingBrasil: mkShop('600006','Biscoito Recheado Oreo 90g',3.69,'06/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','420 mil','R$ 12.000')
-  },
-  {
-    id: '600007', name: 'bolacha cream cracker mabel 400g', imageUrl: '/products/cat-padaria.png',
-    price: 5.49, stock: 42, margin: 0.24, sales: 1600, rentability: 0.20, competitiveness: 0.72, growth: 0.06, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(14,'Básico',38,3),
-    prixsia: mkPrixsia(4.49,5.10,5.19,5.99,[mkComp('GIASSI - CENTRO','JS CENTRO',5.49),mkComp('MAX ATAC-JD','JARDIM',4.79)]),
-    shoppingBrasil: mkShop('600007','Bolacha Cream Cracker Mabel 400g',4.99,'04/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Jornal','Jun/25','200 mil','R$ 5.000')
-  },
-  {
-    id: '600008', name: 'granola nesfit natural 300g', imageUrl: '/products/cat-padaria.png',
-    price: 9.49, stock: 20, margin: 0.33, sales: 580, rentability: 0.29, competitiveness: 0.63, growth: 0.20, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(6,'Premium',12,6),
-    prixsia: mkPrixsia(7.99,8.90,8.99,10.49,[mkComp('GIASSI - CENTRO','JS CENTRO',9.49),mkComp('MAX ATAC-JD','JARDIM',8.49)]),
-    shoppingBrasil: mkShop('600008','Granola Nesfit Natural 300g',8.99,'10/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','100 mil','R$ 3.500')
-  },
-  {
-    id: '600009', name: 'pao de hot dog pullman 6un', imageUrl: '/products/cat-padaria.png',
-    price: 5.99, stock: 35, margin: 0.27, sales: 1400, rentability: 0.23, competitiveness: 0.71, growth: 0.09, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(18,'Básico',40,2),
-    prixsia: mkPrixsia(4.99,5.60,5.69,6.49,[mkComp('GIASSI - CENTRO','JS CENTRO',5.99),mkComp('ATACADAO','SHANGRILA',5.19)]),
-    shoppingBrasil: mkShop('600009','Pão de Hot Dog Pullman 6un',5.49,'05/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','TV Aberta','Jun/25','230 mil','R$ 6.500')
-  },
-  {
-    id: '600010', name: 'biscoito wafer bauducco baunilha 140g', imageUrl: '/products/cat-padaria.png',
-    price: 3.49, stock: 48, margin: 0.30, sales: 1900, rentability: 0.26, competitiveness: 0.76, growth: 0.08, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(15,'Básico',40,3),
-    prixsia: mkPrixsia(2.79,3.20,3.29,3.99,[mkComp('GIASSI - CENTRO','JS CENTRO',3.49),mkComp('MAX ATAC-JD','JARDIM',2.99)]),
-    shoppingBrasil: mkShop('600010','Biscoito Wafer Baunilha 140g',3.19,'03/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','310 mil','R$ 7.500')
-  },
+  mkProduct('600001','pao frances kg','/products/cat-padaria.png',14.90,{margin:0.38,sales:3500,isRepeated:true}),
+  mkProduct('600002','bolo formigueiro bauducco 500g','/products/cat-padaria.png',12.49,{margin:0.30,sales:1200,hasAd:true}),
+  mkProduct('600003','biscoito maizena estrela 400g','/products/cat-padaria.png',4.99,{margin:0.28,sales:1800,isRepeated:true}),
+  mkProduct('600004','pao de forma wickbold integral 500g','/products/cat-padaria.png',8.99,{margin:0.26,sales:2100,hasAd:true}),
+  mkProduct('600005','croissant amanteigado 300g','/products/cat-padaria.png',11.99,{margin:0.35,sales:760}),
+  mkProduct('600006','biscoito recheado oreo 90g','/products/cat-padaria.png',3.99,{margin:0.32,sales:2200,hasAd:true}),
+  mkProduct('600007','bolacha cream cracker mabel 400g','/products/cat-padaria.png',5.49,{margin:0.24,sales:1600,isRepeated:true}),
+  mkProduct('600008','granola nesfit natural 300g','/products/cat-padaria.png',9.49,{margin:0.33,sales:580}),
+  mkProduct('600009','pao de hot dog pullman 6un','/products/cat-padaria.png',5.99,{margin:0.27,sales:1400,isRepeated:true}),
+  mkProduct('600010','biscoito wafer bauducco baunilha 140g','/products/cat-padaria.png',3.49,{margin:0.30,sales:1900}),
+  // Novos do CSV real (Seção 19)
+  mkProduct('1127737','bolo renata rech.choc.300g','/products/cat-padaria.png',7.99,{margin:0.28,sales:880}),
+  mkProduct('1127752','bolinho renata l.justica choc/choc.40g','/products/cat-padaria.png',1.99,{margin:0.30,sales:2200,hasAd:true}),
+  mkProduct('1127760','bolinho renata l.justica baun/mrgo 40g','/products/cat-padaria.png',1.99,{margin:0.30,sales:1900}),
+  mkProduct('600011','pao de forma pullman 500g','/products/cat-padaria.png',9.49,{margin:0.26,sales:1800,hasAd:true}),
+  mkProduct('600012','torrada bauducco trigo integ.160g','/products/cat-padaria.png',5.99,{margin:0.32,sales:920}),
+  mkProduct('600013','bisc.tostines especiarias 150g','/products/cat-padaria.png',3.49,{margin:0.22,sales:540}),
+  mkProduct('600014','bisc.oreo rech.baun.270g c/3','/products/cat-padaria.png',9.49,{margin:0.30,sales:1100}),
+  mkProduct('600015','pao integral 7 graos wickbold 400g','/products/cat-padaria.png',9.99,{margin:0.28,sales:780}),
+  mkProduct('600016','bolo ana maria choc.70g','/products/cat-padaria.png',2.99,{margin:0.34,sales:1600}),
+  mkProduct('600017','rosca maria condor kg','/products/cat-padaria.png',19.90,{margin:0.42,sales:480,isRepeated:true}),
+  mkProduct('600018','pao de queijo condor 100g','/products/cat-padaria.png',3.49,{margin:0.36,sales:1400}),
+  mkProduct('600019','pao sovado condor 400g','/products/cat-padaria.png',8.99,{margin:0.40,sales:660}),
+  mkProduct('600020','bolo da nonna sabores kg','/products/cat-padaria.png',29.90,{margin:0.45,sales:320}),
+  mkProduct('600021','bolo de fuba c/goiabada kg','/products/cat-padaria.png',24.90,{margin:0.42,sales:280}),
 ];
 
-// ── ÁGUA MINERAL ──────────────────────────────────────────
+// ── ÁGUA MINERAL (Grupo 85) ──────────────────────────────
 export const aguaProducts: Product[] = [
-  {
-    id: '700001', name: 'agua mineral minalba 1,5l', imageUrl: '/products/cat-agua.png',
-    price: 3.49, stock: 80, margin: 0.35, sales: 4200, rentability: 0.31, competitiveness: 0.85, growth: 0.06, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(18,'Básico',72,2),
-    prixsia: mkPrixsia(2.79,3.20,3.29,3.99,[mkComp('GIASSI - CENTRO','JS CENTRO',3.49),mkComp('MAX ATAC-JD','JARDIM',2.99)]),
-    shoppingBrasil: mkShop('700001','Água Mineral Minalba 1,5L',2.99,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','250 mil','R$ 5.000')
-  },
-  {
-    id: '700002', name: 'agua mineral cristal 500ml', imageUrl: '/products/cat-agua.png',
-    price: 1.99, stock: 120, margin: 0.30, sales: 5800, rentability: 0.26, competitiveness: 0.90, growth: 0.04, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(22,'Básico',80,1),
-    prixsia: mkPrixsia(1.49,1.80,1.89,2.29,[mkComp('GIASSI - CENTRO','JS CENTRO',1.99),mkComp('ATACADAO','SHANGRILA',1.59)]),
-    shoppingBrasil: mkShop('700002','Água Mineral Cristal 500ml',1.79,'01/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','320 mil','R$ 8.000')
-  },
-  {
-    id: '700003', name: 'agua tonica schweppes 350ml la', imageUrl: '/products/cat-agua.png',
-    price: 4.49, stock: 30, margin: 0.28, sales: 880, rentability: 0.24, competitiveness: 0.70, growth: 0.11, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(30,'Alto',22,1),
-    prixsia: mkPrixsia(3.49,4.10,4.19,4.99,[mkComp('GIASSI - CENTRO','JS CENTRO',4.49),mkComp('MAX ATAC-JD','JARDIM',3.89)]),
-    shoppingBrasil: mkShop('700003','Água Tônica Schweppes 350ml',3.99,'06/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','160 mil','R$ 5.500')
-  },
-  {
-    id: '700004', name: 'agua mineral bonafont 1,5l', imageUrl: '/products/cat-agua.png',
-    price: 3.29, stock: 90, margin: 0.33, sales: 3800, rentability: 0.29, competitiveness: 0.87, growth: 0.05, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(20,'Básico',70,2),
-    prixsia: mkPrixsia(2.59,3.00,3.09,3.79,[mkComp('GIASSI - CENTRO','JS CENTRO',3.29),mkComp('MAX ATAC-JD','JARDIM',2.89)]),
-    shoppingBrasil: mkShop('700004','Água Mineral Bonafont 1,5L',2.89,'02/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jul/25','280 mil','R$ 6.000')
-  },
-  {
-    id: '700005', name: 'agua mineral perrier 330ml garrafa', imageUrl: '/products/cat-agua.png',
-    price: 6.99, stock: 18, margin: 0.38, sales: 380, rentability: 0.34, competitiveness: 0.55, growth: 0.18, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(5,'Premium',8,6),
-    prixsia: mkPrixsia(5.49,6.50,6.59,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',6.99),mkComp('MAX ATAC-JD','JARDIM',6.29)]),
-    shoppingBrasil: mkShop('700005','Água Mineral Perrier 330ml',6.49,'09/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','80 mil','R$ 3.500')
-  },
-  {
-    id: '700006', name: 'agua coco green coco 200ml tp', imageUrl: '/products/cat-agua.png',
-    price: 3.99, stock: 35, margin: 0.32, sales: 1200, rentability: 0.28, competitiveness: 0.68, growth: 0.25, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(8,'Médio',18,4),
-    prixsia: mkPrixsia(3.19,3.70,3.79,4.49,[mkComp('GIASSI - CENTRO','JS CENTRO',3.99),mkComp('ATACADAO','SHANGRILA',3.39)]),
-    shoppingBrasil: mkShop('700006','Água de Coco Green Coco 200ml',3.69,'08/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','140 mil','R$ 4.500')
-  },
+  mkProduct('700001','agua mineral minalba 1,5l','/products/cat-agua.png',3.49,{margin:0.35,sales:4200,isRepeated:true}),
+  mkProduct('700002','agua mineral cristal 500ml','/products/cat-agua.png',1.99,{margin:0.30,sales:5800,isRepeated:true}),
+  mkProduct('700003','agua tonica schweppes 350ml la','/products/cat-agua.png',4.49,{margin:0.28,sales:880,hasAd:true}),
+  mkProduct('700004','agua mineral bonafont 1,5l','/products/cat-agua.png',3.29,{margin:0.33,sales:3800,isRepeated:true}),
+  mkProduct('700005','agua mineral perrier 330ml garrafa','/products/cat-agua.png',6.99,{margin:0.38,sales:380}),
+  mkProduct('700006','agua coco green coco 200ml tp','/products/cat-agua.png',3.99,{margin:0.32,sales:1200,hasAd:true}),
+  // Novos
+  mkProduct('700007','agua mineral minalba 500ml','/products/cat-agua.png',1.79,{margin:0.32,sales:4800,isRepeated:true}),
+  mkProduct('700008','agua mineral ouro fino 1,5l','/products/cat-agua.png',2.99,{margin:0.34,sales:2800}),
+  mkProduct('700009','agua coco kero coco 200ml','/products/cat-agua.png',3.49,{margin:0.30,sales:1600,hasAd:true}),
+  mkProduct('700010','agua mineral san pellegrino 500ml','/products/cat-agua.png',7.99,{margin:0.36,sales:220}),
+  mkProduct('700011','agua coco obrigado 1l','/products/cat-agua.png',8.99,{margin:0.28,sales:440}),
+  mkProduct('700012','agua mineral crystal c/gas 500ml','/products/cat-agua.png',2.49,{margin:0.30,sales:1200}),
 ];
 
-// ── SUCOS ─────────────────────────────────────────────────
+// ── SUCOS (Grupo 93) ─────────────────────────────────────
 export const sucoProducts: Product[] = [
-  {
-    id: '800001', name: 'suco del valle uva 1l', imageUrl: '/products/cat-sucos.png',
-    price: 8.49, stock: 28, margin: 0.24, sales: 1050, rentability: 0.20, competitiveness: 0.72, growth: 0.09, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(14,'Médio',28,2),
-    prixsia: mkPrixsia(6.99,7.90,7.99,9.49,[mkComp('GIASSI - CENTRO','JS CENTRO',8.49),mkComp('ATACADAO','SHANGRILA',7.29)]),
-    shoppingBrasil: mkShop('800001','Suco Del Valle Uva 1L',7.99,'08/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jun/25','200 mil','R$ 6.000')
-  },
-  {
-    id: '800002', name: 'nectar pessego sufresh 1l', imageUrl: '/products/cat-sucos.png',
-    price: 6.99, stock: 22, margin: 0.22, sales: 780, rentability: 0.18, competitiveness: 0.69, growth: 0.07, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(10,'Médio',20,4),
-    prixsia: mkPrixsia(5.99,6.50,6.59,7.99,[mkComp('GIASSI - CENTRO','JS CENTRO',6.99),mkComp('MAX ATAC-JD','JARDIM',6.29)]),
-    shoppingBrasil: mkShop('800002','Néctar Pêssego Sufresh 1L',6.49,'07/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Maio/25','130 mil','R$ 4.000')
-  },
-  {
-    id: '800003', name: 'suco del valle laranja 1l', imageUrl: '/products/cat-sucos.png',
-    price: 7.99, stock: 30, margin: 0.23, sales: 1200, rentability: 0.19, competitiveness: 0.74, growth: 0.10, isRepeated: false, hasAd: true,
-    nielsen: mkNielsen(16,'Médio',30,2),
-    prixsia: mkPrixsia(6.49,7.50,7.59,8.99,[mkComp('GIASSI - CENTRO','JS CENTRO',7.99),mkComp('MAX ATAC-JD','JARDIM',7.19)]),
-    shoppingBrasil: mkShop('800003','Suco Del Valle Laranja 1L',7.49,'09/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','Digital','Jul/25','240 mil','R$ 7.000')
-  },
-  {
-    id: '800004', name: 'suco ades laranja 1l', imageUrl: '/products/cat-sucos.png',
-    price: 6.49, stock: 25, margin: 0.21, sales: 950, rentability: 0.17, competitiveness: 0.71, growth: 0.08, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(12,'Médio',25,3),
-    prixsia: mkPrixsia(5.49,6.10,6.19,7.29,[mkComp('GIASSI - CENTRO','JS CENTRO',6.49),mkComp('ATACADAO','SHANGRILA',5.79)]),
-    shoppingBrasil: mkShop('800004','Suco AdeS Laranja 1L',5.99,'06/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','TV Aberta','Jun/25','190 mil','R$ 5.500')
-  },
-  {
-    id: '800005', name: 'suco kapo morango 200ml tp', imageUrl: '/products/cat-sucos.png',
-    price: 1.49, stock: 60, margin: 0.28, sales: 2800, rentability: 0.24, competitiveness: 0.82, growth: 0.07, isRepeated: true, hasAd: false,
-    nielsen: mkNielsen(20,'Básico',48,1),
-    prixsia: mkPrixsia(0.99,1.30,1.39,1.79,[mkComp('GIASSI - CENTRO','JS CENTRO',1.49),mkComp('MAX ATAC-JD','JARDIM',1.19)]),
-    shoppingBrasil: mkShop('800005','Suco Kapo Morango 200ml',1.29,'04/08/2025'),
-    globalSegments: mkSeg('Mercado BomPreço','TV Aberta','Jun/25','350 mil','R$ 9.000')
-  },
-  {
-    id: '800006', name: 'suco do bem laranja 1l', imageUrl: '/products/cat-sucos.png',
-    price: 12.99, stock: 16, margin: 0.30, sales: 420, rentability: 0.26, competitiveness: 0.60, growth: 0.20, isRepeated: false, hasAd: false,
-    nielsen: mkNielsen(6,'Premium',12,5),
-    prixsia: mkPrixsia(10.99,12.20,12.29,13.99,[mkComp('GIASSI - CENTRO','JS CENTRO',12.99),mkComp('MAX ATAC-JD','JARDIM',11.99)]),
-    shoppingBrasil: mkShop('800006','Suco Do Bem Laranja 1L',11.99,'12/08/2025'),
-    globalSegments: mkSeg('Super Mais Barato','Digital','Jun/25','90 mil','R$ 4.000')
-  },
+  mkProduct('800001','suco del valle uva 1l','/products/cat-sucos.png',8.49,{margin:0.24,sales:1050,hasAd:true}),
+  mkProduct('800002','nectar pessego sufresh 1l','/products/cat-sucos.png',6.99,{margin:0.22,sales:780}),
+  mkProduct('800003','suco del valle laranja 1l','/products/cat-sucos.png',7.99,{margin:0.23,sales:1200,hasAd:true}),
+  mkProduct('800004','suco ades laranja 1l','/products/cat-sucos.png',6.49,{margin:0.21,sales:950,isRepeated:true}),
+  mkProduct('800005','suco kapo morango 200ml tp','/products/cat-sucos.png',1.49,{margin:0.28,sales:2800,isRepeated:true}),
+  mkProduct('800006','suco do bem laranja 1l','/products/cat-sucos.png',12.99,{margin:0.30,sales:420}),
+  // Novos do CSV (Seção 23 / sucos pronto)
+  mkProduct('2237634','suco de manga 500ml','/products/cat-sucos.png',4.99,{margin:0.24,sales:580}),
+  mkProduct('800007','suco del valle goiaba 1l','/products/cat-sucos.png',7.99,{margin:0.22,sales:680}),
+  mkProduct('800008','suco tang laranja po 25g','/products/cat-sucos.png',0.99,{margin:0.40,sales:4200,isRepeated:true}),
+  mkProduct('800009','suco clight manga po 8g','/products/cat-sucos.png',1.49,{margin:0.38,sales:2100}),
+  mkProduct('800010','nectar maguary uva 1l','/products/cat-sucos.png',6.49,{margin:0.21,sales:620}),
+  mkProduct('800011','suco natural one laranja 900ml','/products/cat-sucos.png',14.99,{margin:0.32,sales:280}),
+  mkProduct('800012','suco tial goiaba 1l','/products/cat-sucos.png',7.49,{margin:0.23,sales:520}),
 ];
 
-// section tag used for filtering in Dashboard
+// ── FRIOS & EMBUTIDOS (Seção 14, Grupo 92) ───────────────
+export const friosProducts: Product[] = [
+  mkProduct('769266A','presunto cozido sadia fatiado kg','/products/cat-acougue.png',32.90,{margin:0.24,sales:980,hasAd:true}),
+  mkProduct('F00002','mortadela perdigao fatiada kg','/products/cat-acougue.png',14.90,{margin:0.22,sales:1400,isRepeated:true}),
+  mkProduct('F00003','peito de peru sadia fatiado kg','/products/cat-acougue.png',49.90,{margin:0.28,sales:520}),
+  mkProduct('769088A','salame sulita tipo hamburgues kg','/products/cat-acougue.png',39.90,{margin:0.26,sales:320}),
+  mkProduct('F00005','salame sulita tipo milano kg','/products/cat-acougue.png',44.90,{margin:0.27,sales:280}),
+  mkProduct('F00006','salame sulita tipo salaminho kg','/products/cat-acougue.png',42.90,{margin:0.26,sales:240}),
+  mkProduct('F00007','apresuntado sadia fatiado kg','/products/cat-acougue.png',22.90,{margin:0.23,sales:760,hasAd:true}),
+  mkProduct('F00008','queijo muçarela fatiado kg','/products/cat-acougue.png',38.90,{margin:0.29,sales:680}),
+  mkProduct('F00009','bacon perdigao fatiado kg','/products/cat-acougue.png',44.90,{margin:0.25,sales:460}),
+  mkProduct('769088B','manteiga aviacao c/sal 200g pote','/products/cat-laticinios.png',8.99,{margin:0.24,sales:1200,isRepeated:true,hasAd:true}),
+  mkProduct('F00011','copa seara fatiada kg','/products/cat-acougue.png',54.90,{margin:0.28,sales:180}),
+  mkProduct('F00012','lombo canadense sadia fatiado kg','/products/cat-acougue.png',46.90,{margin:0.26,sales:210}),
+];
+
+// ── CONGELADOS (Seção 16, Grupo 94) ──────────────────────
+export const congeladosProducts: Product[] = [
+  mkProduct('1044536','steak de frango sadia 100g','/products/cat-acougue.png',2.99,{margin:0.28,sales:1600,hasAd:true}),
+  mkProduct('C00002','pizza seara muçarela 440g','/products/cat-acougue.png',12.99,{margin:0.26,sales:980}),
+  mkProduct('C00003','lasanha sadia bolognesa 600g','/products/cat-acougue.png',14.99,{margin:0.24,sales:860,hasAd:true}),
+  mkProduct('C00004','nuggets sadia tradicional 300g','/products/cat-acougue.png',11.99,{margin:0.27,sales:1200,isRepeated:true}),
+  mkProduct('C00005','hamburguer seara gourmet 360g','/products/cat-acougue.png',16.99,{margin:0.25,sales:520}),
+  mkProduct('C00006','empanado sadia hot pocket 145g','/products/cat-acougue.png',6.49,{margin:0.30,sales:880}),
+  mkProduct('2041754','almondega bovina sadia 900g','/products/cat-acougue.png',19.99,{margin:0.22,sales:640}),
+  mkProduct('C00008','batata frita mccain congelada 400g','/products/cat-acougue.png',9.99,{margin:0.28,sales:1100,hasAd:true}),
+  mkProduct('C00009','acai frooty natural 500g','/products/cat-acougue.png',14.99,{margin:0.32,sales:720}),
+  mkProduct('C00010','sorvete kibon napolitano 1,5l','/products/cat-acougue.png',19.99,{margin:0.30,sales:580,hasAd:true}),
+  mkProduct('C00011','pao de queijo forno de minas 400g','/products/cat-acougue.png',13.49,{margin:0.28,sales:940}),
+  mkProduct('C00012','coxinha de frango sadia 300g','/products/cat-acougue.png',12.99,{margin:0.26,sales:560}),
+  mkProduct('C00013','torta de frango sadia 500g','/products/cat-acougue.png',16.99,{margin:0.24,sales:420}),
+  mkProduct('C00014','sorvete ben & jerrys 458ml','/products/cat-acougue.png',34.90,{margin:0.35,sales:220}),
+];
+
+// ── HORTIFRUTI (Seção 23, Grupo 95) ──────────────────────
+export const hortifrutiProducts: Product[] = [
+  mkProduct('H00001','banana nanica kg','/products/cat-padaria.png',3.99,{margin:0.32,sales:5200,isRepeated:true}),
+  mkProduct('H00002','maça fuji kg','/products/cat-padaria.png',7.99,{margin:0.28,sales:2800}),
+  mkProduct('H00003','tomate salada kg','/products/cat-padaria.png',6.99,{margin:0.30,sales:3200,isRepeated:true,hasAd:true}),
+  mkProduct('H00004','cebola branca kg','/products/cat-padaria.png',4.99,{margin:0.26,sales:2400}),
+  mkProduct('H00005','batata inglesa kg','/products/cat-padaria.png',5.49,{margin:0.24,sales:2800,isRepeated:true}),
+  mkProduct('H00006','alface crespa unid','/products/cat-padaria.png',2.99,{margin:0.35,sales:1800}),
+  mkProduct('H00007','laranja pera kg','/products/cat-padaria.png',4.49,{margin:0.28,sales:2200,hasAd:true}),
+  mkProduct('H00008','cenoura kg','/products/cat-padaria.png',5.99,{margin:0.27,sales:1600}),
+  mkProduct('H00009','abacaxi perola unid','/products/cat-padaria.png',5.99,{margin:0.30,sales:1400}),
+  mkProduct('H00010','manga tommy kg','/products/cat-padaria.png',4.99,{margin:0.28,sales:1200}),
+  mkProduct('H00011','morango bandeja 300g','/products/cat-padaria.png',8.99,{margin:0.34,sales:980,hasAd:true}),
+  mkProduct('H00012','melancia kg','/products/cat-padaria.png',2.99,{margin:0.22,sales:1800,isRepeated:true}),
+  mkProduct('H00013','uva italia kg','/products/cat-padaria.png',9.99,{margin:0.30,sales:680}),
+  mkProduct('H00014','limão tahiti kg','/products/cat-padaria.png',4.99,{margin:0.32,sales:1600}),
+  mkProduct('H00015','brócolis maço','/products/cat-padaria.png',4.49,{margin:0.28,sales:920}),
+  mkProduct('H00016','pepino japones kg','/products/cat-padaria.png',5.99,{margin:0.26,sales:640}),
+];
+
+// ── MERCEARIA SECA (Grupo 96) ────────────────────────────
+export const merceariaProducts: Product[] = [
+  mkProduct('M00001','arroz tio joao tipo 1 5kg','/products/cat-padaria.png',24.90,{margin:0.18,sales:3200,isRepeated:true,hasAd:true}),
+  mkProduct('M00002','feijao carioca kicaldo 1kg','/products/cat-padaria.png',7.99,{margin:0.20,sales:2800,isRepeated:true}),
+  mkProduct('M00003','oleo de soja liza 900ml','/products/cat-padaria.png',6.99,{margin:0.16,sales:3400,hasAd:true}),
+  mkProduct('M00004','acucar uniao cristal 1kg','/products/cat-padaria.png',4.99,{margin:0.18,sales:2600}),
+  mkProduct('1070622','cafe coamo trad.almof.500g','/products/cat-padaria.png',12.99,{margin:0.22,sales:1800,isRepeated:true}),
+  mkProduct('M00006','farinha de trigo dona benta 1kg','/products/cat-padaria.png',5.49,{margin:0.20,sales:1400}),
+  mkProduct('M00007','macarrão renata espaguete 500g','/products/cat-padaria.png',3.49,{margin:0.24,sales:2200}),
+  mkProduct('M00008','molho de tomate heinz 340g','/products/cat-padaria.png',4.49,{margin:0.26,sales:1600,hasAd:true}),
+  mkProduct('M00009','achoc.nescau 730g','/products/cat-padaria.png',14.99,{margin:0.22,sales:1200}),
+  mkProduct('M00010','leite em po ninho fases 1+ 400g','/products/cat-padaria.png',16.99,{margin:0.18,sales:980}),
+  mkProduct('799823','amido de milho maizena 200g','/products/cat-padaria.png',4.99,{margin:0.22,sales:1400}),
+  mkProduct('M00012','sal refinado cisne 1kg','/products/cat-padaria.png',2.49,{margin:0.24,sales:2200,isRepeated:true}),
+  mkProduct('M00013','azeite gallo extra virgem 500ml','/products/cat-padaria.png',29.90,{margin:0.28,sales:680}),
+  mkProduct('M00014','maionese hellmanns 500g','/products/cat-padaria.png',8.99,{margin:0.22,sales:1400,hasAd:true}),
+  mkProduct('M00015','extrato tomate elefante 340g','/products/cat-padaria.png',5.99,{margin:0.24,sales:1200}),
+  mkProduct('M00016','cafe melitta trad.500g','/products/cat-padaria.png',14.49,{margin:0.20,sales:2200,isRepeated:true,hasAd:true}),
+  mkProduct('M00017','sardinha gomes da costa 125g','/products/cat-padaria.png',5.99,{margin:0.26,sales:980}),
+  mkProduct('M00018','fermento fleischmann inst.10g','/products/cat-padaria.png',1.49,{margin:0.30,sales:1600}),
+];
+
+// ── SECTION GROUP MAP ─────────────────────────────────────
 export const SECTION_GROUP_MAP: Record<string, string[]> = {
   'Todas': [],
   'Bebidas': ['80', '81', '85', '88', '93'],
   'Laticínios': ['82'],
   'Açougue': ['90'],
   'Padaria': ['91'],
+  'Frios & Embutidos': ['92'],
+  'Congelados': ['94'],
+  'Hortifruti': ['95'],
+  'Mercearia': ['96'],
 };
 
 export const mockProductGroups: ProductGroup[] = [
-  {
-    id: '80', name: '80-Cervejas', percentage: 29.9,
-    products: mockProducts.filter(p => p.id.startsWith('1') && p.name.includes('cerv'))
-  },
-  {
-    id: '81', name: '81-Refrigerantes', percentage: 35.4,
-    products: mockProducts.filter(p => p.id.startsWith('200'))
-  },
-  {
-    id: '82', name: '82-Laticínios', percentage: 15.2,
-    products: mockProducts.filter(p => p.id.startsWith('300'))
-  },
-  {
-    id: '88', name: '88-Energéticos', percentage: 10.3,
-    products: mockProducts.filter(p => p.id.startsWith('400'))
-  },
-  {
-    id: '85', name: '85-Água Mineral', percentage: 5.4,
-    products: aguaProducts
-  },
-  {
-    id: '93', name: '93-Suco Pronto', percentage: 3.8,
-    products: sucoProducts
-  },
-  {
-    id: '90', name: '90-Açougue', percentage: 12.1,
-    products: açougueProducts
-  },
-  {
-    id: '91', name: '91-Padaria', percentage: 8.7,
-    products: padariaProducts
-  }
+  { id: '80', name: '80-Cervejas', percentage: 22.5, products: cervejaProducts },
+  { id: '81', name: '81-Refrigerantes', percentage: 18.2, products: refrigeranteProducts },
+  { id: '82', name: '82-Laticínios', percentage: 14.8, products: laticinioProducts },
+  { id: '88', name: '88-Energéticos', percentage: 5.6, products: energeticoProducts },
+  { id: '85', name: '85-Água Mineral', percentage: 4.2, products: aguaProducts },
+  { id: '93', name: '93-Suco Pronto', percentage: 4.0, products: sucoProducts },
+  { id: '90', name: '90-Açougue', percentage: 12.8, products: açougueProducts },
+  { id: '91', name: '91-Padaria', percentage: 8.4, products: padariaProducts },
+  { id: '92', name: '92-Frios & Embutidos', percentage: 3.5, products: friosProducts },
+  { id: '94', name: '94-Congelados', percentage: 3.2, products: congeladosProducts },
+  { id: '95', name: '95-Hortifruti', percentage: 1.8, products: hortifrutiProducts },
+  { id: '96', name: '96-Mercearia Seca', percentage: 1.0, products: merceariaProducts },
+];
+
+// Backward-compatible export
+export const mockProducts: Product[] = [
+  ...cervejaProducts,
+  ...refrigeranteProducts,
+  ...laticinioProducts,
+  ...energeticoProducts,
 ];
 
 export interface HistoryItem {
@@ -725,138 +363,70 @@ export interface HistoryItem {
 
 export const mockHistory: HistoryItem[] = [
   {
-    id: '1',
-    name: 'Tabloide Inverno 2025',
-    date: '2025-01-05',
-    products: [mockProducts[0], mockProducts[1], mockProducts[3], aguaProducts[0], aguaProducts[3], padariaProducts[0], padariaProducts[2], padariaProducts[6]],
-    avgScore: 78,
-    status: 'published',
-    region: 'Curitiba',
-    campaign: 'Inverno',
-    createdBy: 'João Silva',
-    totalValue: 45890.50,
-    avgMargin: 0.23
+    id: '1', name: 'Tabloide Inverno 2025', date: '2025-01-05',
+    products: [cervejaProducts[0], cervejaProducts[1], cervejaProducts[4], aguaProducts[0], aguaProducts[3], padariaProducts[0], padariaProducts[2], padariaProducts[6], merceariaProducts[0], merceariaProducts[4]],
+    avgScore: 78, status: 'published', region: 'Curitiba', campaign: 'Inverno', createdBy: 'João Silva', totalValue: 45890.50, avgMargin: 0.23
   },
   {
-    id: '2',
-    name: 'Campanha Dia das Mães',
-    date: '2025-05-10',
-    products: [mockProducts[2], mockProducts[4], mockProducts[5], mockProducts[6], açougueProducts[0], açougueProducts[2], açougueProducts[7], padariaProducts[1], padariaProducts[5], sucoProducts[0], sucoProducts[2]],
-    avgScore: 82,
-    status: 'draft',
-    region: 'Litoral',
-    campaign: 'Dia das Mães',
-    createdBy: 'Maria Santos',
-    totalValue: 62450.00,
-    avgMargin: 0.25
+    id: '2', name: 'Campanha Dia das Mães', date: '2025-05-10',
+    products: [cervejaProducts[2], cervejaProducts[5], cervejaProducts[6], refrigeranteProducts[0], açougueProducts[0], açougueProducts[2], açougueProducts[7], padariaProducts[1], padariaProducts[5], sucoProducts[0], sucoProducts[2], laticinioProducts[3], laticinioProducts[5]],
+    avgScore: 82, status: 'draft', region: 'Litoral', campaign: 'Dia das Mães', createdBy: 'Maria Santos', totalValue: 62450.00, avgMargin: 0.25
   },
   {
-    id: '3',
-    name: 'Tabloide Verão 2024',
-    date: '2024-12-15',
-    products: [mockProducts[0], mockProducts[3], mockProducts[4], mockProducts[14], mockProducts[15], aguaProducts[1], aguaProducts[2], aguaProducts[5], sucoProducts[0], sucoProducts[1], sucoProducts[3]],
-    avgScore: 71,
-    status: 'published',
-    region: 'Interior',
-    campaign: 'Verão',
-    createdBy: 'Pedro Costa',
-    totalValue: 38200.00,
-    avgMargin: 0.21
+    id: '3', name: 'Tabloide Verão 2024', date: '2024-12-15',
+    products: [cervejaProducts[0], cervejaProducts[4], cervejaProducts[5], cervejaProducts[10], cervejaProducts[11], aguaProducts[1], aguaProducts[2], aguaProducts[5], sucoProducts[0], sucoProducts[1], sucoProducts[3], hortifrutiProducts[0], hortifrutiProducts[6]],
+    avgScore: 71, status: 'published', region: 'Interior', campaign: 'Verão', createdBy: 'Pedro Costa', totalValue: 38200.00, avgMargin: 0.21
   },
   {
-    id: '4',
-    name: 'Black Friday 2024',
-    date: '2024-11-28',
-    products: [...mockProducts, ...açougueProducts, ...padariaProducts, ...aguaProducts, ...sucoProducts],
-    avgScore: 85,
-    status: 'published',
-    region: 'Todas',
-    campaign: 'Black Friday',
-    createdBy: 'Ana Oliveira',
-    totalValue: 156780.00,
-    avgMargin: 0.28
+    id: '4', name: 'Black Friday 2024', date: '2024-11-28',
+    products: [...cervejaProducts.slice(0,10), ...refrigeranteProducts.slice(0,8), ...açougueProducts.slice(0,8), ...padariaProducts.slice(0,6), ...laticinioProducts.slice(0,6), ...aguaProducts.slice(0,4), ...sucoProducts.slice(0,4), ...congeladosProducts.slice(0,4)],
+    avgScore: 85, status: 'published', region: 'Todas', campaign: 'Black Friday', createdBy: 'Ana Oliveira', totalValue: 156780.00, avgMargin: 0.28
   },
   {
-    id: '5',
-    name: 'Páscoa 2025',
-    date: '2025-04-18',
-    products: [mockProducts[7], mockProducts[8], mockProducts[16], mockProducts[17], mockProducts[27], mockProducts[28], açougueProducts[1], açougueProducts[3], açougueProducts[9], padariaProducts[3], padariaProducts[4], padariaProducts[7]],
-    avgScore: 79,
-    status: 'published',
-    region: 'Curitiba',
-    campaign: 'Páscoa',
-    createdBy: 'Carlos Mendes',
-    totalValue: 52300.00,
-    avgMargin: 0.26
+    id: '5', name: 'Páscoa 2025', date: '2025-04-18',
+    products: [cervejaProducts[7], cervejaProducts[8], cervejaProducts[12], cervejaProducts[13], açougueProducts[1], açougueProducts[3], açougueProducts[9], padariaProducts[3], padariaProducts[4], padariaProducts[7], laticinioProducts[8], laticinioProducts[9], merceariaProducts[5]],
+    avgScore: 79, status: 'published', region: 'Curitiba', campaign: 'Páscoa', createdBy: 'Carlos Mendes', totalValue: 52300.00, avgMargin: 0.26
   },
   {
-    id: '6',
-    name: 'Promoção Junho 2025',
-    date: '2025-06-05',
-    products: [mockProducts[0], mockProducts[1], mockProducts[9], mockProducts[10], mockProducts[18], mockProducts[19], açougueProducts[4], açougueProducts[5], açougueProducts[8], aguaProducts[0], aguaProducts[3], sucoProducts[1], sucoProducts[4]],
-    avgScore: 80,
-    status: 'published',
-    region: 'SC',
-    campaign: 'Inverno',
-    createdBy: 'Fernanda Lima',
-    totalValue: 71200.00,
-    avgMargin: 0.24
+    id: '6', name: 'Promoção Junho 2025', date: '2025-06-05',
+    products: [cervejaProducts[0], cervejaProducts[1], cervejaProducts[9], cervejaProducts[16], refrigeranteProducts[6], refrigeranteProducts[12], açougueProducts[4], açougueProducts[5], açougueProducts[8], aguaProducts[0], aguaProducts[3], sucoProducts[1], sucoProducts[4], friosProducts[0], friosProducts[1]],
+    avgScore: 80, status: 'published', region: 'SC', campaign: 'Inverno', createdBy: 'Fernanda Lima', totalValue: 71200.00, avgMargin: 0.24
   },
   {
-    id: '7',
-    name: 'Festa Junina 2025',
-    date: '2025-06-21',
-    products: [mockProducts[3], mockProducts[4], mockProducts[5], mockProducts[11], mockProducts[12], açougueProducts[0], açougueProducts[2], açougueProducts[6], padariaProducts[0], padariaProducts[2], padariaProducts[8], aguaProducts[1]],
-    avgScore: 77,
-    status: 'published',
-    region: 'Interior',
-    campaign: 'Festa Junina',
-    createdBy: 'Roberto Alves',
-    totalValue: 48900.00,
-    avgMargin: 0.22
+    id: '7', name: 'Festa Junina 2025', date: '2025-06-21',
+    products: [cervejaProducts[3], cervejaProducts[4], cervejaProducts[5], cervejaProducts[11], cervejaProducts[17], açougueProducts[0], açougueProducts[2], açougueProducts[6], padariaProducts[0], padariaProducts[2], padariaProducts[8], aguaProducts[1], merceariaProducts[0], merceariaProducts[2], hortifrutiProducts[2]],
+    avgScore: 77, status: 'published', region: 'Interior', campaign: 'Festa Junina', createdBy: 'Roberto Alves', totalValue: 48900.00, avgMargin: 0.22
   },
   {
-    id: '8',
-    name: 'Tabloide Julho 2025',
-    date: '2025-07-10',
-    products: [mockProducts[0], mockProducts[2], mockProducts[6], mockProducts[13], mockProducts[14], mockProducts[20], mockProducts[21], açougueProducts[1], açougueProducts[3], açougueProducts[7], açougueProducts[10], padariaProducts[1], padariaProducts[3], padariaProducts[9], sucoProducts[0], sucoProducts[2]],
-    avgScore: 83,
-    status: 'published',
-    region: 'Litoral',
-    campaign: 'Férias',
-    createdBy: 'Juliana Souza',
-    totalValue: 89400.00,
-    avgMargin: 0.27
+    id: '8', name: 'Tabloide Julho 2025', date: '2025-07-10',
+    products: [cervejaProducts[0], cervejaProducts[2], cervejaProducts[6], cervejaProducts[13], cervejaProducts[18], cervejaProducts[19], açougueProducts[1], açougueProducts[3], açougueProducts[7], açougueProducts[10], padariaProducts[1], padariaProducts[3], padariaProducts[9], sucoProducts[0], sucoProducts[2], congeladosProducts[2], congeladosProducts[3]],
+    avgScore: 83, status: 'published', region: 'Litoral', campaign: 'Férias', createdBy: 'Juliana Souza', totalValue: 89400.00, avgMargin: 0.27
   },
   {
-    id: '9',
-    name: 'Tabloide Agosto 2025',
-    date: '2025-08-01',
-    products: [mockProducts[0], mockProducts[1], mockProducts[8], mockProducts[9], mockProducts[23], mockProducts[24], mockProducts[30], mockProducts[31], açougueProducts[0], açougueProducts[5], açougueProducts[11], padariaProducts[0], padariaProducts[5], padariaProducts[6], aguaProducts[2], aguaProducts[4], sucoProducts[3], sucoProducts[5]],
-    avgScore: 81,
-    status: 'published',
-    region: 'Curitiba',
-    campaign: 'Inverno',
-    createdBy: 'Ricardo Melo',
-    totalValue: 94500.00,
-    avgMargin: 0.26
+    id: '9', name: 'Tabloide Agosto 2025', date: '2025-08-01',
+    products: [cervejaProducts[0], cervejaProducts[1], cervejaProducts[8], cervejaProducts[9], cervejaProducts[20], cervejaProducts[21], refrigeranteProducts[0], refrigeranteProducts[6], açougueProducts[0], açougueProducts[5], açougueProducts[11], padariaProducts[0], padariaProducts[5], padariaProducts[6], aguaProducts[2], aguaProducts[4], sucoProducts[3], sucoProducts[5], friosProducts[2], hortifrutiProducts[0], hortifrutiProducts[3]],
+    avgScore: 81, status: 'published', region: 'Curitiba', campaign: 'Inverno', createdBy: 'Ricardo Melo', totalValue: 94500.00, avgMargin: 0.26
   },
   {
-    id: '10',
-    name: 'Promoção Dia dos Pais 2025',
-    date: '2025-08-10',
-    products: [mockProducts[2], mockProducts[3], mockProducts[7], mockProducts[11], mockProducts[12], mockProducts[26], mockProducts[27], açougueProducts[1], açougueProducts[2], açougueProducts[4], açougueProducts[8], padariaProducts[2], padariaProducts[4], padariaProducts[7], aguaProducts[0], aguaProducts[1], sucoProducts[0], sucoProducts[1]],
-    avgScore: 84,
-    status: 'draft',
-    region: 'Todas',
-    campaign: 'Dia dos Pais',
-    createdBy: 'Cristiana Souza',
-    totalValue: 108000.00,
-    avgMargin: 0.25
-  }
+    id: '10', name: 'Promoção Dia dos Pais 2025', date: '2025-08-10',
+    products: [cervejaProducts[2], cervejaProducts[3], cervejaProducts[7], cervejaProducts[11], cervejaProducts[22], açougueProducts[1], açougueProducts[2], açougueProducts[4], açougueProducts[8], açougueProducts[12], padariaProducts[2], padariaProducts[4], padariaProducts[7], aguaProducts[0], aguaProducts[1], sucoProducts[0], sucoProducts[1], energeticoProducts[0], energeticoProducts[6], merceariaProducts[12], laticinioProducts[14]],
+    avgScore: 84, status: 'published', region: 'Curitiba', campaign: 'Dia dos Pais', createdBy: 'Marcela Vieira', totalValue: 87600.00, avgMargin: 0.25
+  },
 ];
 
-export const regions = ['Selecione uma região', 'Curitiba', 'Litoral', 'Interior', 'SC'];
-export const sections = ['Todas', 'Bebidas', 'Laticínios', 'Açougue', 'Padaria'];
-export const campaigns = ['Todas', 'Inverno', 'Dia das Mães', 'Verão', 'Black Friday', 'Páscoa', 'Festa Junina', 'Férias', 'Dia dos Pais'];
-export const strategies = ['Maior Quantidade', 'Maior Margem', 'Maior Venda', 'Menor Preço'];
+// ── Filter Options ────────────────────────────────────────
+export const regions = [
+  'Selecione uma região', 'Curitiba', 'Litoral', 'Ponta Grossa', 'Castro', 'Lapa', 'Irati', 'Interior', 'SC', 'Todas'
+];
+
+export const sections = [
+  'Todas', 'Bebidas', 'Laticínios', 'Açougue', 'Padaria', 'Frios & Embutidos', 'Congelados', 'Hortifruti', 'Mercearia'
+];
+
+export const strategies = [
+  'Maior Quantidade', 'Maior Margem', 'Maior Score IA', 'Equilíbrio', 'Competitividade', 'Crescimento'
+];
+
+export const campaigns = [
+  'Todas', 'Inverno', 'Verão', 'Black Friday', 'Páscoa', 'Dia das Mães', 'Dia dos Pais', 'Festa Junina', 'Férias', 'Aniversário'
+];
