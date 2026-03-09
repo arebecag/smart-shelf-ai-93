@@ -179,7 +179,9 @@ const shortName = (name: string) => name.split(" ").slice(0, 3).join(" ");
 export default function WeeklyComparison() {
   const [selectedDay, setSelectedDay] = useState<string>("Sex");
   const { approveProduct, isApproved } = useApprovals();
+  const { addToSimulator, isInSimulator } = useSimulator();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const allStats = useMemo(() => buildProductStats(), []);
   const chartData = useMemo(() => buildWeeklyChartData(), []);
@@ -190,6 +192,18 @@ export default function WeeklyComparison() {
     toast({
       title: "Produto sugerido para tabloide!",
       description: `${product.name} adicionado ao fluxo de aprovação.`,
+    });
+  };
+
+  const handleAddToSimulator = (product: Product) => {
+    addToSimulator(product);
+    toast({
+      title: "Adicionado ao Simulador!",
+      description: `${product.name} está pronto para simulação de preço.`,
+      action: <button
+        onClick={() => navigate("/simulador")}
+        className="text-xs underline font-semibold"
+      >Ver Simulador</button>,
     });
   };
 
