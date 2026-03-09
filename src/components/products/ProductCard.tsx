@@ -29,11 +29,14 @@ import {
   XCircle,
   ThumbsUp,
   ThumbsDown,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useApprovals } from '@/contexts/ApprovalsContext';
+import { useSimulator } from '@/contexts/SimulatorContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { PriceSimulatorModal } from '@/components/simulator/PriceSimulatorModal';
 
 interface ProductCardProps {
   product: Product;
