@@ -13,8 +13,10 @@ import {
   Star, Send, Flame, DollarSign, Zap, History, Award, ChevronRight
 } from "lucide-react";
 import { useApprovals } from "@/contexts/ApprovalsContext";
+import { useSimulator } from "@/contexts/SimulatorContext";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/types/product";
+import { useNavigate } from "react-router-dom";
 
 // ── Seções ────────────────────────────────────────────────
 const SECTION_MAP: Record<string, string[]> = {
