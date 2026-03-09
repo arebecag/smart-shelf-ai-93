@@ -13,8 +13,10 @@ import {
   Star, Send, Flame, DollarSign, Zap, History, Award, ChevronRight
 } from "lucide-react";
 import { useApprovals } from "@/contexts/ApprovalsContext";
+import { useSimulator } from "@/contexts/SimulatorContext";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/types/product";
+import { useNavigate } from "react-router-dom";
 
 // ── Seções ────────────────────────────────────────────────
 const SECTION_MAP: Record<string, string[]> = {
@@ -177,7 +179,9 @@ const shortName = (name: string) => name.split(" ").slice(0, 3).join(" ");
 export default function WeeklyComparison() {
   const [selectedDay, setSelectedDay] = useState<string>("Sex");
   const { approveProduct, isApproved } = useApprovals();
+  const { addToSimulator, isInSimulator } = useSimulator();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const allStats = useMemo(() => buildProductStats(), []);
   const chartData = useMemo(() => buildWeeklyChartData(), []);
@@ -188,6 +192,18 @@ export default function WeeklyComparison() {
     toast({
       title: "Produto sugerido para tabloide!",
       description: `${product.name} adicionado ao fluxo de aprovação.`,
+    });
+  };
+
+  const handleAddToSimulator = (product: Product) => {
+    addToSimulator(product);
+    toast({
+      title: "Adicionado ao Simulador!",
+      description: `${product.name} está pronto para simulação de preço.`,
+      action: <button
+        onClick={() => navigate("/simulador")}
+        className="text-xs underline font-semibold"
+      >Ver Simulador</button>,
     });
   };
 
@@ -357,6 +373,18 @@ export default function WeeklyComparison() {
                             }`}
                           >
                             {already ? "✓ No tabloide" : <><Send className="h-2.5 w-2.5" /> Sugerir</>}
+                          </button>
+                          <button
+                            onClick={() => handleAddToSimulator(stat.product)}
+                            disabled={isInSimulator(stat.product.id)}
+                            title="Simular preço"
+                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors font-medium ${
+                              isInSimulator(stat.product.id)
+                                ? "border-violet-300 text-violet-600 bg-violet-50 cursor-default"
+                                : "border-violet-300 text-violet-600 hover:bg-violet-600 hover:text-white"
+                            }`}
+                          >
+                            {isInSimulator(stat.product.id) ? "✓ Simulador" : <><Zap className="h-2.5 w-2.5" /> Simular</>}
                           </button>
                         </div>
                       </div>

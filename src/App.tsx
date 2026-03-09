@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { ApprovalsProvider } from "@/contexts/ApprovalsContext";
+import { SimulatorProvider } from "@/contexts/SimulatorContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
 import WeeklyComparison from "./pages/WeeklyComparison";
@@ -18,37 +19,40 @@ import TVPresentation from "./pages/TVPresentation";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import AIAssistant from "./pages/AIAssistant";
+import Simulator from "./pages/Simulator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// App component with all providers
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <FavoritesProvider>
         <ApprovalsProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/semanal" element={<WeeklyComparison />} />
-                <Route path="/buscar" element={<SearchProducts />} />
-                <Route path="/favoritos" element={<Favorites />} />
-                <Route path="/comparar" element={<Compare />} />
-                <Route path="/aprovacoes" element={<Approvals />} />
-                <Route path="/tv" element={<TVPresentation />} />
-                <Route path="/estatisticas" element={<Statistics />} />
-                <Route path="/historico" element={<History />} />
-                <Route path="/configuracoes" element={<Settings />} />
-                <Route path="/ajuda" element={<Help />} />
-                <Route path="/assistente" element={<AIAssistant />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </MainLayout>
-          </BrowserRouter>
+          <SimulatorProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <MainLayout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/semanal" element={<WeeklyComparison />} />
+                  <Route path="/buscar" element={<SearchProducts />} />
+                  <Route path="/favoritos" element={<Favorites />} />
+                  <Route path="/comparar" element={<Compare />} />
+                  <Route path="/aprovacoes" element={<Approvals />} />
+                  <Route path="/tv" element={<TVPresentation />} />
+                  <Route path="/estatisticas" element={<Statistics />} />
+                  <Route path="/historico" element={<History />} />
+                  <Route path="/configuracoes" element={<Settings />} />
+                  <Route path="/ajuda" element={<Help />} />
+                  <Route path="/assistente" element={<AIAssistant />} />
+                  <Route path="/simulador" element={<Simulator />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MainLayout>
+            </BrowserRouter>
+          </SimulatorProvider>
         </ApprovalsProvider>
       </FavoritesProvider>
     </TooltipProvider>
