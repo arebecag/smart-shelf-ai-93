@@ -374,6 +374,18 @@ export default function WeeklyComparison() {
                           >
                             {already ? "✓ No tabloide" : <><Send className="h-2.5 w-2.5" /> Sugerir</>}
                           </button>
+                          <button
+                            onClick={() => handleAddToSimulator(stat.product)}
+                            disabled={isInSimulator(stat.product.id)}
+                            title="Simular preço"
+                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors font-medium ${
+                              isInSimulator(stat.product.id)
+                                ? "border-violet-300 text-violet-600 bg-violet-50 cursor-default"
+                                : "border-violet-300 text-violet-600 hover:bg-violet-600 hover:text-white"
+                            }`}
+                          >
+                            {isInSimulator(stat.product.id) ? "✓ Simulador" : <><Zap className="h-2.5 w-2.5" /> Simular</>}
+                          </button>
                         </div>
                       </div>
                     );
