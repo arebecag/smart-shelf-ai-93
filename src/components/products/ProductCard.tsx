@@ -48,10 +48,12 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
   const [isExpanded, setIsExpanded] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [showSimulator, setShowSimulator] = useState(false);
   const scoreResult = calculateScore(product, filters);
   const weights = getWeights(filters);
   const { addFavorite, removeFavorite, isFavorite, addToCompare, removeFromCompare, isInCompare } = useFavorites();
   const { approveProduct, rejectProduct, isApproved, isRejected, getApprovalStatus, removeApproval } = useApprovals();
+  const { isInSimulator } = useSimulator();
 
   const approvalStatus = getApprovalStatus(product.id);
 
