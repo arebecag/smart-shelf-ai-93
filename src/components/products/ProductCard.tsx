@@ -297,10 +297,25 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
           </div>
         )}
 
+        {/* Simulator Button */}
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full mt-2 gap-2 text-sm",
+            isInSimulator(product.id)
+              ? "border-primary/40 text-primary bg-primary/5"
+              : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+          )}
+          onClick={() => setShowSimulator(true)}
+        >
+          <Zap className="w-4 h-4" />
+          {isInSimulator(product.id) ? "Ver no Simulador" : "Simular Preço"}
+        </Button>
+
         {/* Action Button */}
         <Button
           variant="outline"
-          className="w-full mt-3"
+          className="w-full mt-2"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? (
@@ -315,6 +330,13 @@ export const ProductCard = ({ product, filters, showFullReason = true }: Product
             </>
           )}
         </Button>
+
+        {/* Price Simulator Modal */}
+        <PriceSimulatorModal
+          product={showSimulator ? product : null}
+          open={showSimulator}
+          onClose={() => setShowSimulator(false)}
+        />
 
         {/* Expanded Details */}
         {isExpanded && (
