@@ -1,16 +1,16 @@
 import { useState, useMemo } from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, Cell
+  Tooltip, ResponsiveContainer, Legend
 } from "recharts";
-import { mockHistory, mockProductGroups } from "@/data/mockData";
+import { mockProductGroups } from "@/data/mockData";
 import { useApprovals } from "@/contexts/ApprovalsContext";
 import { useSimulator } from "@/contexts/SimulatorContext";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/types/product";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Send, Zap, ChevronUp, ChevronDown, Tag, Sparkles } from "lucide-react";
+import { Send, Zap, Tag, Sparkles } from "lucide-react";
 
 // ── Seções ─────────────────────────────────────────────────
 const SECTIONS = [
@@ -34,7 +34,6 @@ const SECTION_MAP: Record<string, string[]> = {
   "Cervejas":      ["80"],
 };
 
-// Real section-group mapping for product lookups
 const PRODUCT_SECTION_MAP: Record<string, string[]> = {
   "Cervejas":      ["80"],
   "Refrigerantes": ["81"],
@@ -48,13 +47,11 @@ const PRODUCT_SECTION_MAP: Record<string, string[]> = {
 const DAYS_FULL = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
 const DAYS_SHORT = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-// Revenue multipliers per day
 const DAY_MULT: Record<string, number> = {
   "Seg": 0.65, "Ter": 0.72, "Qua": 0.80, "Qui": 0.85,
   "Sex": 1.20, "Sáb": 1.55, "Dom": 1.23,
 };
 
-// Which sections are boosted each day
 const DAY_BOOST: Record<string, string[]> = {
   "Seg": ["Laticínios", "Padaria", "Limpeza", "Seca Pesada", "Seca Leve", "Frutas & Hort.", "Perfumaria/Hig", "Bebidas Frias", "Açougue"],
   "Ter": ["Refrigerantes", "Seca Pesada", "Açougue", "Bebidas Frias", "Limpeza", "Seca Leve", "Frutas & Hort.", "Laticínios", "Padaria"],
@@ -65,13 +62,11 @@ const DAY_BOOST: Record<string, string[]> = {
   "Dom": ["Laticínios", "Padaria", "Refrigerantes", "Açougue", "Bebidas Frias", "Seca Leve", "Cervejas", "Frutas & Hort.", "Limpeza"],
 };
 
-// Colors for each day (blue palette for weekdays, red for weekend)
 const DAY_COLORS: Record<string, string> = {
   "Seg": "#2563eb", "Ter": "#1d4ed8", "Qua": "#1e40af",
   "Qui": "#1e3a8a", "Sex": "#be123c", "Sáb": "#9f1239", "Dom": "#7f1d1d",
 };
 
-// Stacked chart section colors
 const SECTION_COLORS = [
   "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6",
   "#1d4ed8", "#fb923c", "#ef4444", "#dc2626"
@@ -82,9 +77,7 @@ function getSectionRevenue(section: string, dayShort: string): number {
   let base = 0;
   for (const gid of groupIds) {
     const group = mockProductGroups.find(g => g.id === gid);
-    if (group) {
-      base += group.products.reduce((s, p) => s + p.sales * p.price, 0) / 120;
-    }
+    if (group) base += group.products.reduce((s, p) => s + p.sales * p.price, 0) / 120;
   }
   const mult = DAY_MULT[dayShort] ?? 1;
   const boosted = (DAY_BOOST[dayShort] || []).includes(section) ? 1.35 : 0.72;
@@ -94,7 +87,7 @@ function getSectionRevenue(section: string, dayShort: string): number {
 function buildAreaData() {
   return Object.keys(PRODUCT_SECTION_MAP).map(section => {
     const groupIds = PRODUCT_SECTION_MAP[section];
-    let totalSales = 0, totalMargin = 0, count = 0, totalVol = 0;
+    let totalSales = 0, totalMargin = 0, totalVol = 0;
     for (const gid of groupIds) {
       const group = mockProductGroups.find(g => g.id === gid);
       if (group) {
@@ -102,7 +95,6 @@ function buildAreaData() {
           totalSales += p.sales * p.price;
           totalMargin += p.sales * p.price * p.margin;
           totalVol += p.sales;
-          count++;
         }
       }
     }
@@ -115,9 +107,11 @@ function buildAreaData() {
   });
 }
 
-function buildRankings() {
-  const result: { section: string; faturamento: number; volume: number; rentabilidade: number; margem: number }[] = [];
-  for (const [section, groupIds] of Object.entries(PRODUCT_SECTION_MAP)) {
+function buildAllSectionMetrics() {
+  // All sections with full metrics for the table
+  const allSections = [...new Set([...Object.keys(PRODUCT_SECTION_MAP), ...SECTIONS])];
+  return allSections.map(section => {
+    const groupIds = PRODUCT_SECTION_MAP[section] || SECTION_MAP[section] || [];
     let fat = 0, vol = 0, rent = 0, marginSum = 0, count = 0;
     for (const gid of groupIds) {
       const group = mockProductGroups.find(g => g.id === gid);
@@ -131,15 +125,14 @@ function buildRankings() {
         }
       }
     }
-    result.push({
+    return {
       section,
       faturamento: Math.round(fat / 80),
       volume: Math.round(vol / 10),
       rentabilidade: Math.round(rent / 80),
       margem: count > 0 ? marginSum / count : 0,
-    });
-  }
-  return result;
+    };
+  }).sort((a, b) => b.faturamento - a.faturamento);
 }
 
 function buildDayGrid() {
@@ -154,7 +147,6 @@ function buildDayGrid() {
 }
 
 function buildStackedData() {
-  // X-axis = sections, stacked bars = days (matching reference BI layout)
   return Object.keys(PRODUCT_SECTION_MAP).map(section => {
     const row: Record<string, any> = { section: section.slice(0, 14) };
     for (const day of DAYS_SHORT) {
@@ -169,7 +161,7 @@ function buildStackedData() {
 }
 
 function buildSectionProducts(section: string) {
-  const groupIds = PRODUCT_SECTION_MAP[section] || [];
+  const groupIds = PRODUCT_SECTION_MAP[section] || SECTION_MAP[section] || [];
   const products: Product[] = [];
   for (const gid of groupIds) {
     const group = mockProductGroups.find(g => g.id === gid);
@@ -183,6 +175,24 @@ function buildSectionProducts(section: string) {
   return { byFat, byVol, byRent, withCampaign, noCampaign };
 }
 
+// All products flattened for global rankings
+function buildGlobalProducts() {
+  const products: Product[] = [];
+  for (const groupIds of Object.values(PRODUCT_SECTION_MAP)) {
+    for (const gid of groupIds) {
+      const group = mockProductGroups.find(g => g.id === gid);
+      if (group) products.push(...group.products);
+    }
+  }
+  const unique = Array.from(new Map(products.map(p => [p.id, p])).values());
+  const byFat = [...unique].sort((a, b) => (b.sales * b.price) - (a.sales * a.price));
+  const byVol = [...unique].sort((a, b) => b.sales - a.sales);
+  const byRent = [...unique].sort((a, b) => (b.sales * b.price * b.margin) - (a.sales * a.price * a.margin));
+  const withCampaign = [...unique].filter(p => p.hasAd).sort((a, b) => (b.sales * b.price) - (a.sales * a.price));
+  const noCampaign = [...unique].filter(p => !p.hasAd).sort((a, b) => (b.sales * b.price * b.margin) - (a.sales * a.price * a.margin));
+  return { byFat, byVol, byRent, withCampaign, noCampaign };
+}
+
 const fmtM = (v: number) => {
   if (v >= 1_000_000) return `R$${(v / 1_000_000).toFixed(0)}M`;
   if (v >= 1_000) return `R$${(v / 1_000).toFixed(0)}K`;
@@ -191,9 +201,8 @@ const fmtM = (v: number) => {
 const fmtFull = (v: number) =>
   `R$${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtVol = (v: number) => v.toLocaleString("pt-BR");
-const short = (s: string, n = 20) => s.length > n ? s.slice(0, n) + "…" : s;
+const short = (s: string, n = 22) => s.length > n ? s.slice(0, n) + "…" : s;
 
-// ── Tooltip personalizado para o area chart ────────────────
 const AreaTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
@@ -219,19 +228,22 @@ export default function WeeklyComparison() {
   const navigate = useNavigate();
 
   const areaData = useMemo(() => buildAreaData(), []);
-  const rankings = useMemo(() => buildRankings(), []);
+  const allSectionMetrics = useMemo(() => buildAllSectionMetrics(), []);
   const dayGrid = useMemo(() => buildDayGrid(), []);
   const stackedData = useMemo(() => buildStackedData(), []);
-
-  const rankFat = useMemo(() => [...rankings].sort((a, b) => b.faturamento - a.faturamento).slice(0, 8), [rankings]);
-  const rankVol = useMemo(() => [...rankings].sort((a, b) => b.volume - a.volume).slice(0, 8), [rankings]);
-  const rankRent = useMemo(() => [...rankings].sort((a, b) => b.rentabilidade - a.rentabilidade).slice(0, 8), [rankings]);
-  const rankMarg = useMemo(() => [...rankings].sort((a, b) => b.margem - a.margem).slice(0, 8), [rankings]);
+  const globalProducts = useMemo(() => buildGlobalProducts(), []);
 
   const sectionDetail = useMemo(() => {
     if (!selectedSection) return null;
     return buildSectionProducts(selectedSection);
   }, [selectedSection]);
+
+  // The panel on the right shows section detail when selected, else global
+  const panelData = sectionDetail ?? globalProducts;
+
+  const maxFat = allSectionMetrics[0]?.faturamento ?? 1;
+  const maxVol = Math.max(...allSectionMetrics.map(r => r.volume));
+  const maxRent = Math.max(...allSectionMetrics.map(r => r.rentabilidade));
 
   const handleSuggest = (product: Product) => {
     approveProduct(product);
@@ -250,175 +262,120 @@ export default function WeeklyComparison() {
     <div className="space-y-0 bg-background">
 
       {/* ════════════════════════════════════════════════════════
-          BLOCO 1: Area Chart + 4 Rankings
+          BLOCO 1: Tabela de Seções + Painel de Produtos (sempre visível)
           ══════════════════════════════════════════════════════ */}
-      <div className="flex gap-0 border-b border-border">
-        {/* Area Chart */}
-        <div className="flex-1 min-w-0 border-r border-border p-3">
-          <p className="text-[11px] font-semibold text-muted-foreground text-center mb-2">
-            Faturamento, volume e rentabilidade(c/sellout) por categorias
-          </p>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={areaData} margin={{ top: 5, right: 5, left: 0, bottom: 50 }}>
-              <defs>
-                <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.6} />
-                  <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="gVol" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0.02} />
-                </linearGradient>
-                <linearGradient id="gRent" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey="section"
-                tick={{ fontSize: 9.5, fill: "hsl(var(--muted-foreground))" }}
-                angle={-40}
-                textAnchor="end"
-                interval={0}
-                height={55}
-              />
-              <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={38} />
-              <Tooltip content={<AreaTooltip />} />
-              <Legend
-                wrapperStyle={{ fontSize: 10, paddingTop: 0 }}
-                formatter={(v) =>
-                  v === "faturamento" ? "Faturamento" :
-                  v === "volume" ? "Volume" : "Rentabilidade c/ Sellout"
-                }
-              />
-              <Area type="monotone" dataKey="faturamento" name="faturamento" stroke="#3b82f6" fill="url(#gFat)" strokeWidth={2} dot={false} />
-              <Area type="monotone" dataKey="volume" name="volume" stroke="#f97316" fill="url(#gVol)" strokeWidth={1.5} dot={false} />
-              <Area type="monotone" dataKey="rentabilidade" name="rentabilidade" stroke="#22c55e" fill="url(#gRent)" strokeWidth={1.5} dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="flex border-b border-border" style={{ minHeight: 420 }}>
 
-        {/* 4 Rankings */}
-        <div className="flex divide-x divide-border" style={{ minWidth: 420, maxWidth: 480 }}>
-          {/* Faturamento */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-3 py-1.5 border-b border-border text-center">
-              <span className="text-[11px] font-bold text-blue-500">Faturamento</span>
-            </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-border/50">
-              {rankFat.map((r, i) => (
-                <button
-                  key={r.section}
-                  onClick={() => setSelectedSection(selectedSection === r.section ? null : r.section)}
-                  className={cn(
-                    "w-full px-3 py-2 text-left hover:bg-muted/40 transition-colors",
-                    selectedSection === r.section && "bg-blue-50 dark:bg-blue-950/30"
-                  )}
-                >
-                  <p className={cn("text-[10px] font-semibold leading-tight", selectedSection === r.section ? "text-blue-600" : "text-blue-500")}>
-                    {r.section}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">{fmtFull(r.faturamento)}</p>
-                </button>
-              ))}
-            </div>
+        {/* Esquerda: Tabela de seções */}
+        <div className="flex flex-col border-r border-border" style={{ minWidth: 520, maxWidth: 560 }}>
+          {/* Cabeçalho da tabela */}
+          <div className="grid border-b border-border bg-muted/40" style={{ gridTemplateColumns: "1fr 110px 80px 110px 70px" }}>
+            <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase">Seção</div>
+            <div className="px-2 py-2 text-[10px] font-bold text-blue-500 uppercase text-right">Faturamento</div>
+            <div className="px-2 py-2 text-[10px] font-bold text-orange-500 uppercase text-right">Volume</div>
+            <div className="px-2 py-2 text-[10px] font-bold text-green-600 uppercase text-right leading-tight">Rentab. c/ Sellout</div>
+            <div className="px-2 py-2 text-[10px] font-bold text-purple-500 uppercase text-right">Margem</div>
           </div>
-          {/* Volume */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-3 py-1.5 border-b border-border text-center">
-              <span className="text-[11px] font-bold text-orange-500">Volume</span>
-            </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-border/50">
-              {rankVol.map((r) => (
-                <button
-                  key={r.section}
-                  onClick={() => setSelectedSection(selectedSection === r.section ? null : r.section)}
-                  className={cn(
-                    "w-full px-3 py-2 text-left hover:bg-muted/40 transition-colors",
-                    selectedSection === r.section && "bg-orange-50 dark:bg-orange-950/30"
-                  )}
-                >
-                  <p className={cn("text-[10px] font-semibold leading-tight", selectedSection === r.section ? "text-orange-600" : "text-orange-500")}>
-                    {r.section}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">{fmtVol(r.volume)}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* Rentab. c/ Sellout */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-3 py-1.5 border-b border-border text-center">
-              <span className="text-[10px] font-bold text-green-600">Rentab. c/ Sellout</span>
-            </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-border/50">
-              {rankRent.map((r) => (
-                <button
-                  key={r.section}
-                  onClick={() => setSelectedSection(selectedSection === r.section ? null : r.section)}
-                  className={cn(
-                    "w-full px-3 py-2 text-left hover:bg-muted/40 transition-colors",
-                    selectedSection === r.section && "bg-green-50 dark:bg-green-950/30"
-                  )}
-                >
-                  <p className={cn("text-[10px] font-semibold leading-tight", selectedSection === r.section ? "text-green-700" : "text-green-600")}>
-                    {r.section}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">{fmtFull(r.rentabilidade)}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* Margem c/ Sellout */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-3 py-1.5 border-b border-border text-center">
-              <span className="text-[10px] font-bold text-purple-500">Margem. c/ Sellout</span>
-            </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-border/50">
-              {rankMarg.map((r) => (
-                <button
-                  key={r.section}
-                  onClick={() => setSelectedSection(selectedSection === r.section ? null : r.section)}
-                  className={cn(
-                    "w-full px-3 py-2 text-left hover:bg-muted/40 transition-colors",
-                    selectedSection === r.section && "bg-purple-50 dark:bg-purple-950/30"
-                  )}
-                >
-                  <p className={cn("text-[10px] font-semibold leading-tight", selectedSection === r.section ? "text-purple-700" : "text-purple-500")}>
-                    {r.section}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">{(r.margem * 100).toFixed(2)}%</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ════════════════════════════════════════════════════════
-          BLOCO 2: Section Detail (aparece ao clicar numa seção)
-          ══════════════════════════════════════════════════════ */}
-      {sectionDetail && selectedSection && (
-        <div className="border-b border-border bg-muted/20">
-          <div className="px-4 py-2 border-b border-border flex items-center gap-3">
-            <span className="text-sm font-bold text-foreground">{selectedSection}</span>
-            <button
-              onClick={() => setSelectedSection(null)}
-              className="ml-auto text-xs text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border hover:bg-muted transition-colors"
+          {/* Linhas das seções */}
+          <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+            {allSectionMetrics.map((r) => {
+              const fatPct = Math.round((r.faturamento / maxFat) * 100);
+              const volPct = Math.round((r.volume / maxVol) * 100);
+              const rentPct = Math.round((r.rentabilidade / maxRent) * 100);
+              const isSelected = selectedSection === r.section;
+              return (
+                <button
+                  key={r.section}
+                  onClick={() => setSelectedSection(isSelected ? null : r.section)}
+                  className={cn(
+                    "w-full text-left hover:bg-muted/40 transition-colors",
+                    isSelected && "bg-primary/8 border-l-2 border-primary"
+                  )}
+                  style={{ display: "grid", gridTemplateColumns: "1fr 110px 80px 110px 70px" }}
+                >
+                  {/* Nome da seção */}
+                  <div className="px-3 py-1.5 flex items-center">
+                    <span className={cn(
+                      "text-[10px] font-semibold leading-tight",
+                      isSelected ? "text-primary" : "text-foreground"
+                    )}>
+                      {r.section}
+                    </span>
+                  </div>
+                  {/* Faturamento com barra */}
+                  <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
+                    <span className="text-[9px] text-blue-500 font-semibold text-right leading-none">{fmtFull(r.faturamento)}</span>
+                    <div className="h-2 bg-muted rounded-sm overflow-hidden">
+                      <div className="h-full rounded-sm bg-blue-200" style={{ width: `${fatPct}%` }} />
+                    </div>
+                  </div>
+                  {/* Volume com barra */}
+                  <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
+                    <span className="text-[9px] text-orange-500 font-semibold text-right leading-none">{fmtVol(r.volume)}</span>
+                    <div className="h-2 bg-muted rounded-sm overflow-hidden">
+                      <div className="h-full rounded-sm bg-orange-200" style={{ width: `${volPct}%` }} />
+                    </div>
+                  </div>
+                  {/* Rentabilidade com barra verde */}
+                  <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
+                    <span className="text-[9px] text-green-600 font-semibold text-right leading-none">{fmtFull(r.rentabilidade)}</span>
+                    <div className="h-2 bg-muted rounded-sm overflow-hidden">
+                      <div className="h-full rounded-sm bg-green-300" style={{ width: `${rentPct}%` }} />
+                    </div>
+                  </div>
+                  {/* Margem */}
+                  <div className="px-2 py-1.5 flex items-center justify-end">
+                    <span className="text-[9px] text-purple-500 font-semibold">{(r.margem * 100).toFixed(2)}%</span>
+                  </div>
+                </button>
+              );
+            })}
+            {/* Total */}
+            <div
+              className="bg-muted/60 font-bold"
+              style={{ display: "grid", gridTemplateColumns: "1fr 110px 80px 110px 70px" }}
             >
-              ✕ Fechar
-            </button>
-          </div>
-          <div className="grid grid-cols-5 divide-x divide-border">
-            {/* Col 1: Faturamento */}
-            <div className="flex flex-col">
-              <div className="px-3 py-1.5 border-b border-border bg-muted/30">
-                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">Faturamento</span>
+              <div className="px-3 py-2 text-[10px] font-bold text-foreground">Total</div>
+              <div className="px-2 py-2 text-[9px] text-blue-600 font-bold text-right">
+                {fmtFull(allSectionMetrics.reduce((s, r) => s + r.faturamento, 0))}
               </div>
-              <div className="divide-y divide-border/50">
-                {sectionDetail.byFat.slice(0, 8).map((p) => (
-                  <div key={p.id} className="px-3 py-2 flex items-center justify-between gap-1 hover:bg-muted/30">
+              <div className="px-2 py-2 text-[9px] text-orange-600 font-bold text-right">
+                {fmtVol(allSectionMetrics.reduce((s, r) => s + r.volume, 0))}
+              </div>
+              <div className="px-2 py-2 text-[9px] text-green-700 font-bold text-right">
+                {fmtFull(allSectionMetrics.reduce((s, r) => s + r.rentabilidade, 0))}
+              </div>
+              <div className="px-2 py-2 text-[9px] text-purple-600 font-bold text-right">
+                {(allSectionMetrics.reduce((s, r) => s + r.margem, 0) / allSectionMetrics.length * 100).toFixed(2)}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Direita: Painel de produtos (sempre visível) */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Título do painel */}
+          {selectedSection && (
+            <div className="px-4 py-1.5 border-b border-border bg-primary/5 flex items-center gap-2">
+              <span className="text-[11px] font-bold text-primary">{selectedSection}</span>
+              <button
+                onClick={() => setSelectedSection(null)}
+                className="ml-auto text-[10px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border hover:bg-muted transition-colors"
+              >✕ Todos</button>
+            </div>
+          )}
+
+          {/* 3 colunas de ranking + 2 colunas campanha */}
+          <div className="flex-1 grid grid-cols-5 divide-x divide-border overflow-hidden">
+            {/* Faturamento */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="px-3 py-1.5 border-b border-border text-center">
+                <span className="text-[10px] font-bold text-blue-500">Faturamento</span>
+              </div>
+              <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+                {panelData.byFat.slice(0, 10).map((p) => (
+                  <div key={p.id} className="px-3 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-blue-500 leading-tight truncate">{short(p.name)}</p>
                       <p className="text-[9px] text-muted-foreground">{fmtFull(p.sales * p.price)}</p>
@@ -428,14 +385,14 @@ export default function WeeklyComparison() {
                 ))}
               </div>
             </div>
-            {/* Col 2: Volume */}
-            <div className="flex flex-col">
-              <div className="px-3 py-1.5 border-b border-border bg-muted/30">
-                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wide">Volume</span>
+            {/* Volume */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="px-3 py-1.5 border-b border-border text-center">
+                <span className="text-[10px] font-bold text-orange-500">Volume</span>
               </div>
-              <div className="divide-y divide-border/50">
-                {sectionDetail.byVol.slice(0, 8).map((p) => (
-                  <div key={p.id} className="px-3 py-2 flex items-center justify-between gap-1 hover:bg-muted/30">
+              <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+                {panelData.byVol.slice(0, 10).map((p) => (
+                  <div key={p.id} className="px-3 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-orange-500 leading-tight truncate">{short(p.name)}</p>
                       <p className="text-[9px] text-muted-foreground">{fmtVol(p.sales)}</p>
@@ -445,14 +402,14 @@ export default function WeeklyComparison() {
                 ))}
               </div>
             </div>
-            {/* Col 3: Rentab. c/ Sellout */}
-            <div className="flex flex-col">
-              <div className="px-3 py-1.5 border-b border-border bg-muted/30">
-                <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">Rentab. c/ Sellout</span>
+            {/* Rentab. c/ Sellout */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="px-3 py-1.5 border-b border-border text-center">
+                <span className="text-[10px] font-bold text-green-600">Rentab. c/ Sellout</span>
               </div>
-              <div className="divide-y divide-border/50">
-                {sectionDetail.byRent.slice(0, 8).map((p) => (
-                  <div key={p.id} className="px-3 py-2 flex items-center justify-between gap-1 hover:bg-muted/30">
+              <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+                {panelData.byRent.slice(0, 10).map((p) => (
+                  <div key={p.id} className="px-3 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-green-600 leading-tight truncate">{short(p.name)}</p>
                       <p className="text-[9px] text-muted-foreground">{fmtFull(p.sales * p.price * p.margin)}</p>
@@ -462,15 +419,15 @@ export default function WeeklyComparison() {
                 ))}
               </div>
             </div>
-            {/* Col 4: Em Campanha */}
-            <div className="flex flex-col">
-              <div className="px-3 py-1.5 border-b border-border bg-muted/30 flex items-center gap-1.5">
+            {/* TOP em Campanha */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="px-3 py-1.5 border-b border-border flex items-center justify-center gap-1">
                 <Tag className="h-3 w-3 text-primary flex-shrink-0" />
-                <span className="text-[10px] font-bold text-primary uppercase tracking-wide">TOP em Campanha</span>
+                <span className="text-[10px] font-bold text-primary">TOP em Campanha</span>
               </div>
-              <div className="divide-y divide-border/50">
-                {sectionDetail.withCampaign.slice(0, 8).map((p) => (
-                  <div key={p.id} className="px-3 py-2 flex items-center justify-between gap-1 hover:bg-muted/30">
+              <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+                {panelData.withCampaign.slice(0, 10).map((p) => (
+                  <div key={p.id} className="px-3 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-primary leading-tight truncate">{short(p.name)}</p>
                       <p className="text-[9px] text-muted-foreground">{fmtFull(p.sales * p.price)}</p>
@@ -478,20 +435,20 @@ export default function WeeklyComparison() {
                     <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
                   </div>
                 ))}
-                {sectionDetail.withCampaign.length === 0 && (
+                {panelData.withCampaign.length === 0 && (
                   <p className="text-[10px] text-muted-foreground px-3 py-4 text-center">Nenhum em campanha</p>
                 )}
               </div>
             </div>
-            {/* Col 5: Oportunidades */}
-            <div className="flex flex-col">
-              <div className="px-3 py-1.5 border-b border-border bg-muted/30 flex items-center gap-1.5">
+            {/* Oportunidades SEM campanha */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="px-3 py-1.5 border-b border-border flex items-center justify-center gap-1">
                 <Sparkles className="h-3 w-3 text-orange-500 flex-shrink-0" />
-                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wide">Oportunidades</span>
+                <span className="text-[10px] font-bold text-orange-500 leading-tight text-center">TOP **SEM** Campanha<br/>(Oportunidades)</span>
               </div>
-              <div className="divide-y divide-border/50">
-                {sectionDetail.noCampaign.slice(0, 8).map((p) => (
-                  <div key={p.id} className="px-3 py-2 flex items-center justify-between gap-1 hover:bg-muted/30">
+              <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+                {panelData.noCampaign.slice(0, 10).map((p) => (
+                  <div key={p.id} className="px-3 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold text-orange-500 leading-tight truncate">{short(p.name)}</p>
                       <p className="text-[9px] text-muted-foreground">{fmtFull(p.sales * p.price * p.margin)}</p>
@@ -499,14 +456,62 @@ export default function WeeklyComparison() {
                     <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
                   </div>
                 ))}
-                {sectionDetail.noCampaign.length === 0 && (
+                {panelData.noCampaign.length === 0 && (
                   <p className="text-[10px] text-muted-foreground px-3 py-4 text-center">Sem oportunidades</p>
                 )}
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+          BLOCO 2: Area Chart — Faturamento/Volume/Rentabilidade por categoria
+          ══════════════════════════════════════════════════════ */}
+      <div className="border-b border-border p-3">
+        <p className="text-[11px] font-semibold text-muted-foreground text-center mb-2">
+          Faturamento, volume e rentabilidade (c/sellout) por categorias
+        </p>
+        <ResponsiveContainer width="100%" height={220}>
+          <AreaChart data={areaData} margin={{ top: 5, right: 5, left: 0, bottom: 50 }}>
+            <defs>
+              <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="gVol" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="gRent" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="section"
+              tick={{ fontSize: 9.5, fill: "hsl(var(--muted-foreground))" }}
+              angle={-40}
+              textAnchor="end"
+              interval={0}
+              height={55}
+            />
+            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={38} />
+            <Tooltip content={<AreaTooltip />} />
+            <Legend
+              wrapperStyle={{ fontSize: 10, paddingTop: 0 }}
+              formatter={(v) =>
+                v === "faturamento" ? "Faturamento" :
+                v === "volume" ? "Volume" : "Rentabilidade c/ Sellout"
+              }
+            />
+            <Area type="monotone" dataKey="faturamento" name="faturamento" stroke="#3b82f6" fill="url(#gFat)" strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="volume" name="volume" stroke="#f97316" fill="url(#gVol)" strokeWidth={1.5} dot={false} />
+            <Area type="monotone" dataKey="rentabilidade" name="rentabilidade" stroke="#22c55e" fill="url(#gRent)" strokeWidth={1.5} dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* ════════════════════════════════════════════════════════
           BLOCO 3: Grade de 7 dias com barras horizontais
@@ -520,23 +525,14 @@ export default function WeeklyComparison() {
             const maxVal = items[0]?.revenue ?? 1;
             return (
               <div key={day} className="flex flex-col">
-                {/* Day header */}
-                <div
-                  className={cn(
-                    "px-2 py-2 text-center border-b border-border",
-                    isWeekend ? "bg-red-50 dark:bg-red-950/20" : "bg-blue-50 dark:bg-blue-950/20"
-                  )}
-                >
-                  <span
-                    className="text-[11px] font-bold"
-                    style={{ color: barColor }}
-                  >
-                    {fullDay}
-                  </span>
+                <div className={cn(
+                  "px-2 py-2 text-center border-b border-border",
+                  isWeekend ? "bg-red-50 dark:bg-red-950/20" : "bg-blue-50 dark:bg-blue-950/20"
+                )}>
+                  <span className="text-[11px] font-bold" style={{ color: barColor }}>{fullDay}</span>
                 </div>
-                {/* Rows with horizontal bars */}
                 <div className="flex-1 divide-y divide-border/40">
-                  {items.slice(0, 9).map((item, idx) => {
+                  {items.slice(0, 9).map((item) => {
                     const pct = Math.round((item.revenue / maxVal) * 100);
                     return (
                       <button
@@ -551,16 +547,10 @@ export default function WeeklyComparison() {
                           {item.section}
                         </span>
                         <div className="flex-1 flex items-center gap-1 min-w-0">
-                          <div className="flex-1 h-4 bg-muted/50 rounded-sm overflow-hidden relative">
-                            <div
-                              className="h-full rounded-sm transition-all"
-                              style={{ width: `${pct}%`, background: barColor }}
-                            />
+                          <div className="flex-1 h-4 bg-muted/50 rounded-sm overflow-hidden">
+                            <div className="h-full rounded-sm transition-all" style={{ width: `${pct}%`, background: barColor }} />
                           </div>
-                          <span
-                            className="text-[9px] font-bold shrink-0 tabular-nums"
-                            style={{ color: barColor }}
-                          >
+                          <span className="text-[9px] font-bold shrink-0 tabular-nums" style={{ color: barColor }}>
                             {fmtM(item.revenue)}
                           </span>
                         </div>
@@ -582,10 +572,7 @@ export default function WeeklyComparison() {
           Participação em faturamento por categoria e dia da semana (Acumulado Rede)
         </p>
         <ResponsiveContainer width="100%" height={280}>
-          <BarChart
-            data={stackedData}
-            margin={{ top: 5, right: 20, left: 10, bottom: 60 }}
-          >
+          <BarChart data={stackedData} margin={{ top: 5, right: 20, left: 10, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
               dataKey="section"
