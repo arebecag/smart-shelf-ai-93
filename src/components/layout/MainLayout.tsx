@@ -31,14 +31,14 @@ export function MainLayout({ children }: MainLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { approvals } = useApprovals();
-  const { simulatorQueue } = useSimulator();
+  const { queue: simulatorQueue } = useSimulator();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
 
   const activeTab = PRIMARY_TABS.find(t => location.pathname.startsWith(t.path))?.path
     ?? (location.pathname === "/" ? "/sugestao" : null);
 
-  const pendingApprovals = approvals.filter(a => a.status === "pending").length;
+  const pendingApprovals = approvals.length;
   const simulatorCount = simulatorQueue.length;
 
   return (

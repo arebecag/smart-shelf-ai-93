@@ -21,7 +21,7 @@ type TabId = typeof TABS[number]["id"];
 export default function Suggestions() {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const { approvals } = useApprovals();
-  const pendingCount = approvals.filter(a => a.status === "pending").length;
+  const pendingCount = approvals.length;
 
   return (
     <div className="space-y-5">
