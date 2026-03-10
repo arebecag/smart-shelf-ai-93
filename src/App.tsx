@@ -2,24 +2,19 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { ApprovalsProvider } from "@/contexts/ApprovalsContext";
 import { SimulatorProvider } from "@/contexts/SimulatorContext";
 import { MainLayout } from "@/components/layout/MainLayout";
-import Index from "./pages/Index";
+import Suggestions from "./pages/Suggestions";
 import WeeklyComparison from "./pages/WeeklyComparison";
-import SearchProducts from "./pages/SearchProducts";
-import Favorites from "./pages/Favorites";
-import Compare from "./pages/Compare";
+import Simulator from "./pages/Simulator";
+import TVPresentation from "./pages/TVPresentation";
 import Statistics from "./pages/Statistics";
 import History from "./pages/History";
-import Approvals from "./pages/Approvals";
-import TVPresentation from "./pages/TVPresentation";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
-import AIAssistant from "./pages/AIAssistant";
-import Simulator from "./pages/Simulator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,19 +30,21 @@ const App = () => (
             <BrowserRouter>
               <MainLayout>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/sugestao" element={<Suggestions />} />
                   <Route path="/semanal" element={<WeeklyComparison />} />
-                  <Route path="/buscar" element={<SearchProducts />} />
-                  <Route path="/favoritos" element={<Favorites />} />
-                  <Route path="/comparar" element={<Compare />} />
-                  <Route path="/aprovacoes" element={<Approvals />} />
+                  <Route path="/simulador" element={<Simulator />} />
                   <Route path="/tv" element={<TVPresentation />} />
                   <Route path="/estatisticas" element={<Statistics />} />
                   <Route path="/historico" element={<History />} />
                   <Route path="/configuracoes" element={<Settings />} />
                   <Route path="/ajuda" element={<Help />} />
-                  <Route path="/assistente" element={<AIAssistant />} />
-                  <Route path="/simulador" element={<Simulator />} />
+                  {/* Legacy redirects */}
+                  <Route path="/buscar" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/favoritos" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/comparar" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/aprovacoes" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/assistente" element={<Navigate to="/sugestao" replace />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </MainLayout>
