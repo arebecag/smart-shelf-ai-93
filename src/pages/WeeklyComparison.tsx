@@ -402,8 +402,6 @@ export default function WeeklyComparison() {
                     name: p.name,
                     value: fmtR(p.sales * p.price),
                   }))}
-                  onSuggest={() => {}}
-                  onSimulate={() => {}}
                 />
                 <ProductColumn
                   title="Volume"
@@ -412,8 +410,6 @@ export default function WeeklyComparison() {
                     name: p.name,
                     value: fmt(p.sales),
                   }))}
-                  onSuggest={() => {}}
-                  onSimulate={() => {}}
                 />
                 <ProductColumn
                   title="Rentab. c/ Sellout"
@@ -422,8 +418,6 @@ export default function WeeklyComparison() {
                     name: p.name,
                     value: fmtR(p.sales * p.price * p.margin),
                   }))}
-                  onSuggest={() => {}}
-                  onSimulate={() => {}}
                 />
               </div>
 
