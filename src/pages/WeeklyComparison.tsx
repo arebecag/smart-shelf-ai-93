@@ -71,9 +71,10 @@ const DAY_COLORS: Record<string, string> = {
   "Qui": "#1e3a8a", "Sex": "#be123c", "Sáb": "#9f1239", "Dom": "#7f1d1d",
 };
 
-// Stacked chart day colors matching reference
-const STACK_COLORS = [
-  "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6", "#ef4444", "#dc2626", "#991b1b"
+// Stacked chart section colors
+const SECTION_COLORS = [
+  "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6",
+  "#1d4ed8", "#fb923c", "#ef4444", "#dc2626"
 ];
 
 function getSectionRevenue(section: string, dayShort: string): number {
@@ -153,15 +154,15 @@ function buildDayGrid() {
 }
 
 function buildStackedData() {
-  // Participation % per section per day
-  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
-    const row: Record<string, any> = { section: section.slice(0, 12) };
-    for (const day of DAYS_SHORT) {
-      const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
-        (s, sec) => s + getSectionRevenue(sec, day), 0
-      );
+  // Participation % per day — each row is a day, columns are sections
+  return DAYS_SHORT.map(day => {
+    const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
+      (s, sec) => s + getSectionRevenue(sec, day), 0
+    );
+    const row: Record<string, any> = { day };
+    for (const section of Object.keys(PRODUCT_SECTION_MAP)) {
       const val = getSectionRevenue(section, day);
-      row[day] = total > 0 ? Math.round((val / total) * 100) : 0;
+      row[section] = total > 0 ? Math.round((val / total) * 100) : 0;
     }
     return row;
   });
@@ -577,27 +578,32 @@ export default function WeeklyComparison() {
           BLOCO 4: Stacked Bar — Participação por dia da semana
           ══════════════════════════════════════════════════════ */}
       <div className="border-b border-border p-3">
-        <p className="text-[11px] font-semibold text-muted-foreground text-center mb-2">
+        <p className="text-[11px] font-semibold text-muted-foreground text-center mb-3">
           Participação em faturamento por categoria e dia da semana (Acumulado Rede)
         </p>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={280}>
           <BarChart
             data={stackedData}
-            margin={{ top: 5, right: 20, left: 0, bottom: 55 }}
+            margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
-              dataKey="section"
-              tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-              angle={-40}
-              textAnchor="end"
-              interval={0}
-              height={60}
+              dataKey="day"
+              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+              tickFormatter={(v) => {
+                const map: Record<string, string> = {
+                  "Seg": "1.Segunda-Feira", "Ter": "2.Terça-Feira", "Qua": "3.Quarta-Feira",
+                  "Qui": "4.Quinta-Feira", "Sex": "5.Sexta-Feira", "Sáb": "6.Sábado", "Dom": "7.Domingo"
+                };
+                return map[v] ?? v;
+              }}
+              height={30}
             />
             <YAxis
               tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-              width={28}
+              width={32}
               tickFormatter={(v) => `${v}%`}
+              domain={[0, 100]}
             />
             <Tooltip
               contentStyle={{
@@ -610,27 +616,16 @@ export default function WeeklyComparison() {
             />
             <Legend
               wrapperStyle={{ fontSize: 10 }}
-              formatter={(v, entry: any) => {
-                const dayFullMap: Record<string, string> = {
-                  "Seg": "1.Segunda-Feira", "Ter": "2.Terça-Feira", "Qua": "3.Quarta-Feira",
-                  "Qui": "4.Quinta-Feira", "Sex": "5.Sexta-Feira", "Sáb": "6.Sabado", "Dom": "7.Domingo"
-                };
-                return dayFullMap[v] ?? v;
-              }}
+              iconSize={10}
+              iconType="square"
             />
-            {DAYS_SHORT.map((day, i) => (
+            {Object.keys(PRODUCT_SECTION_MAP).map((section, i) => (
               <Bar
-                key={day}
-                dataKey={day}
+                key={section}
+                dataKey={section}
                 stackId="a"
-                fill={STACK_COLORS[i]}
-                label={{
-                  position: "center",
-                  fontSize: 8,
-                  fill: i <= 3 ? "#1e40af" : "#7f1d1d",
-                  formatter: (v: number) => v >= 8 ? `${v}%` : "",
-                }}
-                radius={i === DAYS_SHORT.length - 1 ? [2, 2, 0, 0] : undefined}
+                fill={SECTION_COLORS[i % SECTION_COLORS.length]}
+                radius={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? [3, 3, 0, 0] : undefined}
               />
             ))}
           </BarChart>
