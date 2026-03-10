@@ -1,88 +1,35 @@
 
-## Understanding the request
+## Plan
 
-The user sketched a UI where:
-- The **sidebar is removed** (or minimized)
-- **3 big tabs at the top** replace the sidebar navigation: `Semanal` | `Simulador` | `Sugestão`
-- Each tab opens its respective full-screen view
-- The Weekly tab should look like the reference dashboard image (faturamento/volume/rentabilidade by category with day-of-week breakdown)
-- Everything is inside a single unified shell — no left sidebar cluttering
+### 1. WeeklyComparison — "Melhores por Seção/Dia" + Cruzamento com Dashboard
 
-## What to build
+**New section: "Sugestão de Produtos por Dia e Seção"**
 
-### New top-level shell: `MainLayout.tsx`
-Replace the sidebar-based layout with a **top navigation bar** approach:
-- Logo (Condor) on the left
-- **3 primary tab buttons** in the center/top: `Semanal`, `Simulador`, `Sugestão`  
-- Secondary utility links on the right (Configurações, Ajuda, TV)
-- No sidebar at all (remove `AppSidebar`)
-- Routes remain the same, but the "main 3" tabs are the primary entry points
+- Add a tab layout at the top: `Comparativo` | `Sugestões por Dia`
+- In the **Sugestões por Dia** tab:
+  - For each day of the week, show a row/card with the **top 2 products per section** (Cervejas, Refrigerantes, Laticínios, Energéticos) ranked by simulated sales for that day
+  - At the bottom, a **"Adicionar ao Dashboard"** button per product that opens a toast saying "Produto X adicionado como sugestão"
+  - A **"Sugestões Inteligentes"** panel that picks the top product per section with the highest weekly sales average, with a CTA to send to approvals
+- The cross with Dashboard: use `useApprovals` context — clicking "Sugerir para Tabloide" on a weekly suggestion card calls `addApproval(product)` so it flows directly to the approval screen and TV Presentation
 
-### Tab structure (based on sketch)
+### 2. TVPresentation — Editable prices + Observations + Larger font
 
-```text
-┌─────────────────────────────────────────────────┐
-│  [Logo Condor]  [Semanal] [Simulador] [Sugestão] │  ← top bar
-│──────────────────────────────────────────────────│
-│                                                  │
-│  [Content of selected tab fills this area]       │
-│                                                  │
-└─────────────────────────────────────────────────┘
-```
+**Editable fields:**
+- Add `editedData` state: `Record<productId, Record<storeId, { price: string, obs: string }>>` 
+- Replace static price cells with `<input>` fields (inline, borderless style matching the table) when in edit mode
+- Toggle button "Editar / Visualizar" in the toolbar
+- Margin auto-recalculates based on typed price vs cost
 
-### Tab 1 — "Semanal" (`/semanal`)
-Redesign WeeklyComparison to match the reference BI screenshot:
-- **Top area**: Area chart "Faturamento, volume e rentabilidade por categorias" (line/area chart)
-- **Middle**: Day-of-week grid showing top categories per day with faturamento values (7 columns Mon-Sun)
-- **Bottom**: Participation charts (stacked bar per category per day)
-- Keep the existing scoring/suggestion logic, just re-layout it
+**Observations column:**
+- Add an `Obs.` column after Score IA
+- When in edit mode, shows a small `<textarea>` or `<input>` for each row
+- Saved in local state, appears on print
 
-### Tab 2 — "Simulador" (`/simulador`)
-The existing Simulator page stays as-is — already well built.
+**Larger text:**
+- Increase base table font from `text-[11px]` to `text-[13px]`
+- Increase product image from `w-8 h-8` to `w-10 h-10`
+- Header row padding increased slightly
 
-### Tab 3 — "Sugestão" (new composite page or `/`)
-This tab becomes a hub with its own internal sub-navigation:
-- Dashboard (current `/`)
-- Buscar Produtos (`/buscar`)  
-- Assistente IA (`/assistente`)
-- Comparar (`/comparar`)
-- Favoritos + Aprovações
-
-Secondary pages (TV, Estatísticas, Histórico, Config, Ajuda) accessible via top-right utility area.
-
-## Implementation plan
-
-### 1. New `MainLayout.tsx`
-- Remove `SidebarProvider` / `AppSidebar`
-- Add a fixed top header bar with:
-  - Condor logo (left)
-  - 3 primary nav tabs: Semanal / Simulador / Sugestão (center, styled as large pill tabs)
-  - Secondary icon buttons: TV, Estatísticas, Histórico, Config, Ajuda (right side)
-- Use `useLocation` + `NavLink` so active tab is highlighted
-- Responsive: on mobile collapse secondary icons into a dropdown
-
-### 2. Revamp `WeeklyComparison.tsx` to match BI reference
-- **Top section**: `AreaChart` (recharts) — Faturamento + Volume + Rentabilidade by section (x-axis = sections)
-- **Right side of top**: ranked lists for Faturamento, Volume, Rentabilidade, Margem
-- **Middle section**: 7-column day grid — each day shows top sections ordered by estimated faturamento with value chips
-- Keep existing day-boost logic to power the day grid
-- **Bottom**: `BarChart` stacked — participation per category per day (% or R$)
-
-### 3. New "Sugestão" hub page (`src/pages/Suggestions.tsx`)
-- Route: `/` becomes this hub
-- Internal tabs: "Dashboard" | "Buscar" | "Assistente IA" | "Comparar" | "Aprovações"
-- This consolidates the discovery/approval workflow into one tabbed page
-
-### 4. Update `App.tsx` routes
-- `/` → new Suggestions hub
-- `/semanal` → redesigned WeeklyComparison
-- `/simulador` → existing Simulator
-- Keep all other routes for secondary pages
-
-### Files to change
-- `src/components/layout/MainLayout.tsx` — full rewrite (top nav, no sidebar)
-- `src/components/layout/AppSidebar.tsx` — no longer needed (can keep but unused)
-- `src/pages/WeeklyComparison.tsx` — redesign layout to match BI screenshot
-- `src/pages/Index.tsx` — redirect to new Suggestions hub
-- `src/App.tsx` — add Suggestions route, update layout
-- `src/pages/Suggestions.tsx` — new file, tabbed hub for Sugestão section
+### Files to edit
+- `src/pages/WeeklyComparison.tsx` — add tabs, sugestões por dia/seção, integration with ApprovalsContext
+- `src/pages/TVPresentation.tsx` — editable price inputs, obs column, larger font
