@@ -253,8 +253,8 @@ export const FilterPanel = ({ filters, onFiltersChange, onSearch }: FilterPanelP
 
         <div className="flex justify-end">
           <Button type="submit" className="gradient-primary text-primary-foreground font-semibold h-10 px-8">
-            <Search className="w-4 h-4 mr-2" />
-            Buscar Produtos
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Aplicar Filtros
           </Button>
         </div>
       </form>
