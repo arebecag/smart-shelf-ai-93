@@ -153,15 +153,15 @@ function buildDayGrid() {
 }
 
 function buildStackedData() {
-  // Participation % per section per day
-  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
-    const row: Record<string, any> = { section: section.slice(0, 12) };
-    for (const day of DAYS_SHORT) {
-      const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
-        (s, sec) => s + getSectionRevenue(sec, day), 0
-      );
+  // Participation % per day — each row is a day, columns are sections
+  return DAYS_SHORT.map(day => {
+    const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
+      (s, sec) => s + getSectionRevenue(sec, day), 0
+    );
+    const row: Record<string, any> = { day };
+    for (const section of Object.keys(PRODUCT_SECTION_MAP)) {
       const val = getSectionRevenue(section, day);
-      row[day] = total > 0 ? Math.round((val / total) * 100) : 0;
+      row[section] = total > 0 ? Math.round((val / total) * 100) : 0;
     }
     return row;
   });
