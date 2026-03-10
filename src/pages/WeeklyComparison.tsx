@@ -1,22 +1,21 @@
 import { useState, useMemo } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer, LineChart, Line,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { mockHistory, mockProductGroups } from "@/data/mockData";
 import {
-  TrendingUp, TrendingDown, Calendar, BarChart3, Lightbulb,
-  Star, Send, Flame, DollarSign, Zap, History, Award, ChevronRight
+  TrendingUp, TrendingDown, Calendar, Flame, DollarSign,
+  Zap, History, Award, Send, Star, ChevronUp, ChevronDown
 } from "lucide-react";
 import { useApprovals } from "@/contexts/ApprovalsContext";
 import { useSimulator } from "@/contexts/SimulatorContext";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/types/product";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 // ── Seções ────────────────────────────────────────────────
 const SECTION_MAP: Record<string, string[]> = {
@@ -39,19 +38,28 @@ const SECTION_COLORS: Record<string, string> = {
   "Água":          "hsl(var(--chart-2))",
 };
 
+const SECTION_BG: Record<string, string> = {
+  "Cervejas":      "bg-blue-50 border-blue-200",
+  "Refrigerantes": "bg-green-50 border-green-200",
+  "Laticínios":    "bg-yellow-50 border-yellow-200",
+  "Energéticos":   "bg-purple-50 border-purple-200",
+  "Açougue":       "bg-red-50 border-red-200",
+  "Padaria":       "bg-orange-50 border-orange-200",
+  "Água":          "bg-sky-50 border-sky-200",
+};
+
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 const DAY_CONTEXTS: Record<string, string> = {
-  "Seg": "Reposição pós-fds • foco em básicos",
-  "Ter": "Giro médio • boa margem",
-  "Qua": "Pico mid-week • impulso promoções",
-  "Qui": "Antecipa fds • destaque premium",
-  "Sex": "Alta demanda • bebidas e frios",
-  "Sáb": "Pico de vendas • tudo vende",
-  "Dom": "Família em casa • laticínios e bebidas",
+  "Seg": "Reposição pós-fds",
+  "Ter": "Giro médio",
+  "Qua": "Pico mid-week",
+  "Qui": "Antecipa fds",
+  "Sex": "Alta demanda",
+  "Sáb": "Pico de vendas 🔥",
+  "Dom": "Família em casa 🔥",
 };
 
-// Seção mais adequada por dia (baseado em padrão de consumo real)
 const DAY_SECTION_BOOST: Record<string, string[]> = {
   "Seg": ["Laticínios", "Padaria"],
   "Ter": ["Refrigerantes", "Água"],
@@ -62,17 +70,21 @@ const DAY_SECTION_BOOST: Record<string, string[]> = {
   "Dom": ["Laticínios", "Padaria", "Refrigerantes"],
 };
 
-// ── Lógica de análise histórica ───────────────────────────
+// Revenue multiplier per day (relative to average)
+const DAY_REVENUE_MULT: Record<string, number> = {
+  "Seg": 0.65, "Ter": 0.72, "Qua": 0.80, "Qui": 0.85,
+  "Sex": 1.20, "Sáb": 1.55, "Dom": 1.23,
+};
 
 interface ProductStats {
   product: Product;
   section: string;
-  appearances: number;           // quantas vezes apareceu no histórico
+  appearances: number;
   avgMargin: number;
   totalSales: number;
   campaigns: string[];
   lastSeen: string;
-  score: number;                 // score composto calculado
+  score: number;
 }
 
 function getSectionForGroupId(groupId: string): string {
@@ -83,23 +95,17 @@ function getSectionForGroupId(groupId: string): string {
 }
 
 function buildProductStats(): ProductStats[] {
-  // Mapa: productId → acumuladores
   const statsMap: Record<string, {
     product: Product; section: string; appearances: number;
     marginSum: number; campaigns: string[]; dates: string[];
   }> = {};
 
-  // Percorre histórico
   for (const histItem of mockHistory) {
     for (const product of histItem.products) {
       if (!statsMap[product.id]) {
-        // Descobre seção pelo groupId
         const group = mockProductGroups.find(g => g.products.some(p => p.id === product.id));
         const section = group ? getSectionForGroupId(group.id) : "Outros";
-        statsMap[product.id] = {
-          product, section, appearances: 0,
-          marginSum: 0, campaigns: [], dates: [],
-        };
+        statsMap[product.id] = { product, section, appearances: 0, marginSum: 0, campaigns: [], dates: [] };
       }
       statsMap[product.id].appearances += 1;
       statsMap[product.id].marginSum += product.margin;
@@ -112,35 +118,22 @@ function buildProductStats(): ProductStats[] {
   return Object.values(statsMap).map(s => {
     const avgMargin = s.marginSum / s.appearances;
     const lastSeen = s.dates.sort().reverse()[0];
-    // Score composto: frequência 30% + margem 30% + vendas base 20% + crescimento 20%
     const freqScore  = Math.min(1, s.appearances / mockHistory.length) * 30;
     const marginScore = Math.min(1, avgMargin / 0.40) * 30;
     const salesScore  = Math.min(1, s.product.sales / 4000) * 20;
     const growthScore = Math.min(1, s.product.growth / 0.30) * 20;
     const score = Math.round(freqScore + marginScore + salesScore + growthScore);
-    return {
-      product: s.product, section: s.section,
-      appearances: s.appearances, avgMargin,
-      totalSales: s.product.sales, campaigns: s.campaigns,
-      lastSeen, score,
-    };
+    return { product: s.product, section: s.section, appearances: s.appearances, avgMargin, totalSales: s.product.sales, campaigns: s.campaigns, lastSeen, score };
   }).sort((a, b) => b.score - a.score);
 }
 
-// Top N por seção
-function topBySection(stats: ProductStats[], section: string, n = 3): ProductStats[] {
-  return stats.filter(s => s.section === section).slice(0, n);
-}
-
-// Produto destaque do dia: cruza boosted sections com melhor score
-function getDayHighlights(stats: ProductStats[], day: string, perSection = 4) {
+function getDayHighlights(stats: ProductStats[], day: string, perSection = 3) {
   const boosted = DAY_SECTION_BOOST[day] || [];
   const result: { section: string; items: ProductStats[] }[] = [];
   for (const section of boosted) {
     const items = stats
       .filter(s => s.section === section)
       .sort((a, b) => {
-        // Day-specific boost: sales + growth weighted by day pattern
         const isWeekend = day === "Sáb" || day === "Dom";
         const salesW = isWeekend ? 1.4 : 1;
         return (b.totalSales * salesW + b.score * 2) - (a.totalSales * salesW + a.score * 2);
@@ -151,31 +144,54 @@ function getDayHighlights(stats: ProductStats[], day: string, perSection = 4) {
   return result;
 }
 
-// Histórico semanal para gráfico — agrega vendas por seção ao longo dos tabloides
-function buildWeeklyChartData() {
-  return mockHistory.map(h => {
-    const row: Record<string, any> = {
-      name: h.name.split(" ").slice(0, 2).join(" "),
-      score: h.avgScore,
-      margem: Math.round(h.avgMargin * 100),
-      produtos: h.products.length,
-    };
+// ── Chart data builders ─────────────────────────────────
+function buildSectionAreaData() {
+  return Object.keys(SECTION_MAP).map(section => {
+    const group = mockProductGroups.find(g => SECTION_MAP[section].includes(g.id));
+    if (!group) return { section, faturamento: 0, volume: 0, rentabilidade: 0 };
+    const totalSales = group.products.reduce((s, p) => s + p.sales, 0);
+    const avgMargin = group.products.reduce((s, p) => s + p.margin, 0) / group.products.length;
+    const avgPrice = group.products.reduce((s, p) => s + p.price, 0) / group.products.length;
+    const faturamento = Math.round(totalSales * avgPrice / 100);
+    const rentabilidade = Math.round(faturamento * avgMargin);
+    return { section: section.slice(0, 6), faturamento, volume: totalSales, rentabilidade };
+  });
+}
+
+function buildDayBarData() {
+  return DAYS.map(day => {
+    const mult = DAY_REVENUE_MULT[day];
+    const row: Record<string, any> = { day };
     for (const section of Object.keys(SECTION_MAP)) {
-      const group = mockProductGroups.find(g =>
-        SECTION_MAP[section].includes(g.id)
-      );
-      const count = group
-        ? h.products.filter(p => group.products.some(gp => gp.id === p.id)).length
-        : 0;
-      row[section] = count;
+      const group = mockProductGroups.find(g => SECTION_MAP[section].includes(g.id));
+      const base = group ? group.products.reduce((s, p) => s + p.sales * p.price, 0) / 100 : 0;
+      const boosted = (DAY_SECTION_BOOST[day] || []).includes(section) ? 1.3 : 0.7;
+      row[section] = Math.round(base * mult * boosted);
     }
     return row;
   });
 }
 
+// ── Ranking metrics ─────────────────────────────────────
+function buildRankings() {
+  return Object.keys(SECTION_MAP).map(section => {
+    const group = mockProductGroups.find(g => SECTION_MAP[section].includes(g.id));
+    if (!group) return { section, faturamento: 0, volume: 0, margem: 0 };
+    const totalSales = group.products.reduce((s, p) => s + p.sales, 0);
+    const avgMargin = group.products.reduce((s, p) => s + p.margin, 0) / group.products.length;
+    const avgPrice = group.products.reduce((s, p) => s + p.price, 0) / group.products.length;
+    return {
+      section,
+      faturamento: Math.round(totalSales * avgPrice / 100),
+      volume: totalSales,
+      margem: Math.round(avgMargin * 100),
+    };
+  });
+}
+
 const shortName = (name: string) => name.split(" ").slice(0, 3).join(" ");
 
-// ── Componente ────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────
 export default function WeeklyComparison() {
   const [selectedDay, setSelectedDay] = useState<string>("Sex");
   const { approveProduct, isApproved } = useApprovals();
@@ -184,377 +200,314 @@ export default function WeeklyComparison() {
   const navigate = useNavigate();
 
   const allStats = useMemo(() => buildProductStats(), []);
-  const chartData = useMemo(() => buildWeeklyChartData(), []);
+  const sectionAreaData = useMemo(() => buildSectionAreaData(), []);
+  const dayBarData = useMemo(() => buildDayBarData(), []);
+  const rankings = useMemo(() => buildRankings(), []);
   const dayHighlights = useMemo(() => getDayHighlights(allStats, selectedDay), [allStats, selectedDay]);
+
+  const sortedByFat = [...rankings].sort((a, b) => b.faturamento - a.faturamento);
+  const sortedByVol = [...rankings].sort((a, b) => b.volume - a.volume);
+  const sortedByMarg = [...rankings].sort((a, b) => b.margem - a.margem);
 
   const handleSuggest = (product: Product) => {
     approveProduct(product);
-    toast({
-      title: "Produto sugerido para tabloide!",
-      description: `${product.name} adicionado ao fluxo de aprovação.`,
-    });
+    toast({ title: "Sugerido para tabloide!", description: `${product.name} adicionado à fila de aprovação.` });
   };
 
   const handleAddToSimulator = (product: Product) => {
     addToSimulator(product);
     toast({
       title: "Adicionado ao Simulador!",
-      description: `${product.name} está pronto para simulação de preço.`,
-      action: <button
-        onClick={() => navigate("/simulador")}
-        className="text-xs underline font-semibold"
-      >Ver Simulador</button>,
+      description: `${product.name} pronto para simulação.`,
+      action: <button onClick={() => navigate("/simulador")} className="text-xs underline font-semibold">Ver Simulador</button>,
     });
   };
 
-  // Seções com pelo menos 1 produto no histórico
-  const activeSections = Object.keys(SECTION_MAP).filter(
-    s => allStats.some(st => st.section === s)
-  );
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Calendar className="h-6 w-6 text-primary" />
-          Comparativo Semanal
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Sugestões automáticas baseadas no histórico real de {mockHistory.length} tabloides
-        </p>
-      </div>
-
-      {/* Resumo rápido do histórico */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10"><History className="h-4 w-4 text-primary" /></div>
-            <div>
-              <p className="text-xl font-bold">{mockHistory.length}</p>
-              <p className="text-[11px] text-muted-foreground">Tabloides analisados</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-100"><Flame className="h-4 w-4 text-orange-500" /></div>
-            <div>
-              <p className="text-xl font-bold">{allStats.length}</p>
-              <p className="text-[11px] text-muted-foreground">Produtos no histórico</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-100"><DollarSign className="h-4 w-4 text-green-600" /></div>
-            <div>
-              <p className="text-xl font-bold">{Math.round(allStats.reduce((a, s) => a + s.avgMargin, 0) / (allStats.length || 1) * 100)}%</p>
-              <p className="text-[11px] text-muted-foreground">Margem média histórica</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-100"><Zap className="h-4 w-4 text-blue-600" /></div>
-            <div>
-              <p className="text-xl font-bold">{allStats[0]?.score ?? 0}</p>
-              <p className="text-[11px] text-muted-foreground">Maior score composto</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="sugestoes">
-        <TabsList>
-          <TabsTrigger value="sugestoes"><Lightbulb className="h-4 w-4 mr-1" />Sugestões por Dia</TabsTrigger>
-          <TabsTrigger value="ranking"><Award className="h-4 w-4 mr-1" />Ranking por Seção</TabsTrigger>
-          <TabsTrigger value="historico"><BarChart3 className="h-4 w-4 mr-1" />Evolução Histórica</TabsTrigger>
-        </TabsList>
-
-        {/* ── ABA: SUGESTÕES POR DIA ─────────────────────── */}
-        <TabsContent value="sugestoes" className="space-y-5 mt-4">
-          <p className="text-sm text-muted-foreground">
-            Produtos com maior recorrência, margem e volume de vendas nos tabloides anteriores — priorizados conforme o padrão de consumo do dia.
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Calendar className="h-6 w-6 text-primary" />
+            Comparativo Semanal
+          </h1>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            Análise baseada em {mockHistory.length} tabloides históricos
           </p>
-
-          {/* Seletor de dia */}
-          <div className="flex flex-wrap gap-2">
-            {DAYS.map(day => (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-                  selectedDay === day
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                }`}
-              >
-                <span>{day}</span>
-                {(day === "Sáb" || day === "Dom") && (
-                  <span className="ml-1.5 text-[10px] opacity-70">🔥</span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Contexto do dia */}
-          <div className="bg-primary/5 border border-primary/15 rounded-xl px-4 py-3 flex items-center gap-3">
-            <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
-            <div>
-              <span className="font-semibold text-sm text-foreground">{selectedDay} — </span>
-              <span className="text-sm text-muted-foreground">{DAY_CONTEXTS[selectedDay]}</span>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { icon: History, label: `${mockHistory.length} Tabloides`, color: "text-primary" },
+            { icon: Flame, label: `${allStats.length} Produtos`, color: "text-orange-500" },
+            { icon: DollarSign, label: `${Math.round(allStats.reduce((a, s) => a + s.avgMargin, 0) / (allStats.length || 1) * 100)}% Margem`, color: "text-green-600" },
+          ].map(({ icon: Icon, label, color }) => (
+            <div key={label} className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-3 py-1.5 text-sm font-medium">
+              <Icon className={cn("h-4 w-4", color)} />
+              <span className="text-foreground">{label}</span>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          {/* Seções com destaque para o dia */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {dayHighlights.map(({ section, items }) => (
-              <Card key={section} className="overflow-hidden">
-                <CardHeader className="pb-2 pt-3 px-4 bg-muted/20 border-b border-border">
-                  <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: SECTION_COLORS[section] }} />
-                    {section}
-                    <Badge variant="secondary" className="text-[10px] ml-auto">destaque {selectedDay}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 space-y-2">
-                  {items.map((stat, rank) => {
-                    const already = isApproved(stat.product.id);
-                    return (
+      {/* ── Section 1: Area Chart + Rankings ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Area chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Faturamento · Volume · Rentabilidade por Seção
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={sectionAreaData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gRent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="section" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Area type="monotone" dataKey="faturamento" name="Faturamento (R$ 00)" stroke="hsl(var(--chart-1))" fill="url(#gFat)" strokeWidth={2} />
+                <Area type="monotone" dataKey="rentabilidade" name="Rentabilidade (R$ 00)" stroke="hsl(var(--chart-2))" fill="url(#gRent)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Rankings */}
+        <div className="space-y-3">
+          {[
+            { title: "Faturamento", data: sortedByFat, key: "faturamento" as const, prefix: "R$", icon: DollarSign, color: "text-blue-600" },
+            { title: "Volume", data: sortedByVol, key: "volume" as const, prefix: "", icon: TrendingUp, color: "text-green-600" },
+            { title: "Margem", data: sortedByMarg, key: "margem" as const, prefix: "", suffix: "%", icon: Award, color: "text-purple-600" },
+          ].map(({ title, data, key, prefix, suffix, icon: Icon, color }) => (
+            <Card key={title}>
+              <CardHeader className="pb-1 pt-3 px-4">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                  <Icon className={cn("h-3.5 w-3.5", color)} />
+                  {title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-3 space-y-1">
+                {data.slice(0, 4).map((r, i) => (
+                  <div key={r.section} className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-muted-foreground w-4">{i + 1}º</span>
+                    <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
                       <div
-                        key={stat.product.id}
-                        className={`flex items-center gap-3 rounded-lg p-2.5 ${rank === 0 ? "bg-primary/5 border border-primary/15" : "bg-muted/20"}`}
-                      >
-                        {/* Rank */}
-                        <div className="w-5 flex-shrink-0 text-center">
-                          {rank === 0
-                            ? <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-400 mx-auto" />
-                            : <span className="text-[10px] font-bold text-muted-foreground">{rank + 1}º</span>}
-                        </div>
+                        className="h-full rounded-full bg-primary/70"
+                        style={{ width: `${(r[key] / data[0][key]) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-semibold text-foreground w-14 text-right truncate">{r.section}</span>
+                    <span className="text-[10px] text-muted-foreground w-12 text-right">
+                      {prefix}{r[key].toLocaleString("pt-BR")}{suffix || ""}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
 
-                        <img
-                          src={stat.product.imageUrl}
-                          alt={stat.product.name}
-                          className="w-9 h-9 object-contain flex-shrink-0 rounded"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-foreground truncate">{shortName(stat.product.name)}</p>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-[10px] text-muted-foreground">
-                              {stat.appearances}x em tabloides
-                            </span>
-                            <span className="text-[10px] font-medium text-green-600">
-                              {Math.round(stat.avgMargin * 100)}% mg
-                            </span>
-                            <span className="text-[10px] font-medium text-primary">
-                              score {stat.score}
-                            </span>
-                          </div>
-                          <div className="flex gap-1 mt-1 flex-wrap">
-                            {stat.campaigns.map(c => (
-                              <span key={c} className="text-[9px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">{c}</span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                          <span className="text-xs font-bold text-foreground">R$ {stat.product.price.toFixed(2)}</span>
-                          <button
-                            onClick={() => handleSuggest(stat.product)}
-                            disabled={already}
-                            title={already ? "Já no tabloide" : "Sugerir para tabloide"}
-                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors font-medium ${
-                              already
-                                ? "border-green-400 text-green-600 bg-green-50 cursor-default"
-                                : "border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-                            }`}
-                          >
-                            {already ? "✓ No tabloide" : <><Send className="h-2.5 w-2.5" /> Sugerir</>}
-                          </button>
-                          <button
-                            onClick={() => handleAddToSimulator(stat.product)}
-                            disabled={isInSimulator(stat.product.id)}
-                            title="Simular preço"
-                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors font-medium ${
-                              isInSimulator(stat.product.id)
-                                ? "border-violet-300 text-violet-600 bg-violet-50 cursor-default"
-                                : "border-violet-300 text-violet-600 hover:bg-violet-600 hover:text-white"
-                            }`}
-                          >
-                            {isInSimulator(stat.product.id) ? "✓ Simulador" : <><Zap className="h-2.5 w-2.5" /> Simular</>}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {dayHighlights.length === 0 && (
-            <div className="bg-card rounded-xl border border-border p-10 text-center">
-              <Lightbulb className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">Nenhum destaque mapeado para este dia ainda.</p>
-            </div>
-          )}
-        </TabsContent>
-
-        {/* ── ABA: RANKING POR SEÇÃO ─────────────────────── */}
-        <TabsContent value="ranking" className="space-y-5 mt-4">
-          <p className="text-sm text-muted-foreground">
-            Produtos mais recorrentes e rentáveis por seção — calculados a partir dos tabloides históricos.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeSections.map(section => {
-              const top = topBySection(allStats, section, 6);
-              if (!top.length) return null;
+      {/* ── Section 2: Day Grid ── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Destaques por Dia da Semana
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="grid grid-cols-7 divide-x divide-border border-t border-border">
+            {DAYS.map(day => {
+              const isSelected = selectedDay === day;
+              const mult = DAY_REVENUE_MULT[day];
+              const boosted = DAY_SECTION_BOOST[day] || [];
               return (
-                <Card key={section}>
-                  <CardHeader className="pb-2 pt-3 px-4 border-b border-border">
-                    <CardTitle className="text-sm font-bold flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: SECTION_COLORS[section] }} />
-                      {section}
-                      <span className="ml-auto text-[11px] text-muted-foreground font-normal">{top.length} produtos</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 space-y-2">
-                    {top.map((stat, rank) => {
-                      const already = isApproved(stat.product.id);
-                      const scoreColor = stat.score >= 70 ? "text-green-600" : stat.score >= 50 ? "text-yellow-600" : "text-muted-foreground";
-                      return (
-                        <div key={stat.product.id} className="flex items-center gap-2 py-1.5 border-b border-border/50 last:border-0">
-                          <span className={`text-xs font-bold w-5 text-center ${rank === 0 ? "text-yellow-500" : "text-muted-foreground"}`}>
-                            {rank + 1}
-                          </span>
-                          <img
-                            src={stat.product.imageUrl}
-                            alt={stat.product.name}
-                            className="w-8 h-8 object-contain rounded flex-shrink-0"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-foreground truncate">{shortName(stat.product.name)}</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {stat.appearances}x · {Math.round(stat.avgMargin * 100)}%mg · R$ {stat.product.price.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <div className={`text-xs font-bold ${scoreColor}`}>{stat.score}pts</div>
-                            <button
-                              onClick={() => handleSuggest(stat.product)}
-                              disabled={already}
-                              className={`p-1 rounded-full transition-colors ${
-                                already ? "text-green-500 cursor-default" : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                              }`}
-                            >
-                              {already
-                                ? <span className="text-[10px]">✓</span>
-                                : <Send className="h-3 w-3" />}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </CardContent>
-                </Card>
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={cn(
+                    "flex flex-col p-3 text-left transition-colors hover:bg-muted/50 min-h-[160px]",
+                    isSelected && "bg-primary/5"
+                  )}
+                >
+                  {/* Day header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={cn("text-sm font-bold", isSelected ? "text-primary" : "text-foreground")}>
+                      {day}
+                    </span>
+                    {(day === "Sáb" || day === "Dom") && (
+                      <Flame className="h-3 w-3 text-orange-500" />
+                    )}
+                  </div>
+                  <p className="text-[9px] text-muted-foreground leading-tight mb-2">{DAY_CONTEXTS[day]}</p>
+
+                  {/* Revenue indicator */}
+                  <div className={cn(
+                    "text-[10px] font-semibold px-1.5 py-0.5 rounded mb-2",
+                    mult >= 1.3 ? "bg-green-100 text-green-700" :
+                    mult >= 1.0 ? "bg-blue-100 text-blue-700" :
+                    "bg-muted text-muted-foreground"
+                  )}>
+                    {mult >= 1.3 ? <ChevronUp className="h-2.5 w-2.5 inline" /> : mult < 0.75 ? <ChevronDown className="h-2.5 w-2.5 inline" /> : null}
+                    {(mult * 100).toFixed(0)}%
+                  </div>
+
+                  {/* Boosted sections */}
+                  <div className="space-y-1">
+                    {boosted.slice(0, 3).map(section => (
+                      <div
+                        key={section}
+                        className={cn("text-[9px] px-1.5 py-0.5 rounded border font-medium truncate", SECTION_BG[section] || "bg-muted")}
+                      >
+                        {section}
+                      </div>
+                    ))}
+                  </div>
+
+                  {isSelected && (
+                    <div className="mt-2 w-full h-0.5 rounded-full bg-primary" />
+                  )}
+                </button>
               );
             })}
           </div>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        {/* ── ABA: EVOLUÇÃO HISTÓRICA ────────────────────── */}
-        <TabsContent value="historico" className="space-y-5 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                Score e Margem por Tabloide
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
-                  <Legend wrapperStyle={{ fontSize: "12px" }} />
-                  <Line type="monotone" dataKey="score" name="Score Médio" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="margem" name="Margem %" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+      {/* ── Section 3: Selected Day Products ── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-base font-bold text-foreground">
+            Produtos em Destaque — {selectedDay}
+          </h2>
+          <Badge variant="secondary">{DAY_CONTEXTS[selectedDay]}</Badge>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-primary" />
-                Produtos por Seção em cada Tabloide
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={chartData} barCategoryGap="20%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
-                  <Legend wrapperStyle={{ fontSize: "12px" }} />
-                  {activeSections.map((section, i) => (
-                    <Bar key={section} dataKey={section} name={section} fill={SECTION_COLORS[section]} radius={[3, 3, 0, 0]} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {dayHighlights.map(({ section, items }) => (
+            <Card key={section} className="overflow-hidden">
+              <CardHeader className="pb-2 pt-3 px-4 bg-muted/30 border-b border-border">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: SECTION_COLORS[section] }} />
+                  {section}
+                  <Badge variant="secondary" className="text-[10px] ml-auto">destaque {selectedDay}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 space-y-2">
+                {items.map((stat, rank) => {
+                  const already = isApproved(stat.product.id);
+                  const inSim = isInSimulator(stat.product.id);
+                  return (
+                    <div
+                      key={stat.product.id}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg p-2.5 border",
+                        rank === 0 ? "bg-primary/5 border-primary/20" : "bg-muted/20 border-transparent"
+                      )}
+                    >
+                      <div className="w-5 flex-shrink-0 text-center">
+                        {rank === 0
+                          ? <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-400 mx-auto" />
+                          : <span className="text-[10px] font-bold text-muted-foreground">{rank + 1}º</span>}
+                      </div>
 
-          {/* Tabela de histórico resumida */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Tabloides Analisados</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/40 border-b border-border">
-                    <tr>
-                      <th className="text-left p-3 font-medium text-muted-foreground">Tabloide</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">Campanha</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">Produtos</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">Score</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">Margem</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockHistory.map((h, idx) => (
-                      <tr key={h.id} className={idx % 2 === 0 ? "bg-card" : "bg-muted/20"}>
-                        <td className="p-3 font-medium text-foreground">{h.name}</td>
-                        <td className="p-3 text-center text-muted-foreground">{h.campaign}</td>
-                        <td className="p-3 text-center">{h.products.length}</td>
-                        <td className="p-3 text-center font-bold text-green-600">{h.avgScore}</td>
-                        <td className="p-3 text-center">{Math.round(h.avgMargin * 100)}%</td>
-                        <td className="p-3 text-center">
-                          <Badge variant={h.status === "published" ? "default" : "secondary"}
-                            className={h.status === "published" ? "bg-green-100 text-green-800 text-[10px]" : "text-[10px]"}>
-                            {h.status === "published" ? "Publicado" : "Rascunho"}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                      <img
+                        src={stat.product.imageUrl}
+                        alt={stat.product.name}
+                        className="w-9 h-9 object-contain flex-shrink-0 rounded"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">{shortName(stat.product.name)}</p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-[10px] text-muted-foreground">{stat.appearances}x tabloides</span>
+                          <span className="text-[10px] font-medium text-green-600">{Math.round(stat.avgMargin * 100)}% mg</span>
+                          <span className="text-[10px] font-medium text-primary">score {stat.score}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                        <span className="text-xs font-bold text-foreground">R$ {stat.product.price.toFixed(2)}</span>
+                        <button
+                          onClick={() => handleSuggest(stat.product)}
+                          disabled={already}
+                          className={cn(
+                            "flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors font-medium",
+                            already
+                              ? "border-green-400 text-green-600 bg-green-50 cursor-default"
+                              : "border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                          )}
+                        >
+                          {already ? "✓ Tabloide" : <><Send className="h-2.5 w-2.5" /> Sugerir</>}
+                        </button>
+                        <button
+                          onClick={() => handleAddToSimulator(stat.product)}
+                          disabled={inSim}
+                          className={cn(
+                            "flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors font-medium",
+                            inSim
+                              ? "border-violet-300 text-violet-600 bg-violet-50 cursor-default"
+                              : "border-violet-300 text-violet-600 hover:bg-violet-600 hover:text-white"
+                          )}
+                        >
+                          {inSim ? "✓ Simulador" : <><Zap className="h-2.5 w-2.5" /> Simular</>}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          ))}
+
+          {dayHighlights.length === 0 && (
+            <div className="col-span-full bg-card rounded-xl border border-border p-10 text-center">
+              <Calendar className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-muted-foreground text-sm">Nenhum destaque disponível para {selectedDay}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Section 4: Stacked bar by day ── */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Participação por Seção ao Longo da Semana (R$)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={dayBarData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip
+                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 11 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              {Object.keys(SECTION_MAP).map((section, i) => (
+                <Bar key={section} dataKey={section} stackId="a" fill={SECTION_COLORS[section]} radius={i === Object.keys(SECTION_MAP).length - 1 ? [4, 4, 0, 0] : undefined} />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 }
