@@ -16,7 +16,7 @@ import {
 
 const Help = () => {
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl p-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Central de Ajuda</h1>

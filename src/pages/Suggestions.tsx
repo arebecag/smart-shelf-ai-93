@@ -24,7 +24,7 @@ export default function Suggestions() {
   const pendingCount = approvals.length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 p-6">
       {/* Tab bar */}
       <div className="flex items-center gap-1 bg-muted rounded-xl p-1 w-fit flex-wrap">
         {TABS.map(tab => {
