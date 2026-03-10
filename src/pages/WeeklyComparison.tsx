@@ -619,32 +619,15 @@ export default function WeeklyComparison() {
               iconSize={10}
               iconType="square"
             />
-            {Object.keys(PRODUCT_SECTION_MAP).map((section, i) => {
-              const sectionColors = [
-                "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6",
-                "#1d4ed8", "#fb923c", "#ef4444", "#dc2626"
-              ];
-              return (
-                <Bar
-                  key={section}
-                  dataKey={section}
-                  stackId="a"
-                  fill={sectionColors[i % sectionColors.length]}
-                  label={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? undefined : undefined}
-                  radius={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? [3, 3, 0, 0] : undefined}
-                >
-                  {stackedData.map((entry, dayIdx) => {
-                    const val = entry[section] as number;
-                    return (
-                      <Cell
-                        key={`cell-${dayIdx}`}
-                        fill={sectionColors[i % sectionColors.length]}
-                      />
-                    );
-                  })}
-                </Bar>
-              );
-            })}
+            {Object.keys(PRODUCT_SECTION_MAP).map((section, i) => (
+              <Bar
+                key={section}
+                dataKey={section}
+                stackId="a"
+                fill={SECTION_COLORS[i % SECTION_COLORS.length]}
+                radius={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? [3, 3, 0, 0] : undefined}
+              />
+            ))}
           </BarChart>
         </ResponsiveContainer>
       </div>
