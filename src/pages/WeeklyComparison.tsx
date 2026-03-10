@@ -71,9 +71,10 @@ const DAY_COLORS: Record<string, string> = {
   "Qui": "#1e3a8a", "Sex": "#be123c", "Sáb": "#9f1239", "Dom": "#7f1d1d",
 };
 
-// Stacked chart day colors matching reference
-const STACK_COLORS = [
-  "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6", "#ef4444", "#dc2626", "#991b1b"
+// Stacked chart section colors
+const SECTION_COLORS = [
+  "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6",
+  "#1d4ed8", "#fb923c", "#ef4444", "#dc2626"
 ];
 
 function getSectionRevenue(section: string, dayShort: string): number {
