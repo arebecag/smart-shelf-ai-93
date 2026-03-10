@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, Zap, Settings2 } from 'lucide-react';
+import { SlidersHorizontal, Zap, Settings2, RefreshCw } from 'lucide-react';
 import { getDefaultWeights } from '@/utils/scoreCalculator';
 import { useState } from 'react';
 
@@ -89,28 +89,12 @@ export const FilterPanel = ({ filters, onFiltersChange, onSearch }: FilterPanelP
     <div className="bg-card rounded-xl shadow-card p-6 mb-6">
       <div className="flex items-center gap-2 mb-6">
         <SlidersHorizontal className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Filtros de Busca</h2>
+        <h2 className="text-lg font-semibold text-foreground">Filtros do Dashboard</h2>
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); onSearch(); }}>
         {/* First row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div className="lg:col-span-2">
-            <Label htmlFor="search" className="text-sm font-medium text-muted-foreground mb-1.5 block">
-              Buscar produto
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="search"
-                placeholder="Ex: 789123456 ou cerveja"
-                value={filters.searchQuery}
-                onChange={(e) => updateFilter('searchQuery', e.target.value)}
-                className="pl-10 bg-secondary/50 border-border focus:bg-card"
-              />
-            </div>
-          </div>
-
           <div>
             <Label className="text-sm font-medium text-muted-foreground mb-1.5 block">Região</Label>
             <Select value={filters.region} onValueChange={(v) => updateFilter('region', v)}>
@@ -269,8 +253,8 @@ export const FilterPanel = ({ filters, onFiltersChange, onSearch }: FilterPanelP
 
         <div className="flex justify-end">
           <Button type="submit" className="gradient-primary text-primary-foreground font-semibold h-10 px-8">
-            <Search className="w-4 h-4 mr-2" />
-            Buscar Produtos
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Aplicar Filtros
           </Button>
         </div>
       </form>
