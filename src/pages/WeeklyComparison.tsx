@@ -154,15 +154,15 @@ function buildDayGrid() {
 }
 
 function buildStackedData() {
-  // Participation % per day — each row is a day, columns are sections
-  return DAYS_SHORT.map(day => {
-    const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
-      (s, sec) => s + getSectionRevenue(sec, day), 0
-    );
-    const row: Record<string, any> = { day };
-    for (const section of Object.keys(PRODUCT_SECTION_MAP)) {
+  // X-axis = sections, stacked bars = days (matching reference BI layout)
+  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
+    const row: Record<string, any> = { section: section.slice(0, 14) };
+    for (const day of DAYS_SHORT) {
+      const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
+        (s, sec) => s + getSectionRevenue(sec, day), 0
+      );
       const val = getSectionRevenue(section, day);
-      row[section] = total > 0 ? Math.round((val / total) * 100) : 0;
+      row[day] = total > 0 ? Math.round((val / total) * 100) : 0;
     }
     return row;
   });
@@ -584,20 +584,16 @@ export default function WeeklyComparison() {
         <ResponsiveContainer width="100%" height={280}>
           <BarChart
             data={stackedData}
-            margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+            margin={{ top: 5, right: 20, left: 10, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
-              dataKey="day"
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => {
-                const map: Record<string, string> = {
-                  "Seg": "1.Segunda-Feira", "Ter": "2.Terça-Feira", "Qua": "3.Quarta-Feira",
-                  "Qui": "4.Quinta-Feira", "Sex": "5.Sexta-Feira", "Sáb": "6.Sábado", "Dom": "7.Domingo"
-                };
-                return map[v] ?? v;
-              }}
-              height={30}
+              dataKey="section"
+              tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+              angle={-40}
+              textAnchor="end"
+              interval={0}
+              height={65}
             />
             <YAxis
               tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
@@ -618,14 +614,21 @@ export default function WeeklyComparison() {
               wrapperStyle={{ fontSize: 10 }}
               iconSize={10}
               iconType="square"
+              formatter={(v) => {
+                const map: Record<string, string> = {
+                  "Seg": "1.Segunda-Feira", "Ter": "2.Terça-Feira", "Qua": "3.Quarta-Feira",
+                  "Qui": "4.Quinta-Feira", "Sex": "5.Sexta-Feira", "Sáb": "6.Sábado", "Dom": "7.Domingo"
+                };
+                return map[v] ?? v;
+              }}
             />
-            {Object.keys(PRODUCT_SECTION_MAP).map((section, i) => (
+            {DAYS_SHORT.map((day, i) => (
               <Bar
-                key={section}
-                dataKey={section}
+                key={day}
+                dataKey={day}
                 stackId="a"
                 fill={SECTION_COLORS[i % SECTION_COLORS.length]}
-                radius={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? [3, 3, 0, 0] : undefined}
+                radius={i === DAYS_SHORT.length - 1 ? [3, 3, 0, 0] : undefined}
               />
             ))}
           </BarChart>
