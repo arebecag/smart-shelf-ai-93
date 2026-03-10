@@ -629,6 +629,13 @@ export default function WeeklyComparison() {
                 stackId="a"
                 fill={SECTION_COLORS[i % SECTION_COLORS.length]}
                 radius={i === DAYS_SHORT.length - 1 ? [3, 3, 0, 0] : undefined}
+                label={{
+                  position: "center",
+                  fontSize: 8,
+                  fontWeight: 600,
+                  fill: i <= 3 ? "#1e3a8a" : "#7f1d1d",
+                  formatter: (v: number) => v >= 8 ? `${v}%` : "",
+                }}
               />
             ))}
           </BarChart>
