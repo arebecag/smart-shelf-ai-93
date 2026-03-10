@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, Zap, Settings2 } from 'lucide-react';
+import { SlidersHorizontal, Zap, Settings2, RefreshCw } from 'lucide-react';
 import { getDefaultWeights } from '@/utils/scoreCalculator';
 import { useState } from 'react';
 
