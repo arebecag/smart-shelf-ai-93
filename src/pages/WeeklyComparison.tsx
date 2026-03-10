@@ -154,15 +154,15 @@ function buildDayGrid() {
 }
 
 function buildStackedData() {
-  // Participation % per day — each row is a day, columns are sections
-  return DAYS_SHORT.map(day => {
-    const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
-      (s, sec) => s + getSectionRevenue(sec, day), 0
-    );
-    const row: Record<string, any> = { day };
-    for (const section of Object.keys(PRODUCT_SECTION_MAP)) {
+  // X-axis = sections, stacked bars = days (matching reference BI layout)
+  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
+    const row: Record<string, any> = { section: section.slice(0, 14) };
+    for (const day of DAYS_SHORT) {
+      const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
+        (s, sec) => s + getSectionRevenue(sec, day), 0
+      );
       const val = getSectionRevenue(section, day);
-      row[section] = total > 0 ? Math.round((val / total) * 100) : 0;
+      row[day] = total > 0 ? Math.round((val / total) * 100) : 0;
     }
     return row;
   });
