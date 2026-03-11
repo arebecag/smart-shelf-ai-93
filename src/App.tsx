@@ -30,7 +30,7 @@ const App = () => (
             <BrowserRouter>
               <MainLayout>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/" element={<Navigate to="/semanal" replace />} />
                   <Route path="/sugestao" element={<Suggestions />} />
                   <Route path="/semanal" element={<WeeklyComparison />} />
                   <Route path="/simulador" element={<Simulator />} />

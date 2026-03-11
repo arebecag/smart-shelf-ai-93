@@ -158,7 +158,7 @@ function FilterSelect({
   label: string; options: string[]; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-border/70 bg-card/95 px-1.5 py-1">
+    <div className="rounded-md border border-border/60 bg-transparent px-1.5 py-1">
       <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">{label}</p>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
@@ -314,6 +314,18 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
     rent: Math.max(...group.products.map(p => p.sales * p.price * p.margin), 1),
   }), [group.products]);
 
+  const subgroups = useMemo(() => {
+    const buckets = new Map<string, Product[]>();
+    group.products.forEach((p, idx) => {
+      const first = p.name.split(" ")[0] || "Subgrupo";
+      const key = `${first} ${idx % 2 === 0 ? "A" : "B"}`;
+      const arr = buckets.get(key) || [];
+      arr.push(p);
+      buckets.set(key, arr);
+    });
+    return Array.from(buckets.entries()).slice(0, 3);
+  }, [group.products]);
+
   return (
     <>
       <div
@@ -329,7 +341,7 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
         <div className="py-1.5 min-w-0 flex items-center gap-1 pl-5">
           <span className="text-[9.5px] font-semibold text-foreground/80 truncate">{group.name}</span>
           <span className="text-[8px] text-muted-foreground shrink-0">({group.products.length})</span>
-          <span className="text-[8px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded">Subgrupo Premium</span>
+          
         </div>
         <div className="px-2 py-1.5">
           <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
@@ -348,13 +360,25 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
         </div>
         <div />
       </div>
-      {open && group.products.map(p => (
-        <ProductLeafRow
-          key={p.id} p={p}
-          maxFat={subMax.fat} maxVol={subMax.vol} maxRent={subMax.rent}
-          onSuggest={onSuggest} onSimulate={onSimulate}
-          isApproved={isApproved} isInSimulator={isInSimulator}
-        />
+      {open && subgroups.map(([subgroupName, subgroupProducts]) => (
+        <div key={subgroupName}>
+          <div className="grid items-center bg-muted/20 border-b border-border/20" style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}>
+            <div />
+            <div className="py-1.5 min-w-0 flex items-center gap-1 pl-10">
+              <span className="text-[10px] font-semibold text-primary truncate">Subgrupo: {subgroupName}</span>
+              <span className="text-[9px] text-muted-foreground">({subgroupProducts.length})</span>
+            </div>
+            <div /><div /><div /><div /><div />
+          </div>
+          {subgroupProducts.map(p => (
+            <ProductLeafRow
+              key={p.id} p={p}
+              maxFat={subMax.fat} maxVol={subMax.vol} maxRent={subMax.rent}
+              onSuggest={onSuggest} onSimulate={onSimulate}
+              isApproved={isApproved} isInSimulator={isInSimulator}
+            />
+          ))}
+        </div>
       ))}
     </>
   );
@@ -585,6 +609,14 @@ export default function WeeklyComparison() {
   }, [visibleSections, filters.praca]);
 
   // ── Products panel ────────────────────────────────────────
+  const participationSections = useMemo(() => {
+    const totals = visibleSections.map(sec => ({
+      sec,
+      total: stackedData.reduce((sum, row) => sum + (Number(row[sec]) || 0), 0),
+    })).sort((a, b) => b.total - a.total);
+    return totals.slice(0, 6).map(item => item.sec);
+  }, [visibleSections, stackedData]);
+
   const panelProducts = useMemo(() => {
     const prods = selectedSection
       ? getProductsForSections([selectedSection])
@@ -633,10 +665,10 @@ export default function WeeklyComparison() {
   };
 
   return (
-    <div className="flex flex-col bg-background min-h-0">
+    <div className="flex flex-col bg-background min-h-0" style={{ fontSize: "1.08em" }}>
 
       {/* ══ FILTROS ═══════════════════════════════════════════ */}
-      <div className="border-b border-border bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-slate-950 px-3 py-2 flex items-end gap-2 flex-wrap">
+      <div className="border-b border-border bg-slate-100/70 dark:bg-slate-900/70 px-3 py-2.5 flex items-end gap-2 flex-wrap">
         <FilterSelect label="Depto"       options={Object.keys(DEPTO_TO_SECTIONS)}              value={filters.depto}       onChange={setFilter("depto")} />
         <FilterSelect label="Seção"       options={Object.keys(SECTION_TO_GROUPS)}              value={filters.secao}       onChange={v => { setFilter("secao")(v); if (v !== "__all__") setActiveSections([v]); else setActiveSections(Object.keys(SECTION_TO_GROUPS)); }} />
         <FilterSelect label="Grupo"       options={mockProductGroups.map(g => g.name)}          value={filters.grupo}       onChange={setFilter("grupo")} />
@@ -647,7 +679,7 @@ export default function WeeklyComparison() {
         <FilterSelect label="Fornecedor"  options={[...new Set(Object.values(FORNECEDORES_BY_SECTION))]} value={filters.fornecedor} onChange={setFilter("fornecedor")} />
         <FilterSelect label="Ano e Mês"   options={["Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25"]} value={filters.anoMes} onChange={setFilter("anoMes")} />
         <FilterSelect label="Ofertas"     options={["Sim","Não"]}                               value={filters.ofertas}     onChange={setFilter("ofertas")} />
-        <div className="rounded-md border border-border/70 bg-card/95 px-2 py-1 min-w-[220px]">
+        <div className="rounded-md border border-border/60 bg-transparent px-2 py-1 min-w-[220px]">
           <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">Período personalizado</p>
           <div className="flex items-center gap-1.5">
             <Input type="date" value={customDateStart} onChange={e => setCustomDateStart(e.target.value)} className="h-6 text-[10px] px-1.5" />
@@ -894,15 +926,15 @@ export default function WeeklyComparison() {
       <div className="flex border-b border-border">
         <div className="border-r border-border p-3" style={{ flex: "0 0 60%" }}>
           <p className="text-[10px] font-semibold text-muted-foreground text-center mb-1">
-            Participação % por categoria e dia
+            Participação por categoria (top 6) e dia
             {filters.praca !== "__all__" && ` — ${filters.praca}`}
           </p>
           <p className="text-[9px] text-muted-foreground text-center mb-2">
-            Percentual representa quanto cada categoria contribui no total vendido do dia (a soma por dia fecha em 100%).
+            Percentual de participação no dia. Visual otimizado para reduzir ruído e facilitar leitura.
           </p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={stackedData} margin={{ top: 12, right: 10, left: 5, bottom: 10 }} barCategoryGap="24%">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={stackedData} margin={{ top: 8, right: 12, left: 8, bottom: 12 }} barCategoryGap="34%">
+              <CartesianGrid strokeDasharray="2 4" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--foreground))" }} interval={0} />
               <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={30}
                 tickFormatter={v => `${v}%`} domain={[0, 100]} />
@@ -910,8 +942,8 @@ export default function WeeklyComparison() {
                 contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
                 formatter={(v, name) => [`${v}%`, name]}
               />
-              <Legend wrapperStyle={{ fontSize: 9 }} iconSize={9} iconType="square" />
-              {visibleSections.map((sec, i) => (
+              <Legend wrapperStyle={{ fontSize: 10 }} iconSize={10} iconType="circle" />
+              {participationSections.map((sec, i) => (
                 <Bar key={sec} dataKey={sec} stackId="a"
                   fill={SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
                   radius={i === visibleSections.length - 1 ? [3, 3, 0, 0] : undefined}
@@ -935,7 +967,7 @@ export default function WeeklyComparison() {
                 contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
                 formatter={(v, name) => [`${v}%`, name]}
               />
-              {visibleSections.map((sec, i) => (
+              {participationSections.map((sec, i) => (
                 <Bar key={sec} dataKey={sec} stackId="b"
                   fill={SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
                   radius={i === visibleSections.length - 1 ? [3, 3, 0, 0] : undefined}
