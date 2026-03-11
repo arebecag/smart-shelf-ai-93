@@ -696,7 +696,7 @@ export default function WeeklyComparison() {
             Limpar ({activeFilterCount})
           </button>
         )}
-        <span className="ml-auto text-[10px] font-mono text-muted-foreground shrink-0">{todayStr}</span>
+        <span className="ml-auto text-[10px] font-mono text-blue-100/90 shrink-0">{todayStr}</span>
       </div>
 
       {/* ── Active filter chips ── */}
