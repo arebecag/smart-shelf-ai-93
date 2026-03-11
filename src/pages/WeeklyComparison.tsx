@@ -325,7 +325,134 @@ function FilterSelect({ label, options }: { label: string; options: string[] }) 
   );
 }
 
-// ── Expandable Section Row ───────────────────────────────────
+// ── Mini bar for table cells ──────────────────────────────────
+function MiniBar({ pct, color }: { pct: number; color: string }) {
+  return (
+    <div className="h-1.5 bg-muted rounded-sm overflow-hidden mt-0.5">
+      <div className="h-full rounded-sm transition-all" style={{ width: `${Math.max(pct, 3)}%`, background: color }} />
+    </div>
+  );
+}
+
+// ── Product leaf row ──────────────────────────────────────────
+function ProductLeafRow({ p, depth, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator }: {
+  p: Product; depth: number; maxFat: number; maxVol: number; maxRent: number;
+  onSuggest: (p: Product) => void; onSimulate: (p: Product) => void;
+  isApproved: (id: string) => boolean; isInSimulator: (id: string) => boolean;
+}) {
+  const fat  = p.sales * p.price;
+  const rent = p.sales * p.price * p.margin;
+  const fatPct  = Math.round((fat  / maxFat)  * 100);
+  const volPct  = Math.round((p.sales / maxVol)  * 100);
+  const rentPct = Math.round((rent / maxRent) * 100);
+  const indent  = depth * 16;
+
+  return (
+    <div
+      className="grid items-center hover:bg-primary/5 transition-colors border-b border-border/20"
+      style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+    >
+      <div />
+      <div className="py-1.5 min-w-0 flex items-center gap-1" style={{ paddingLeft: indent + 8 }}>
+        <span className="w-1 h-1 rounded-full bg-muted-foreground/40 flex-shrink-0" />
+        <div className="min-w-0">
+          <p className="text-[9.5px] font-medium text-foreground leading-tight truncate">{p.name}</p>
+          <p className="text-[8px] text-muted-foreground">R$ {p.price?.toFixed(2) ?? "—"}</p>
+        </div>
+      </div>
+      <div className="px-2 py-1.5">
+        <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
+        <MiniBar pct={fatPct} color="#3b82f6" />
+      </div>
+      <div className="px-2 py-1.5">
+        <span className="text-[9px] text-orange-500 font-mono block text-right leading-none">{fmtVol(p.sales)}</span>
+        <MiniBar pct={volPct} color="#f97316" />
+      </div>
+      <div className="px-2 py-1.5">
+        <span className="text-[9px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
+        <MiniBar pct={rentPct} color="#22c55e" />
+      </div>
+      <div className="px-2 py-1.5 text-right">
+        <span className="text-[9px] text-purple-600 font-mono">{(p.margin * 100).toFixed(2)}%</span>
+      </div>
+      <div className="px-2 py-1.5 flex items-center justify-center">
+        <ActionBtns product={p} onSuggest={onSuggest} onSimulate={onSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
+      </div>
+    </div>
+  );
+}
+
+// ── Group row (level 2) ───────────────────────────────────────
+function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator }: {
+  group: { id: string; name: string; products: Product[] };
+  maxFat: number; maxVol: number; maxRent: number;
+  onSuggest: (p: Product) => void; onSimulate: (p: Product) => void;
+  isApproved: (id: string) => boolean; isInSimulator: (id: string) => boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const fat  = group.products.reduce((s, p) => s + p.sales * p.price, 0);
+  const vol  = group.products.reduce((s, p) => s + p.sales, 0);
+  const rent = group.products.reduce((s, p) => s + p.sales * p.price * p.margin, 0);
+  const avgMarg = group.products.length
+    ? group.products.reduce((s, p) => s + p.margin, 0) / group.products.length
+    : 0;
+  const fatPct  = Math.round((fat  / maxFat)  * 100);
+  const volPct  = Math.round((vol  / maxVol)  * 100);
+  const rentPct = Math.round((rent / maxRent) * 100);
+
+  return (
+    <>
+      <div
+        className="grid items-center hover:bg-muted/40 cursor-pointer transition-colors border-b border-border/30 select-none"
+        style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="flex items-center justify-center py-1.5 pl-2">
+          {open
+            ? <ChevronDown className="h-3 w-3 text-primary" />
+            : <ChevronRight className="h-3 w-3 text-muted-foreground" />
+          }
+        </div>
+        <div className="py-1.5 min-w-0 flex items-center gap-1 pl-6">
+          <span className="text-[9.5px] font-semibold text-foreground/80 truncate">{group.name}</span>
+          <span className="text-[8.5px] text-muted-foreground ml-1 shrink-0">({group.products.length})</span>
+        </div>
+        <div className="px-2 py-1.5">
+          <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
+          <MiniBar pct={fatPct} color="#60a5fa" />
+        </div>
+        <div className="px-2 py-1.5">
+          <span className="text-[9px] text-orange-500 font-mono block text-right leading-none">{fmtVol(vol)}</span>
+          <MiniBar pct={volPct} color="#fdba74" />
+        </div>
+        <div className="px-2 py-1.5">
+          <span className="text-[9px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
+          <MiniBar pct={rentPct} color="#86efac" />
+        </div>
+        <div className="px-2 py-1.5 text-right">
+          <span className="text-[9px] text-purple-600 font-mono">{(avgMarg * 100).toFixed(2)}%</span>
+        </div>
+        <div />
+      </div>
+      {open && group.products.map(p => (
+        <ProductLeafRow
+          key={p.id}
+          p={p}
+          depth={2}
+          maxFat={maxFat}
+          maxVol={maxVol}
+          maxRent={maxRent}
+          onSuggest={onSuggest}
+          onSimulate={onSimulate}
+          isApproved={isApproved}
+          isInSimulator={isInSimulator}
+        />
+      ))}
+    </>
+  );
+}
+
+// ── Expandable Section Row (level 1) ──────────────────────────
 function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator }: {
   r: { section: string; faturamento: number; volume: number; rentabilidade: number; margem: number };
   maxFat: number; maxVol: number; maxRent: number;
@@ -339,21 +466,27 @@ function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isAppro
   const volPct  = Math.round((r.volume        / maxVol)  * 100);
   const rentPct = Math.round((r.rentabilidade / maxRent) * 100);
 
-  const products = useMemo(() => {
+  // Build groups for this section
+  const groups = useMemo(() => {
     const groupIds = PRODUCT_SECTION_MAP[r.section] || SECTION_MAP[r.section] || [];
-    const prods: Product[] = [];
-    for (const gid of groupIds) {
-      const group = mockProductGroups.find(g => g.id === gid);
-      if (group) prods.push(...group.products);
-    }
-    return prods.sort((a, b) => (b.sales * b.price) - (a.sales * a.price));
+    return groupIds
+      .map(gid => mockProductGroups.find(g => g.id === gid))
+      .filter(Boolean)
+      .map(g => g!);
   }, [r.section]);
+
+  // max values among all leaf products in this section (for sub-bars)
+  const allProducts = useMemo(() => groups.flatMap(g => g.products), [groups]);
+  const subMaxFat  = Math.max(...allProducts.map(p => p.sales * p.price), 1);
+  const subMaxVol  = Math.max(...allProducts.map(p => p.sales), 1);
+  const subMaxRent = Math.max(...allProducts.map(p => p.sales * p.price * p.margin), 1);
 
   return (
     <>
+      {/* Section header row */}
       <div
         className="grid hover:bg-muted/30 transition-colors cursor-pointer border-b border-border/40 select-none"
-        style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px" }}
+        style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
         onClick={() => setExpanded(e => !e)}
       >
         <div className="flex items-center justify-center py-1.5 pl-2">
@@ -362,74 +495,51 @@ function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isAppro
             : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
           }
         </div>
-        <div className="px-2 py-1.5 flex items-center">
+        <div className="px-2 py-1.5 flex items-center gap-1.5">
+          <span
+            className="w-2 h-2 rounded-sm flex-shrink-0"
+            style={{ background: SECTION_COLORS[r.section] ?? "hsl(var(--primary))" }}
+          />
           <span className={cn("text-[10px] font-semibold", expanded ? "text-primary" : "text-foreground")}>
             {r.section}
           </span>
+          <span className="text-[8.5px] text-muted-foreground ml-0.5">({allProducts.length})</span>
         </div>
-        <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
-          <span className="text-[9px] text-blue-600 font-semibold text-right leading-none">{fmtFull(r.faturamento)}</span>
-          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
-            <div className="h-full rounded-sm bg-blue-400" style={{ width: `${fatPct}%` }} />
-          </div>
+        <div className="px-2 py-1.5">
+          <span className="text-[9px] text-blue-600 font-semibold block text-right leading-none">{fmtFull(r.faturamento)}</span>
+          <MiniBar pct={fatPct} color="#3b82f6" />
         </div>
-        <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
-          <span className="text-[9px] text-orange-500 font-semibold text-right leading-none">{fmtVol(r.volume)}</span>
-          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
-            <div className="h-full rounded-sm bg-orange-300" style={{ width: `${volPct}%` }} />
-          </div>
+        <div className="px-2 py-1.5">
+          <span className="text-[9px] text-orange-500 font-semibold block text-right leading-none">{fmtVol(r.volume)}</span>
+          <MiniBar pct={volPct} color="#f97316" />
         </div>
-        <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
-          <span className="text-[9px] text-green-700 font-semibold text-right leading-none">{fmtFull(r.rentabilidade)}</span>
-          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
-            <div className="h-full rounded-sm bg-green-400" style={{ width: `${rentPct}%` }} />
-          </div>
+        <div className="px-2 py-1.5">
+          <span className="text-[9px] text-green-700 font-semibold block text-right leading-none">{fmtFull(r.rentabilidade)}</span>
+          <MiniBar pct={rentPct} color="#22c55e" />
         </div>
         <div className="px-2 py-1.5 flex items-center justify-end">
           <span className="text-[9px] text-purple-600 font-semibold">{(r.margem * 100).toFixed(2)}%</span>
         </div>
+        <div />
       </div>
 
+      {/* Expanded: groups → products */}
       {expanded && (
-        <div className="bg-muted/10 border-b border-border/60">
-          {/* Product sub-header */}
-          <div
-            className="grid bg-muted/50 border-b border-border/60"
-            style={{ gridTemplateColumns: "56px 1fr 140px 90px 140px 70px 64px" }}
-          >
-            <div className="px-2 py-1 text-[8.5px] font-bold text-muted-foreground uppercase">#</div>
-            <div className="px-3 py-1 text-[8.5px] font-bold text-muted-foreground uppercase">Produto</div>
-            <div className="px-2 py-1 text-[8.5px] font-bold text-blue-600 uppercase text-right">Faturamento</div>
-            <div className="px-2 py-1 text-[8.5px] font-bold text-orange-500 uppercase text-right">Volume</div>
-            <div className="px-2 py-1 text-[8.5px] font-bold text-green-700 uppercase text-right">Rentab. c/Sellout</div>
-            <div className="px-2 py-1 text-[8.5px] font-bold text-purple-600 uppercase text-right">Margem</div>
-            <div className="px-2 py-1 text-[8.5px] font-bold text-muted-foreground uppercase text-center">Ação</div>
-          </div>
-          {products.slice(0, 15).map((p, pi) => (
-            <div
-              key={p.id}
-              className={cn(
-                "grid items-center hover:bg-primary/5 transition-colors border-b border-border/30",
-                pi % 2 === 0 ? "bg-background/60" : "bg-muted/5"
-              )}
-              style={{ gridTemplateColumns: "56px 1fr 140px 90px 140px 70px 64px" }}
-            >
-              <div className="px-2 py-1.5 text-[8px] text-muted-foreground font-mono text-center">{pi + 1}</div>
-              <div className="px-3 py-1.5 min-w-0">
-                <p className="text-[9.5px] font-semibold text-foreground leading-tight truncate">{p.name}</p>
-                <p className="text-[8px] text-muted-foreground">R$ {p.price?.toFixed(2) ?? "—"}</p>
-              </div>
-              <div className="px-2 py-1.5 text-[9px] text-blue-600 font-mono text-right">{fmtFull(p.sales * p.price)}</div>
-              <div className="px-2 py-1.5 text-[9px] text-orange-500 font-mono text-right">{fmtVol(p.sales)}</div>
-              <div className="px-2 py-1.5 text-[9px] text-green-700 font-mono text-right">{fmtFull(p.sales * p.price * p.margin)}</div>
-              <div className="px-2 py-1.5 text-[9px] text-purple-600 font-mono text-right">{(p.margin * 100).toFixed(2)}%</div>
-              <div className="px-2 py-1.5 flex items-center justify-center">
-                <ActionBtns product={p} onSuggest={onSuggest} onSimulate={onSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
-              </div>
-            </div>
-          ))}
-          {products.length === 0 && (
-            <div className="py-3 text-center text-[9px] text-muted-foreground">Nenhum produto encontrado</div>
+        <div className="bg-muted/5">
+          {groups.length > 0 ? groups.map(group => (
+            <GroupRow
+              key={group.id}
+              group={group}
+              maxFat={subMaxFat}
+              maxVol={subMaxVol}
+              maxRent={subMaxRent}
+              onSuggest={onSuggest}
+              onSimulate={onSimulate}
+              isApproved={isApproved}
+              isInSimulator={isInSimulator}
+            />
+          )) : (
+            <div className="py-3 text-center text-[9px] text-muted-foreground">Nenhum grupo encontrado</div>
           )}
         </div>
       )}
