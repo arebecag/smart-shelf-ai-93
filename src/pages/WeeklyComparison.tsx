@@ -95,27 +95,22 @@ function getSectionRevenue(section: string, dayShort: string): number {
   return Math.round(base * mult * boosted);
 }
 
+// X = days, each section is a key with its faturamento for that day
 function buildAreaData() {
-  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
-    const groupIds = PRODUCT_SECTION_MAP[section];
-    let totalSales = 0, totalMargin = 0, totalVol = 0;
-    for (const gid of groupIds) {
-      const group = mockProductGroups.find(g => g.id === gid);
-      if (group) {
-        for (const p of group.products) {
-          totalSales += p.sales * p.price;
-          totalMargin += p.sales * p.price * p.margin;
-          totalVol += p.sales;
-        }
-      }
+  return DAYS_SHORT.map(day => {
+    const row: Record<string, any> = { day };
+    for (const section of Object.keys(PRODUCT_SECTION_MAP)) {
+      row[section] = getSectionRevenue(section, day);
     }
-    return {
-      section,
-      faturamento: Math.round(totalSales / 80),
-      volume: Math.round(totalVol / 10),
-      rentabilidade: Math.round(totalMargin / 80),
-    };
+    return row;
   });
+}
+
+// For the "% vs Monday" custom dot label
+function calcPctVsMon(dayRevenue: number, monRevenue: number): string {
+  if (!monRevenue) return "";
+  const pct = Math.round(((dayRevenue - monRevenue) / monRevenue) * 100);
+  return pct >= 0 ? `+${pct}%` : `${pct}%`;
 }
 
 function buildAllSectionMetrics() {
@@ -445,6 +440,7 @@ function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isAppro
 // ── Main Component ───────────────────────────────────────────
 export default function WeeklyComparison() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [activeSections, setActiveSections] = useState<string[]>(Object.keys(PRODUCT_SECTION_MAP));
   const { approveProduct, isApproved } = useApprovals();
   const { addToSimulator, isInSimulator } = useSimulator();
   const { toast } = useToast();
@@ -505,41 +501,119 @@ export default function WeeklyComparison() {
         <span className="ml-auto text-[10px] font-mono text-muted-foreground shrink-0">{todayStr}</span>
       </div>
 
-      {/* ══ BLOCO 1: Area Chart + 4 Rankings ══════════════════ */}
-      <div className="border-b border-border flex" style={{ minHeight: 260 }}>
+      {/* ══ BLOCO 1: Area Chart por dia + Pills de Seção + 4 Rankings ══ */}
+      <div className="border-b border-border flex" style={{ minHeight: 290 }}>
         <div className="flex flex-col border-r border-border" style={{ flex: "0 0 65%" }}>
-          <div className="px-3 py-1.5 border-b border-border bg-muted/20">
-            <span className="text-[10px] font-semibold text-muted-foreground">
-              Faturamento, volume e rentabilidade (c/sellout) por categorias
+          {/* Header com título e pills de seção */}
+          <div className="px-3 py-1.5 border-b border-border bg-muted/20 flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-semibold text-muted-foreground shrink-0">
+              Faturamento por dia da semana
             </span>
+            <div className="flex items-center gap-1 flex-wrap ml-2">
+              {Object.keys(PRODUCT_SECTION_MAP).map(sec => {
+                const isActive = activeSections.includes(sec);
+                const color = SECTION_COLORS[sec] ?? "#6b7280";
+                return (
+                  <button
+                    key={sec}
+                    onClick={() => setActiveSections(prev =>
+                      isActive
+                        ? prev.length > 1 ? prev.filter(s => s !== sec) : Object.keys(PRODUCT_SECTION_MAP)
+                        : [...prev, sec]
+                    )}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-semibold border transition-all"
+                    style={{
+                      borderColor: isActive ? color : "hsl(var(--border))",
+                      background: isActive ? `${color}22` : "transparent",
+                      color: isActive ? color : "hsl(var(--muted-foreground))",
+                      opacity: isActive ? 1 : 0.55,
+                    }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isActive ? color : "hsl(var(--muted-foreground))" }} />
+                    {sec}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setActiveSections(Object.keys(PRODUCT_SECTION_MAP))}
+                className="px-1.5 py-0.5 rounded-full text-[8.5px] font-semibold border border-border text-muted-foreground hover:bg-muted transition-colors"
+              >Todos</button>
+            </div>
           </div>
+          {/* Chart */}
           <div className="flex-1 p-2">
-            <ResponsiveContainer width="100%" height={210}>
-              <AreaChart data={areaData} margin={{ top: 4, right: 8, left: 0, bottom: 52 }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={areaData} margin={{ top: 18, right: 8, left: 0, bottom: 4 }}>
                 <defs>
-                  <linearGradient id="gFat"  x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#60a5fa" stopOpacity={0.55} />
-                    <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.03} />
-                  </linearGradient>
-                  <linearGradient id="gVol"  x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#f97316" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.02} />
-                  </linearGradient>
-                  <linearGradient id="gRent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#22c55e" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
-                  </linearGradient>
+                  {Object.keys(PRODUCT_SECTION_MAP).map((sec, i) => {
+                    const color = SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`;
+                    return (
+                      <linearGradient key={sec} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor={color} stopOpacity={0.35} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.01} />
+                      </linearGradient>
+                    );
+                  })}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="section" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} angle={-38} textAnchor="end" interval={0} height={56} />
-                <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={36} />
-                <Tooltip content={<AreaTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 9 }} formatter={(v) =>
-                  v === "faturamento" ? "Faturamento" : v === "volume" ? "Volume" : "Rentabilidade c/ Sellout"
-                } />
-                <Area type="monotone" dataKey="faturamento"  name="faturamento"  stroke="#3b82f6" fill="url(#gFat)"  strokeWidth={2}   dot={false} />
-                <Area type="monotone" dataKey="volume"       name="volume"       stroke="#f97316" fill="url(#gVol)"  strokeWidth={1.5} dot={false} />
-                <Area type="monotone" dataKey="rentabilidade" name="rentabilidade" stroke="#22c55e" fill="url(#gRent)" strokeWidth={1.5} dot={false} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 10, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                  width={36}
+                  tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    fontSize: 11,
+                  }}
+                  formatter={(v: any, name: string) => [fmtFull(v), name]}
+                />
+                {Object.keys(PRODUCT_SECTION_MAP).map((sec, i) => {
+                  if (!activeSections.includes(sec)) return null;
+                  const color = SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`;
+                  const monVal = areaData[0]?.[sec] ?? 0;
+                  return (
+                    <Area
+                      key={sec}
+                      type="monotone"
+                      dataKey={sec}
+                      stroke={color}
+                      fill={`url(#grad-${i})`}
+                      strokeWidth={activeSections.length === 1 ? 2.5 : 1.5}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        const val = payload[sec] ?? 0;
+                        const pct = calcPctVsMon(val, monVal);
+                        const isPos = pct.startsWith("+");
+                        const isNeg = pct.startsWith("-");
+                        if (!pct || payload.day === "Seg") return <circle key={`d-${cx}`} cx={cx} cy={cy} r={3} fill={color} stroke="#fff" strokeWidth={1} />;
+                        return (
+                          <g key={`g-${cx}`}>
+                            <circle cx={cx} cy={cy} r={3} fill={color} stroke="#fff" strokeWidth={1} />
+                            <text
+                              x={cx}
+                              y={cy - 8}
+                              textAnchor="middle"
+                              fontSize={8}
+                              fontWeight={700}
+                              fill={isPos ? "#16a34a" : isNeg ? "#dc2626" : color}
+                            >
+                              {pct}
+                            </text>
+                          </g>
+                        );
+                      }}
+                      activeDot={{ r: 5, strokeWidth: 2 }}
+                    />
+                  );
+                })}
               </AreaChart>
             </ResponsiveContainer>
           </div>
