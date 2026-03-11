@@ -150,32 +150,51 @@ function buildDayGrid() {
   });
 }
 
+// Each row = one DAY, segments = sections (% of that day's total)
 function buildStackedData() {
-  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
-    const row: Record<string, any> = { section: section.slice(0, 14) };
-    for (const day of DAYS_SHORT) {
-      const total = Object.keys(PRODUCT_SECTION_MAP).reduce(
-        (s, sec) => s + getSectionRevenue(sec, day), 0
-      );
-      const val = getSectionRevenue(section, day);
-      row[day] = total > 0 ? Math.round((val / total) * 100) : 0;
+  return DAYS_SHORT.map(day => {
+    const sectionRevs = Object.keys(PRODUCT_SECTION_MAP).map(section => ({
+      section,
+      revenue: getSectionRevenue(section, day),
+    }));
+    const total = sectionRevs.reduce((s, r) => s + r.revenue, 0) || 1;
+    const row: Record<string, any> = { day };
+    for (const { section, revenue } of sectionRevs) {
+      row[section] = Math.round((revenue / total) * 100);
     }
     return row;
   });
 }
 
-// Participação por praça mock data (stacked by day of week %)
+// Section colors for stacked chart
+const SECTION_COLORS: Record<string, string> = {
+  "Cervejas":      "#2563eb",
+  "Refrigerantes": "#0ea5e9",
+  "Bebidas Frias": "#38bdf8",
+  "Energéticos":   "#8b5cf6",
+  "Laticínios":    "#f59e0b",
+  "Açougue":       "#ef4444",
+  "Padaria":       "#f97316",
+  "Frutas & Hort.":"#22c55e",
+  "Água":          "#06b6d4",
+};
+
+// Participação por praça — each row = praça, segments = sections %
 function buildPracaData() {
   const pracas = ["Curitiba/RMC", "Campos Gerais", "Norte PR", "Santa Catarina"];
-  const baseWeights: Record<string, number> = {
-    "Curitiba/RMC": 0.48, "Campos Gerais": 0.22, "Norte PR": 0.17, "Santa Catarina": 0.13,
+  const baseWeights: Record<string, number[]> = {
+    "Curitiba/RMC":    [0.18, 0.16, 0.15, 0.12, 0.11, 0.10, 0.09, 0.09],
+    "Campos Gerais":   [0.20, 0.17, 0.14, 0.13, 0.12, 0.10, 0.08, 0.06],
+    "Norte PR":        [0.22, 0.18, 0.15, 0.14, 0.11, 0.09, 0.07, 0.04],
+    "Santa Catarina":  [0.21, 0.16, 0.15, 0.13, 0.12, 0.10, 0.08, 0.05],
   };
+  const sections = Object.keys(PRODUCT_SECTION_MAP);
   return pracas.map(praca => {
     const row: Record<string, any> = { praca };
-    for (const day of DAYS_SHORT) {
-      const noise = (Math.random() * 0.04 - 0.02);
-      row[day] = Math.round((baseWeights[praca] + noise) * 100 * (DAY_MULT[day] ?? 1));
-    }
+    const weights = baseWeights[praca];
+    sections.forEach((sec, i) => {
+      row[sec] = Math.round((weights[i] ?? 0.05) * 100);
+    });
     return row;
   });
 }
