@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, LabelList
+  Tooltip, ResponsiveContainer, Legend, Cell
 } from "recharts";
 import { mockProductGroups } from "@/data/mockData";
 import { useApprovals } from "@/contexts/ApprovalsContext";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/types/product";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Send, Zap, Tag, Sparkles } from "lucide-react";
+import { Send, Zap, Tag, Sparkles, ChevronDown, ChevronRight } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
