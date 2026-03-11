@@ -867,21 +867,18 @@ export default function WeeklyComparison() {
           BLOCO 4: Stacked Bar — Participação por categoria + Praça
           ════════════════════════════════════════════════════ */}
       <div className="flex border-b border-border">
-        {/* Participação por categoria */}
+        {/* Participação por categoria — X=dias, seções empilhadas */}
         <div className="border-r border-border p-3" style={{ flex: "0 0 60%" }}>
           <p className="text-[10px] font-semibold text-muted-foreground text-center mb-2">
             Participação em faturamento por categoria e dia da semana (Acumulado Rede)
           </p>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={stackedData} margin={{ top: 5, right: 10, left: 5, bottom: 58 }}>
+            <BarChart data={stackedData} margin={{ top: 5, right: 10, left: 5, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
-                dataKey="section"
-                tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                angle={-38}
-                textAnchor="end"
+                dataKey="day"
+                tick={{ fontSize: 9, fill: "hsl(var(--foreground))" }}
                 interval={0}
-                height={62}
               />
               <YAxis
                 tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
@@ -902,49 +899,42 @@ export default function WeeklyComparison() {
                 wrapperStyle={{ fontSize: 9 }}
                 iconSize={9}
                 iconType="square"
-                formatter={(v) => {
-                  const map: Record<string, string> = {
-                    "Seg": "1.Seg", "Ter": "2.Ter", "Qua": "3.Qua",
-                    "Qui": "4.Qui", "Sex": "5.Sex", "Sáb": "6.Sáb", "Dom": "7.Dom"
-                  };
-                  return map[v] ?? v;
-                }}
               />
-              {DAYS_SHORT.map((day, i) => (
+              {Object.keys(PRODUCT_SECTION_MAP).map((section, i) => (
                 <Bar
-                  key={day}
-                  dataKey={day}
+                  key={section}
+                  dataKey={section}
                   stackId="a"
-                  fill={DAY_STACKED_COLORS[day]}
-                  radius={i === DAYS_SHORT.length - 1 ? [3, 3, 0, 0] : undefined}
-                  label={{
-                    position: "center",
-                    fontSize: 8,
-                    fontWeight: 700,
-                    fill: i <= 3 ? "#1e3a8a" : "#fff",
-                    formatter: (v: number) => v >= 9 ? `${v}%` : "",
-                  }}
-                />
+                  fill={SECTION_COLORS[section] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
+                  radius={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? [3, 3, 0, 0] : undefined}
+                >
+                  {stackedData.map((_, di) => (
+                    <Cell
+                      key={`cell-${di}`}
+                      fill={SECTION_COLORS[section] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
+                    />
+                  ))}
+                </Bar>
               ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Participação por praça */}
+        {/* Participação por praça — X=praças, seções empilhadas */}
         <div className="p-3 flex-1">
           <p className="text-[10px] font-semibold text-muted-foreground text-center mb-2">
-            Participação em faturamento por praça e dia da semana
+            Participação em faturamento por praça e categoria
           </p>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={pracaData} margin={{ top: 5, right: 10, left: 5, bottom: 58 }}>
+            <BarChart data={pracaData} margin={{ top: 5, right: 10, left: 5, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="praca"
-                tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                angle={-28}
+                tick={{ fontSize: 8, fill: "hsl(var(--foreground))" }}
+                angle={-15}
                 textAnchor="end"
                 interval={0}
-                height={62}
+                height={40}
               />
               <YAxis
                 tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
@@ -960,36 +950,73 @@ export default function WeeklyComparison() {
                 }}
                 formatter={(v, name) => [`${v}%`, name]}
               />
-              <Legend
-                wrapperStyle={{ fontSize: 9 }}
-                iconSize={9}
-                iconType="square"
-                formatter={(v) => {
-                  const map: Record<string, string> = {
-                    "Seg": "1.Seg", "Ter": "2.Ter", "Qua": "3.Qua",
-                    "Qui": "4.Qui", "Sex": "5.Sex", "Sáb": "6.Sáb", "Dom": "7.Dom"
-                  };
-                  return map[v] ?? v;
-                }}
-              />
-              {DAYS_SHORT.map((day, i) => (
+              {Object.keys(PRODUCT_SECTION_MAP).map((section, i) => (
                 <Bar
-                  key={day}
-                  dataKey={day}
+                  key={section}
+                  dataKey={section}
                   stackId="b"
-                  fill={DAY_STACKED_COLORS[day]}
-                  radius={i === DAYS_SHORT.length - 1 ? [3, 3, 0, 0] : undefined}
-                  label={{
-                    position: "center",
-                    fontSize: 8,
-                    fontWeight: 700,
-                    fill: i <= 3 ? "#1e3a8a" : "#fff",
-                    formatter: (v: number) => v >= 9 ? `${v}%` : "",
-                  }}
+                  fill={SECTION_COLORS[section] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
+                  radius={i === Object.keys(PRODUCT_SECTION_MAP).length - 1 ? [3, 3, 0, 0] : undefined}
                 />
               ))}
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════
+          BLOCO 5: Tabela de Seções Expandível (com produtos)
+          ════════════════════════════════════════════════════ */}
+      <div className="border-b border-border">
+        {/* Table header */}
+        <div
+          className="grid bg-muted/60 border-b border-border sticky top-0 z-10"
+          style={{ gridTemplateColumns: "28px 1fr 160px 100px 160px 80px" }}
+        >
+          <div className="px-2 py-1.5" />
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+            Seção
+          </div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-blue-600 uppercase text-right tracking-wide">Faturamento</div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-orange-500 uppercase text-right tracking-wide">Volume</div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-green-700 uppercase text-right leading-tight tracking-wide">Rentab. c/ Sellout</div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-purple-600 uppercase text-right tracking-wide">MargemSellout</div>
+        </div>
+
+        {/* Section rows (each independently expandable) */}
+        {allSectionMetrics.map(r => (
+          <SectionRow
+            key={r.section}
+            r={r}
+            maxFat={maxFat}
+            maxVol={maxVol}
+            maxRent={maxRent}
+            onSuggest={handleSuggest}
+            onSimulate={handleSimulate}
+            isApproved={isApproved}
+            isInSimulator={isInSimulator}
+          />
+        ))}
+
+        {/* Totals row */}
+        <div
+          className="grid bg-muted/60 border-t border-border font-bold"
+          style={{ gridTemplateColumns: "28px 1fr 160px 100px 160px 80px" }}
+        >
+          <div />
+          <div className="px-3 py-2 text-[10px] font-bold text-foreground">Total</div>
+          <div className="px-2 py-2 text-[9.5px] text-blue-700 font-bold text-right">
+            {fmtFull(allSectionMetrics.reduce((s, r) => s + r.faturamento, 0))}
+          </div>
+          <div className="px-2 py-2 text-[9.5px] text-orange-600 font-bold text-right">
+            {fmtVol(allSectionMetrics.reduce((s, r) => s + r.volume, 0))}
+          </div>
+          <div className="px-2 py-2 text-[9.5px] text-green-800 font-bold text-right">
+            {fmtFull(allSectionMetrics.reduce((s, r) => s + r.rentabilidade, 0))}
+          </div>
+          <div className="px-2 py-2 text-[9.5px] text-purple-700 font-bold text-right">
+            {(allSectionMetrics.reduce((s, r) => s + r.margem, 0) / allSectionMetrics.length * 100).toFixed(2)}%
+          </div>
         </div>
       </div>
 
