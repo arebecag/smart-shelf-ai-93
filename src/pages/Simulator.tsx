@@ -8,7 +8,7 @@ import { mockProductGroups } from "@/data/mockData";
 import {
   Search, Zap, TrendingUp, TrendingDown, DollarSign, BarChart3,
   ArrowRight, AlertTriangle, CheckCircle2, Users, Send, Trash2,
-  RefreshCw, ShoppingBag, ChevronRight
+  RefreshCw, ShoppingBag, ChevronRight, Sparkles, Brain, Target
 } from "lucide-react";
 import { useSimulator } from "@/contexts/SimulatorContext";
 import { useApprovals } from "@/contexts/ApprovalsContext";
@@ -104,6 +104,32 @@ function findCrossSell(product: Product): Product[] {
     .flatMap(g => g.products.slice(0, 3));
 }
 
+
+
+function buildSmartUpselling(product: Product, inQueueIds: Set<string>) {
+  return findCrossSell(product)
+    .filter(p => p.id !== product.id && !inQueueIds.has(p.id))
+    .slice(0, 4)
+    .map(item => ({
+      ...item,
+      uplift: Math.max(2, Math.round((item.margin * 100) / 2 + item.sales / 80)),
+    }));
+}
+
+function findBasketSimilarity(product: Product) {
+  return mockProductGroups
+    .flatMap(g => g.products)
+    .filter(p => p.id !== product.id)
+    .map(candidate => {
+      const marginScore = 1 - Math.min(1, Math.abs(candidate.margin - product.margin) / 0.2);
+      const priceScore = 1 - Math.min(1, Math.abs(candidate.price - product.price) / Math.max(product.price, 1));
+      const salesScore = 1 - Math.min(1, Math.abs(candidate.sales - product.sales) / Math.max(product.sales, 1));
+      const score = Math.round((marginScore * 0.35 + priceScore * 0.4 + salesScore * 0.25) * 100);
+      return { product: candidate, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
 export default function Simulator() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -153,6 +179,9 @@ export default function Simulator() {
     () => selectedProduct ? findCrossSell(selectedProduct) : [],
     [selectedProduct]
   );
+  const queueIds = useMemo(() => new Set(queue.map(e => e.product.id)), [queue]);
+  const smartUpsell = useMemo(() => selectedProduct ? buildSmartUpselling(selectedProduct, queueIds) : [], [selectedProduct, queueIds]);
+  const similaritySuggestions = useMemo(() => selectedProduct ? findBasketSimilarity(selectedProduct) : [], [selectedProduct]);
 
   const priceChanged = selectedProduct ? parsedPrice !== selectedProduct.price : false;
   const marginOk = metrics ? metrics.newMargin >= 0.15 : true;
@@ -338,7 +367,10 @@ export default function Simulator() {
                       )}
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-1">
-                      Custo: R$ {metrics.cost.toFixed(2)} · Mín (15% mg): R$ {(metrics.cost / 0.85).toFixed(2)}
+                      Custo: R$ {metrics.cost.toFixed(2)}
+                    </p>
+                    <p className="text-sm font-extrabold text-amber-600 mt-0.5">
+                      Preço mínimo (15% margem): R$ {(metrics.cost / 0.85).toFixed(2)}
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -532,6 +564,48 @@ export default function Simulator() {
               </Card>
             )}
 
+            {(smartUpsell.length > 0 || similaritySuggestions.length > 0) && (
+              <Card>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Oportunidades inteligentes de cesta
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 space-y-3">
+                  {smartUpsell.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Target className="h-3.5 w-3.5 text-primary" /> Upselling sugerido</p>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        {smartUpsell.map(item => (
+                          <button key={item.id} onClick={() => handleSelectProduct(item)} className="text-left rounded-lg border border-border p-2 hover:border-primary/40 transition-colors">
+                            <p className="text-xs font-medium truncate capitalize">{item.name}</p>
+                            <p className="text-[10px] text-primary font-bold">R$ {item.price.toFixed(2)} · +{item.uplift}% potencial</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {similaritySuggestions.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-primary" /> Perfil de similaridade</p>
+                      <div className="space-y-2">
+                        {similaritySuggestions.map(({ product, score }) => (
+                          <div key={product.id} className="rounded-lg border border-border p-2 flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium truncate capitalize">Clientes parecidos com sua cesta compram: {product.name}</p>
+                              <p className="text-[10px] text-muted-foreground">Compatibilidade de perfil: {score}%</p>
+                            </div>
+                            <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => handleSelectProduct(product)}>Adicionar</Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Enviar para aprovação */}
             <Card>
               <CardContent className="p-4 space-y-3">
@@ -559,11 +633,11 @@ export default function Simulator() {
                 />
                 <Button
                   onClick={handleSubmit}
-                  disabled={!priceChanged || !marginOk}
+                  disabled={!selectedProduct || !marginOk}
                   className="w-full gap-2"
                 >
                   <Send className="h-4 w-4" />
-                  Enviar para Aprovação
+                  {priceChanged ? "Enviar para Aprovação" : "Enviar preço atual para Aprovação"}
                 </Button>
               </CardContent>
             </Card>
