@@ -952,14 +952,15 @@ export default function WeeklyComparison() {
         {/* Header */}
         <div
           className="grid bg-muted/60 border-b border-border sticky top-0 z-10"
-          style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px" }}
+          style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
         >
           <div className="px-2 py-1.5" />
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">Seção</div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">Seção / Grupo / Produto</div>
           <div className="px-2 py-1.5 text-[9.5px] font-bold text-blue-600 uppercase text-right tracking-wide">Faturamento</div>
           <div className="px-2 py-1.5 text-[9.5px] font-bold text-orange-500 uppercase text-right tracking-wide">Volume</div>
           <div className="px-2 py-1.5 text-[9.5px] font-bold text-green-700 uppercase text-right leading-tight tracking-wide">Rentab. c/ Sellout</div>
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-purple-600 uppercase text-right tracking-wide">MargemSellout</div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-purple-600 uppercase text-right tracking-wide">Margem Sellout</div>
+          <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase text-center tracking-wide">Ação</div>
         </div>
 
         {allSectionMetrics.map(r => (
@@ -979,7 +980,7 @@ export default function WeeklyComparison() {
         {/* Totals */}
         <div
           className="grid bg-muted/60 border-t border-border"
-          style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px" }}
+          style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
         >
           <div />
           <div className="px-3 py-2 text-[10px] font-bold text-foreground">Total</div>
@@ -995,6 +996,7 @@ export default function WeeklyComparison() {
           <div className="px-2 py-2 text-[9.5px] text-purple-700 font-bold text-right">
             {(allSectionMetrics.reduce((s, r) => s + r.margem, 0) / allSectionMetrics.length * 100).toFixed(2)}%
           </div>
+          <div />
         </div>
       </div>
 
