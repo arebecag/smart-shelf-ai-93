@@ -670,12 +670,116 @@ export default function WeeklyComparison() {
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          BLOCO 3: Tabela de Seções (esq) + Painel Produtos (dir)
+          BLOCO 3: Painel de Produtos (5 colunas)
           ════════════════════════════════════════════════════ */}
-      <div className="border-b border-border flex" style={{ minHeight: 380 }}>
-
-        {/* Esquerda: Tabela de seções */}
-        <div className="flex flex-col border-r border-border" style={{ minWidth: 500, maxWidth: 540 }}>
+      <div className="border-b border-border flex flex-col" style={{ minHeight: 320 }}>
+        <div className="px-3 py-1.5 border-b border-border bg-muted/20 flex items-center gap-2">
+          <span className="text-[10px] font-semibold text-muted-foreground">
+            {selectedSection ? `Produtos — ${selectedSection}` : "TOP Produtos (Todos)"}
+          </span>
+          {selectedSection && (
+            <button
+              onClick={() => setSelectedSection(null)}
+              className="ml-auto text-[10px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border hover:bg-muted transition-colors"
+            >✕ Todos</button>
+          )}
+        </div>
+        <div className="flex-1 grid grid-cols-5 divide-x divide-border overflow-hidden" style={{ minHeight: 280 }}>
+          {/* Faturamento */}
+          <div className="flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-border text-center bg-muted/20">
+              <span className="text-[9.5px] font-bold text-blue-600">Faturamento</span>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+              {panelData.byFat.slice(0, 12).map((p) => (
+                <div key={p.id} className="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
+                  <div className="min-w-0">
+                    <p className="text-[9.5px] font-semibold text-blue-600 leading-tight truncate">{short(p.name, 18)}</p>
+                    <p className="text-[8.5px] text-muted-foreground">{fmtFull(p.sales * p.price)}</p>
+                  </div>
+                  <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Volume */}
+          <div className="flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-border text-center bg-muted/20">
+              <span className="text-[9.5px] font-bold text-orange-500">Volume</span>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+              {panelData.byVol.slice(0, 12).map((p) => (
+                <div key={p.id} className="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
+                  <div className="min-w-0">
+                    <p className="text-[9.5px] font-semibold text-orange-500 leading-tight truncate">{short(p.name, 18)}</p>
+                    <p className="text-[8.5px] text-muted-foreground">{fmtVol(p.sales)}</p>
+                  </div>
+                  <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Rentab. c/ Sellout */}
+          <div className="flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-border text-center bg-muted/20">
+              <span className="text-[9.5px] font-bold text-green-600">Rentab. c/ Sellout</span>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+              {panelData.byRent.slice(0, 12).map((p) => (
+                <div key={p.id} className="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
+                  <div className="min-w-0">
+                    <p className="text-[9.5px] font-semibold text-green-600 leading-tight truncate">{short(p.name, 18)}</p>
+                    <p className="text-[8.5px] text-muted-foreground">{fmtFull(p.sales * p.price * p.margin)}</p>
+                  </div>
+                  <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* TOP em Campanha */}
+          <div className="flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-border flex items-center justify-center gap-1 bg-muted/20">
+              <Tag className="h-3 w-3 text-primary flex-shrink-0" />
+              <span className="text-[9.5px] font-bold text-primary">TOP em Campanha</span>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+              {panelData.withCampaign.slice(0, 12).map((p) => (
+                <div key={p.id} className="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
+                  <div className="min-w-0">
+                    <p className="text-[9.5px] font-semibold text-primary leading-tight truncate">{short(p.name, 18)}</p>
+                    <p className="text-[8.5px] text-muted-foreground">{fmtFull(p.sales * p.price)}</p>
+                  </div>
+                  <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
+                </div>
+              ))}
+              {panelData.withCampaign.length === 0 && (
+                <p className="text-[9.5px] text-muted-foreground px-2 py-4 text-center">Nenhum em campanha</p>
+              )}
+            </div>
+          </div>
+          {/* TOP SEM Campanha */}
+          <div className="flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-border flex items-center justify-center gap-1 bg-muted/20">
+              <Sparkles className="h-3 w-3 text-orange-500 flex-shrink-0" />
+              <span className="text-[9.5px] font-bold text-orange-500 leading-tight text-center">TOP SEM Campanha</span>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+              {panelData.noCampaign.slice(0, 12).map((p) => (
+                <div key={p.id} className="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
+                  <div className="min-w-0">
+                    <p className="text-[9.5px] font-semibold text-orange-500 leading-tight truncate">{short(p.name, 18)}</p>
+                    <p className="text-[8.5px] text-muted-foreground">{fmtFull(p.sales * p.price * p.margin)}</p>
+                  </div>
+                  <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
+                </div>
+              ))}
+              {panelData.noCampaign.length === 0 && (
+                <p className="text-[9.5px] text-muted-foreground px-2 py-4 text-center">Sem oportunidades</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
           <div className="grid border-b border-border bg-muted/40" style={{ gridTemplateColumns: "1fr 108px 78px 108px 64px" }}>
             <div className="px-3 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase">Seção</div>
             <div className="px-2 py-1.5 text-[9.5px] font-bold text-blue-500 uppercase text-right">Faturamento</div>
