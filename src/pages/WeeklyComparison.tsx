@@ -543,18 +543,7 @@ export default function WeeklyComparison() {
           {/* Chart */}
           <div className="flex-1 p-2">
             <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={areaData} margin={{ top: 18, right: 8, left: 0, bottom: 4 }}>
-                <defs>
-                  {Object.keys(PRODUCT_SECTION_MAP).map((sec, i) => {
-                    const color = SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`;
-                    return (
-                      <linearGradient key={sec} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor={color} stopOpacity={0.35} />
-                        <stop offset="95%" stopColor={color} stopOpacity={0.01} />
-                      </linearGradient>
-                    );
-                  })}
-                </defs>
+              <LineChart data={areaData} margin={{ top: 22, right: 16, left: 0, bottom: 4 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="day"
@@ -563,8 +552,8 @@ export default function WeeklyComparison() {
                 />
                 <YAxis
                   tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                  width={36}
-                  tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v}
+                  width={40}
+                  tickFormatter={(v) => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : v}
                 />
                 <Tooltip
                   contentStyle={{
@@ -579,42 +568,47 @@ export default function WeeklyComparison() {
                   if (!activeSections.includes(sec)) return null;
                   const color = SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`;
                   const monVal = areaData[0]?.[sec] ?? 0;
+                  const showLabels = activeSections.length === 1;
                   return (
-                    <Area
+                    <Line
                       key={sec}
                       type="monotone"
                       dataKey={sec}
                       stroke={color}
-                      fill={`url(#grad-${i})`}
-                      strokeWidth={activeSections.length === 1 ? 2.5 : 1.5}
+                      strokeWidth={activeSections.length === 1 ? 2.5 : 1.8}
                       dot={(props: any) => {
                         const { cx, cy, payload } = props;
                         const val = payload[sec] ?? 0;
                         const pct = calcPctVsMon(val, monVal);
                         const isPos = pct.startsWith("+");
                         const isNeg = pct.startsWith("-");
-                        if (!pct || payload.day === "Seg") return <circle key={`d-${cx}`} cx={cx} cy={cy} r={3} fill={color} stroke="#fff" strokeWidth={1} />;
+                        const showPct = showLabels && pct && payload.day !== "Seg";
                         return (
-                          <g key={`g-${cx}`}>
-                            <circle cx={cx} cy={cy} r={3} fill={color} stroke="#fff" strokeWidth={1} />
-                            <text
-                              x={cx}
-                              y={cy - 8}
-                              textAnchor="middle"
-                              fontSize={8}
-                              fontWeight={700}
-                              fill={isPos ? "#16a34a" : isNeg ? "#dc2626" : color}
-                            >
-                              {pct}
-                            </text>
+                          <g key={`g-${cx}-${sec}`}>
+                            <circle cx={cx} cy={cy} r={showLabels ? 4 : 3} fill={color} stroke="#fff" strokeWidth={1.5} />
+                            {showPct && (
+                              <>
+                                <rect x={cx - 16} y={cy - 22} width={32} height={13} rx={3} fill={isPos ? "#dcfce7" : "#fee2e2"} />
+                                <text
+                                  x={cx}
+                                  y={cy - 12}
+                                  textAnchor="middle"
+                                  fontSize={9}
+                                  fontWeight={700}
+                                  fill={isPos ? "#16a34a" : "#dc2626"}
+                                >
+                                  {pct}
+                                </text>
+                              </>
+                            )}
                           </g>
                         );
                       }}
-                      activeDot={{ r: 5, strokeWidth: 2 }}
+                      activeDot={{ r: 6, strokeWidth: 2 }}
                     />
                   );
                 })}
-              </AreaChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
