@@ -30,7 +30,7 @@ const App = () => (
             <BrowserRouter>
               <MainLayout>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/sugestao" replace />} />
+                  <Route path="/" element={<Navigate to="/semanal" replace />} />
                   <Route path="/sugestao" element={<Suggestions />} />
                   <Route path="/semanal" element={<WeeklyComparison />} />
                   <Route path="/simulador" element={<Simulator />} />
@@ -40,6 +40,8 @@ const App = () => (
                   <Route path="/configuracoes" element={<Settings />} />
                   <Route path="/ajuda" element={<Help />} />
                   {/* Legacy redirects */}
+                  <Route path="/comparativo-semanal" element={<Navigate to="/semanal" replace />} />
+                  <Route path="/weekly-comparison" element={<Navigate to="/semanal" replace />} />
                   <Route path="/buscar" element={<Navigate to="/sugestao" replace />} />
                   <Route path="/favoritos" element={<Navigate to="/sugestao" replace />} />
                   <Route path="/comparar" element={<Navigate to="/sugestao" replace />} />

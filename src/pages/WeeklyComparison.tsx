@@ -14,6 +14,7 @@ import { Send, Zap, Tag, Sparkles, ChevronDown, ChevronRight, X } from "lucide-r
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 // ── Constants ────────────────────────────────────────────────
 const DAYS_FULL  = ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"];
@@ -81,6 +82,8 @@ const FORNECEDORES_BY_SECTION: Record<string, string> = {
   "Frutas & Hort.":"Hortifruti","Mercearia":"Nestlé",
 };
 
+const FILIAIS = ["Matriz Centro","Batel","São José dos Pinhais","Ponta Grossa","Joinville Norte"];
+
 // All group IDs for "all sections" 
 const ALL_GROUP_IDS = Object.values(SECTION_TO_GROUPS).flat();
 
@@ -139,6 +142,7 @@ interface Filters {
   depto: string;
   secao: string;
   grupo: string;
+  filial: string;
   familia: string;
   praca: string;
   diaSemana: string;
@@ -154,22 +158,25 @@ function FilterSelect({
   label: string; options: string[]; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger
-        className={cn(
-          "h-6 text-[10px] px-2 py-0 min-w-[90px] max-w-[130px] border-border bg-background transition-colors",
-          value !== "__all__" && "border-primary text-primary bg-primary/5"
-        )}
-      >
-        <SelectValue placeholder={label} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="__all__" className="text-[10px]">Todos</SelectItem>
-        {options.map(o => (
-          <SelectItem key={o} value={o} className="text-[10px]">{o}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="rounded-md border border-border/60 bg-transparent px-1.5 py-1">
+      <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">{label}</p>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger
+          className={cn(
+            "h-6 text-[10px] px-2 py-0 min-w-[96px] max-w-[140px] border-border bg-background transition-colors",
+            value !== "__all__" && "border-primary text-primary bg-primary/5"
+          )}
+        >
+          <SelectValue placeholder="Todos" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__" className="text-[10px]">Todos</SelectItem>
+          {options.map(o => (
+            <SelectItem key={o} value={o} className="text-[10px]">{o}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -307,6 +314,18 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
     rent: Math.max(...group.products.map(p => p.sales * p.price * p.margin), 1),
   }), [group.products]);
 
+  const subgroups = useMemo(() => {
+    const buckets = new Map<string, Product[]>();
+    group.products.forEach((p, idx) => {
+      const first = p.name.split(" ")[0] || "Subgrupo";
+      const key = `${first} ${idx % 2 === 0 ? "A" : "B"}`;
+      const arr = buckets.get(key) || [];
+      arr.push(p);
+      buckets.set(key, arr);
+    });
+    return Array.from(buckets.entries()).slice(0, 3);
+  }, [group.products]);
+
   return (
     <>
       <div
@@ -322,6 +341,7 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
         <div className="py-1.5 min-w-0 flex items-center gap-1 pl-5">
           <span className="text-[9.5px] font-semibold text-foreground/80 truncate">{group.name}</span>
           <span className="text-[8px] text-muted-foreground shrink-0">({group.products.length})</span>
+          
         </div>
         <div className="px-2 py-1.5">
           <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
@@ -340,13 +360,25 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
         </div>
         <div />
       </div>
-      {open && group.products.map(p => (
-        <ProductLeafRow
-          key={p.id} p={p}
-          maxFat={subMax.fat} maxVol={subMax.vol} maxRent={subMax.rent}
-          onSuggest={onSuggest} onSimulate={onSimulate}
-          isApproved={isApproved} isInSimulator={isInSimulator}
-        />
+      {open && subgroups.map(([subgroupName, subgroupProducts]) => (
+        <div key={subgroupName}>
+          <div className="grid items-center bg-muted/20 border-b border-border/20" style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}>
+            <div />
+            <div className="py-1.5 min-w-0 flex items-center gap-1 pl-10">
+              <span className="text-[10px] font-semibold text-primary truncate">Subgrupo: {subgroupName}</span>
+              <span className="text-[9px] text-muted-foreground">({subgroupProducts.length})</span>
+            </div>
+            <div /><div /><div /><div /><div />
+          </div>
+          {subgroupProducts.map(p => (
+            <ProductLeafRow
+              key={p.id} p={p}
+              maxFat={subMax.fat} maxVol={subMax.vol} maxRent={subMax.rent}
+              onSuggest={onSuggest} onSimulate={onSimulate}
+              isApproved={isApproved} isInSimulator={isInSimulator}
+            />
+          ))}
+        </div>
       ))}
     </>
   );
@@ -437,12 +469,14 @@ export default function WeeklyComparison() {
 
   // ── Filter state ──────────────────────────────────────────
   const [filters, setFilters] = useState<Filters>({
-    depto: "__all__", secao: "__all__", grupo: "__all__",
+    depto: "__all__", secao: "__all__", grupo: "__all__", filial: "__all__",
     familia: "__all__", praca: "__all__", diaSemana: "__all__",
     fornecedor: "__all__", anoMes: "__all__", ofertas: "__all__",
   });
   const [activeSections, setActiveSections] = useState<string[]>(Object.keys(SECTION_TO_GROUPS));
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [customDateStart, setCustomDateStart] = useState("");
+  const [customDateEnd, setCustomDateEnd] = useState("");
 
   const setFilter = (key: keyof Filters) => (val: string) =>
     setFilters(prev => ({ ...prev, [key]: val }));
@@ -575,6 +609,14 @@ export default function WeeklyComparison() {
   }, [visibleSections, filters.praca]);
 
   // ── Products panel ────────────────────────────────────────
+  const participationSections = useMemo(() => {
+    const totals = visibleSections.map(sec => ({
+      sec,
+      total: stackedData.reduce((sum, row) => sum + (Number(row[sec]) || 0), 0),
+    })).sort((a, b) => b.total - a.total);
+    return totals.slice(0, 6).map(item => item.sec);
+  }, [visibleSections, stackedData]);
+
   const panelProducts = useMemo(() => {
     const prods = selectedSection
       ? getProductsForSections([selectedSection])
@@ -610,30 +652,41 @@ export default function WeeklyComparison() {
   };
 
   // ── Active filter badge count ─────────────────────────────
-  const activeFilterCount = Object.values(filters).filter(v => v !== "__all__").length;
+  const activeFilterCount = Object.values(filters).filter(v => v !== "__all__").length + (customDateStart ? 1 : 0) + (customDateEnd ? 1 : 0);
 
   const resetFilters = () => {
     setFilters({
-      depto:"__all__",secao:"__all__",grupo:"__all__",familia:"__all__",
+      depto:"__all__",secao:"__all__",grupo:"__all__",filial:"__all__",familia:"__all__",
       praca:"__all__",diaSemana:"__all__",fornecedor:"__all__",anoMes:"__all__",ofertas:"__all__",
     });
     setActiveSections(Object.keys(SECTION_TO_GROUPS));
+    setCustomDateStart("");
+    setCustomDateEnd("");
   };
 
   return (
-    <div className="flex flex-col bg-background min-h-0">
+    <div className="flex flex-col bg-background min-h-0" style={{ fontSize: "1.08em" }}>
 
       {/* ══ FILTROS ═══════════════════════════════════════════ */}
-      <div className="border-b border-border bg-muted/20 px-3 py-1.5 flex items-center gap-2 flex-wrap">
+      <div className="border-b border-border bg-slate-100/70 dark:bg-slate-900/70 px-3 py-2.5 flex items-end gap-2 flex-wrap">
         <FilterSelect label="Depto"       options={Object.keys(DEPTO_TO_SECTIONS)}              value={filters.depto}       onChange={setFilter("depto")} />
         <FilterSelect label="Seção"       options={Object.keys(SECTION_TO_GROUPS)}              value={filters.secao}       onChange={v => { setFilter("secao")(v); if (v !== "__all__") setActiveSections([v]); else setActiveSections(Object.keys(SECTION_TO_GROUPS)); }} />
         <FilterSelect label="Grupo"       options={mockProductGroups.map(g => g.name)}          value={filters.grupo}       onChange={setFilter("grupo")} />
+        <FilterSelect label="Filial"      options={FILIAIS}                                        value={filters.filial}      onChange={setFilter("filial")} />
         <FilterSelect label="Família"     options={["Pilsen","Premium","Integral","Desnatado"]}  value={filters.familia}     onChange={setFilter("familia")} />
         <FilterSelect label="Praça"       options={["Curitiba/RMC","Campos Gerais","Norte PR","Santa Catarina"]} value={filters.praca} onChange={setFilter("praca")} />
         <FilterSelect label="Dia Semana"  options={DAYS_FULL}                                   value={filters.diaSemana}   onChange={setFilter("diaSemana")} />
         <FilterSelect label="Fornecedor"  options={[...new Set(Object.values(FORNECEDORES_BY_SECTION))]} value={filters.fornecedor} onChange={setFilter("fornecedor")} />
         <FilterSelect label="Ano e Mês"   options={["Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25"]} value={filters.anoMes} onChange={setFilter("anoMes")} />
         <FilterSelect label="Ofertas"     options={["Sim","Não"]}                               value={filters.ofertas}     onChange={setFilter("ofertas")} />
+        <div className="rounded-md border border-border/60 bg-transparent px-2 py-1 min-w-[220px]">
+          <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">Período personalizado</p>
+          <div className="flex items-center gap-1.5">
+            <Input type="date" value={customDateStart} onChange={e => setCustomDateStart(e.target.value)} className="h-6 text-[10px] px-1.5" />
+            <span className="text-[9px] text-muted-foreground">até</span>
+            <Input type="date" value={customDateEnd} onChange={e => setCustomDateEnd(e.target.value)} className="h-6 text-[10px] px-1.5" />
+          </div>
+        </div>
         {activeFilterCount > 0 && (
           <button
             onClick={resetFilters}
@@ -658,6 +711,14 @@ export default function WeeklyComparison() {
               </button>
             </span>
           ) : null)}
+          {(customDateStart || customDateEnd) && (
+            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded text-[8.5px] text-primary font-medium">
+              Período: {customDateStart || "..."} → {customDateEnd || "..."}
+              <button onClick={() => { setCustomDateStart(""); setCustomDateEnd(""); }} className="hover:text-destructive">
+                <X className="h-2 w-2" />
+              </button>
+            </span>
+          )}
         </div>
       )}
 
@@ -802,7 +863,7 @@ export default function WeeklyComparison() {
                           <div className="h-full rounded-sm transition-all flex items-center justify-end pr-1"
                             style={{ width: `${Math.max(pct, 18)}%`, background: barColor }}>
                             <span className="text-[7.5px] font-bold text-white leading-none tabular-nums whitespace-nowrap">
-                              {fmtM(item.revenue)}
+                              {fmtM(item.revenue)} · {pct}%
                             </span>
                           </div>
                         </div>
@@ -864,13 +925,16 @@ export default function WeeklyComparison() {
       {/* ══ BLOCO 4: Gráficos de participação ══════════════════ */}
       <div className="flex border-b border-border">
         <div className="border-r border-border p-3" style={{ flex: "0 0 60%" }}>
-          <p className="text-[10px] font-semibold text-muted-foreground text-center mb-2">
-            Participação % por categoria e dia
+          <p className="text-[10px] font-semibold text-muted-foreground text-center mb-1">
+            Participação por categoria (top 6) e dia
             {filters.praca !== "__all__" && ` — ${filters.praca}`}
           </p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={stackedData} margin={{ top: 5, right: 10, left: 5, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+          <p className="text-[9px] text-muted-foreground text-center mb-2">
+            Percentual de participação no dia. Visual otimizado para reduzir ruído e facilitar leitura.
+          </p>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={stackedData} margin={{ top: 8, right: 12, left: 8, bottom: 12 }} barCategoryGap="34%">
+              <CartesianGrid strokeDasharray="2 4" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--foreground))" }} interval={0} />
               <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={30}
                 tickFormatter={v => `${v}%`} domain={[0, 100]} />
@@ -878,8 +942,8 @@ export default function WeeklyComparison() {
                 contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
                 formatter={(v, name) => [`${v}%`, name]}
               />
-              <Legend wrapperStyle={{ fontSize: 9 }} iconSize={9} iconType="square" />
-              {visibleSections.map((sec, i) => (
+              <Legend wrapperStyle={{ fontSize: 10 }} iconSize={10} iconType="circle" />
+              {participationSections.map((sec, i) => (
                 <Bar key={sec} dataKey={sec} stackId="a"
                   fill={SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
                   radius={i === visibleSections.length - 1 ? [3, 3, 0, 0] : undefined}
@@ -903,7 +967,7 @@ export default function WeeklyComparison() {
                 contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
                 formatter={(v, name) => [`${v}%`, name]}
               />
-              {visibleSections.map((sec, i) => (
+              {participationSections.map((sec, i) => (
                 <Bar key={sec} dataKey={sec} stackId="b"
                   fill={SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
                   radius={i === visibleSections.length - 1 ? [3, 3, 0, 0] : undefined}
@@ -922,7 +986,7 @@ export default function WeeklyComparison() {
         >
           <div className="px-2 py-1.5" />
           <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
-            Seção / Grupo / Produto
+            Seção / Grupo / Subgrupo / Produto
             {activeFilterCount > 0 && (
               <span className="ml-2 text-[8px] text-primary font-normal">
                 {sectionMetrics.length} seção(ões) filtrada(s)
