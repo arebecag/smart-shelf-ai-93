@@ -347,6 +347,149 @@ function FilterSelect({ label, options }: { label: string; options: string[] }) 
 }
 
 // ── Main Component ───────────────────────────────────────────
+// ── Expandable Section Row ───────────────────────────────────
+function SectionRow({
+  r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator
+}: {
+  r: { section: string; faturamento: number; volume: number; rentabilidade: number; margem: number };
+  maxFat: number; maxVol: number; maxRent: number;
+  onSuggest: (p: Product) => void;
+  onSimulate: (p: Product) => void;
+  isApproved: (id: string) => boolean;
+  isInSimulator: (id: string) => boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const fatPct = Math.round((r.faturamento / maxFat) * 100);
+  const volPct = Math.round((r.volume / maxVol) * 100);
+  const rentPct = Math.round((r.rentabilidade / maxRent) * 100);
+
+  const products = useMemo(() => {
+    const groupIds = PRODUCT_SECTION_MAP[r.section] || SECTION_MAP[r.section] || [];
+    const prods: Product[] = [];
+    for (const gid of groupIds) {
+      const group = mockProductGroups.find(g => g.id === gid);
+      if (group) prods.push(...group.products);
+    }
+    return prods.sort((a, b) => (b.sales * b.price) - (a.sales * a.price));
+  }, [r.section]);
+
+  return (
+    <>
+      {/* Section header row */}
+      <div
+        className="grid hover:bg-muted/30 transition-colors cursor-pointer border-b border-border/40"
+        style={{ gridTemplateColumns: "28px 1fr 160px 100px 160px 80px" }}
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div className="flex items-center justify-center py-1.5 pl-2">
+          {expanded
+            ? <ChevronDown className="h-3.5 w-3.5 text-primary" />
+            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          }
+        </div>
+        <div className="px-2 py-1.5 flex items-center">
+          <span className={cn("text-[10px] font-semibold", expanded ? "text-primary" : "text-foreground")}>
+            {r.section}
+          </span>
+        </div>
+        <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
+          <span className="text-[9px] text-blue-600 font-semibold text-right leading-none">{fmtFull(r.faturamento)}</span>
+          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
+            <div className="h-full rounded-sm bg-blue-400" style={{ width: `${fatPct}%` }} />
+          </div>
+        </div>
+        <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
+          <span className="text-[9px] text-orange-500 font-semibold text-right leading-none">{fmtVol(r.volume)}</span>
+          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
+            <div className="h-full rounded-sm bg-orange-300" style={{ width: `${volPct}%` }} />
+          </div>
+        </div>
+        <div className="px-2 py-1.5 flex flex-col justify-center gap-0.5">
+          <span className="text-[9px] text-green-700 font-semibold text-right leading-none">{fmtFull(r.rentabilidade)}</span>
+          <div className="h-1.5 bg-muted rounded-sm overflow-hidden">
+            <div className="h-full rounded-sm bg-green-400" style={{ width: `${rentPct}%` }} />
+          </div>
+        </div>
+        <div className="px-2 py-1.5 flex items-center justify-end">
+          <span className="text-[9px] text-purple-600 font-semibold">{(r.margem * 100).toFixed(2)}%</span>
+        </div>
+      </div>
+
+      {/* Expanded product rows */}
+      {expanded && (
+        <div className="bg-muted/10 border-b border-border">
+          {/* Sub-header */}
+          <div
+            className="grid bg-muted/40 border-b border-border/60"
+            style={{ gridTemplateColumns: "28px 28px 1fr 130px 80px 130px 64px 64px" }}
+          >
+            <div />
+            <div />
+            <div className="px-3 py-1 text-[8.5px] font-bold text-muted-foreground uppercase">Produto</div>
+            <div className="px-2 py-1 text-[8.5px] font-bold text-blue-500 uppercase text-right">Faturamento</div>
+            <div className="px-2 py-1 text-[8.5px] font-bold text-orange-500 uppercase text-right">Volume</div>
+            <div className="px-2 py-1 text-[8.5px] font-bold text-green-600 uppercase text-right">Rentab. c/Sellout</div>
+            <div className="px-2 py-1 text-[8.5px] font-bold text-purple-500 uppercase text-right">Margem</div>
+            <div className="px-2 py-1 text-[8.5px] font-bold text-muted-foreground uppercase text-center">Ação</div>
+          </div>
+          {products.slice(0, 15).map((p, pi) => (
+            <div
+              key={p.id}
+              className={cn(
+                "grid items-center hover:bg-muted/40 transition-colors border-b border-border/30",
+                pi % 2 === 0 ? "bg-background/60" : "bg-muted/5"
+              )}
+              style={{ gridTemplateColumns: "28px 28px 1fr 130px 80px 130px 64px 64px" }}
+            >
+              <div />
+              <div className="px-1 py-1.5 text-[8px] text-muted-foreground font-mono text-right">{pi + 1}</div>
+              <div className="px-3 py-1.5 min-w-0">
+                <p className="text-[9.5px] font-semibold text-foreground leading-tight truncate">{p.name}</p>
+                <p className="text-[8px] text-muted-foreground">{p.price ? `R$ ${p.price.toFixed(2)}` : ""}</p>
+              </div>
+              <div className="px-2 py-1.5 text-[9px] text-blue-600 font-mono text-right">{fmtFull(p.sales * p.price)}</div>
+              <div className="px-2 py-1.5 text-[9px] text-orange-500 font-mono text-right">{fmtVol(p.sales)}</div>
+              <div className="px-2 py-1.5 text-[9px] text-green-700 font-mono text-right">{fmtFull(p.sales * p.price * p.margin)}</div>
+              <div className="px-2 py-1.5 text-[9px] text-purple-600 font-mono text-right">{(p.margin * 100).toFixed(2)}%</div>
+              <div className="px-2 py-1.5 flex items-center justify-center gap-0.5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSuggest(p); }}
+                  disabled={isApproved(p.id)}
+                  title="Sugerir"
+                  className={cn(
+                    "w-5 h-5 rounded flex items-center justify-center border transition-colors text-[8px]",
+                    isApproved(p.id)
+                      ? "border-green-300 text-green-600 bg-green-50 cursor-default"
+                      : "border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
+                  )}
+                >
+                  {isApproved(p.id) ? "✓" : <Send className="h-2.5 w-2.5" />}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSimulate(p); }}
+                  disabled={isInSimulator(p.id)}
+                  title="Simular"
+                  className={cn(
+                    "w-5 h-5 rounded flex items-center justify-center border transition-colors",
+                    isInSimulator(p.id)
+                      ? "border-violet-300 text-violet-600 bg-violet-50 cursor-default"
+                      : "border-violet-300 text-violet-600 hover:bg-violet-600 hover:text-white"
+                  )}
+                >
+                  {isInSimulator(p.id) ? "✓" : <Zap className="h-2.5 w-2.5" />}
+                </button>
+              </div>
+            </div>
+          ))}
+          {products.length === 0 && (
+            <div className="py-3 text-center text-[9px] text-muted-foreground">Nenhum produto encontrado</div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function WeeklyComparison() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const { approveProduct, isApproved } = useApprovals();
