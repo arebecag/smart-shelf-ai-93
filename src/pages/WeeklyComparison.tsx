@@ -440,6 +440,7 @@ function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isAppro
 // ── Main Component ───────────────────────────────────────────
 export default function WeeklyComparison() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [activeSections, setActiveSections] = useState<string[]>(Object.keys(PRODUCT_SECTION_MAP));
   const { approveProduct, isApproved } = useApprovals();
   const { addToSimulator, isInSimulator } = useSimulator();
   const { toast } = useToast();
