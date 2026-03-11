@@ -81,6 +81,8 @@ const FORNECEDORES_BY_SECTION: Record<string, string> = {
   "Frutas & Hort.":"Hortifruti","Mercearia":"Nestlé",
 };
 
+const FILIAIS = ["Matriz Centro","Batel","São José dos Pinhais","Ponta Grossa","Joinville Norte"];
+
 // All group IDs for "all sections" 
 const ALL_GROUP_IDS = Object.values(SECTION_TO_GROUPS).flat();
 
@@ -139,6 +141,7 @@ interface Filters {
   depto: string;
   secao: string;
   grupo: string;
+  filial: string;
   familia: string;
   praca: string;
   diaSemana: string;
@@ -154,22 +157,25 @@ function FilterSelect({
   label: string; options: string[]; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger
-        className={cn(
-          "h-6 text-[10px] px-2 py-0 min-w-[90px] max-w-[130px] border-border bg-background transition-colors",
-          value !== "__all__" && "border-primary text-primary bg-primary/5"
-        )}
-      >
-        <SelectValue placeholder={label} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="__all__" className="text-[10px]">Todos</SelectItem>
-        {options.map(o => (
-          <SelectItem key={o} value={o} className="text-[10px]">{o}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="rounded-md border border-blue-300/40 bg-blue-950/90 px-1.5 py-1 shadow-sm">
+      <p className="text-[9px] font-semibold text-blue-100 leading-none mb-1">{label}</p>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger
+          className={cn(
+            "h-6 text-[10px] px-2 py-0 min-w-[96px] max-w-[140px] border-border bg-background transition-colors",
+            value !== "__all__" && "border-primary text-primary bg-primary/5"
+          )}
+        >
+          <SelectValue placeholder="Todos" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__" className="text-[10px]">Todos</SelectItem>
+          {options.map(o => (
+            <SelectItem key={o} value={o} className="text-[10px]">{o}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -322,6 +328,7 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
         <div className="py-1.5 min-w-0 flex items-center gap-1 pl-5">
           <span className="text-[9.5px] font-semibold text-foreground/80 truncate">{group.name}</span>
           <span className="text-[8px] text-muted-foreground shrink-0">({group.products.length})</span>
+          <span className="text-[8px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded">Subgrupo Premium</span>
         </div>
         <div className="px-2 py-1.5">
           <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
@@ -437,7 +444,7 @@ export default function WeeklyComparison() {
 
   // ── Filter state ──────────────────────────────────────────
   const [filters, setFilters] = useState<Filters>({
-    depto: "__all__", secao: "__all__", grupo: "__all__",
+    depto: "__all__", secao: "__all__", grupo: "__all__", filial: "__all__",
     familia: "__all__", praca: "__all__", diaSemana: "__all__",
     fornecedor: "__all__", anoMes: "__all__", ofertas: "__all__",
   });
@@ -614,7 +621,7 @@ export default function WeeklyComparison() {
 
   const resetFilters = () => {
     setFilters({
-      depto:"__all__",secao:"__all__",grupo:"__all__",familia:"__all__",
+      depto:"__all__",secao:"__all__",grupo:"__all__",filial:"__all__",familia:"__all__",
       praca:"__all__",diaSemana:"__all__",fornecedor:"__all__",anoMes:"__all__",ofertas:"__all__",
     });
     setActiveSections(Object.keys(SECTION_TO_GROUPS));
@@ -624,10 +631,11 @@ export default function WeeklyComparison() {
     <div className="flex flex-col bg-background min-h-0">
 
       {/* ══ FILTROS ═══════════════════════════════════════════ */}
-      <div className="border-b border-border bg-muted/20 px-3 py-1.5 flex items-center gap-2 flex-wrap">
+      <div className="border-b border-blue-900 bg-blue-900/95 px-3 py-1.5 flex items-center gap-2 flex-wrap">
         <FilterSelect label="Depto"       options={Object.keys(DEPTO_TO_SECTIONS)}              value={filters.depto}       onChange={setFilter("depto")} />
         <FilterSelect label="Seção"       options={Object.keys(SECTION_TO_GROUPS)}              value={filters.secao}       onChange={v => { setFilter("secao")(v); if (v !== "__all__") setActiveSections([v]); else setActiveSections(Object.keys(SECTION_TO_GROUPS)); }} />
         <FilterSelect label="Grupo"       options={mockProductGroups.map(g => g.name)}          value={filters.grupo}       onChange={setFilter("grupo")} />
+        <FilterSelect label="Filial"      options={FILIAIS}                                        value={filters.filial}      onChange={setFilter("filial")} />
         <FilterSelect label="Família"     options={["Pilsen","Premium","Integral","Desnatado"]}  value={filters.familia}     onChange={setFilter("familia")} />
         <FilterSelect label="Praça"       options={["Curitiba/RMC","Campos Gerais","Norte PR","Santa Catarina"]} value={filters.praca} onChange={setFilter("praca")} />
         <FilterSelect label="Dia Semana"  options={DAYS_FULL}                                   value={filters.diaSemana}   onChange={setFilter("diaSemana")} />
@@ -643,7 +651,7 @@ export default function WeeklyComparison() {
             Limpar ({activeFilterCount})
           </button>
         )}
-        <span className="ml-auto text-[10px] font-mono text-muted-foreground shrink-0">{todayStr}</span>
+        <span className="ml-auto text-[10px] font-mono text-blue-100/90 shrink-0">{todayStr}</span>
       </div>
 
       {/* ── Active filter chips ── */}
@@ -802,7 +810,7 @@ export default function WeeklyComparison() {
                           <div className="h-full rounded-sm transition-all flex items-center justify-end pr-1"
                             style={{ width: `${Math.max(pct, 18)}%`, background: barColor }}>
                             <span className="text-[7.5px] font-bold text-white leading-none tabular-nums whitespace-nowrap">
-                              {fmtM(item.revenue)}
+                              {fmtM(item.revenue)} · {pct}%
                             </span>
                           </div>
                         </div>
@@ -864,12 +872,15 @@ export default function WeeklyComparison() {
       {/* ══ BLOCO 4: Gráficos de participação ══════════════════ */}
       <div className="flex border-b border-border">
         <div className="border-r border-border p-3" style={{ flex: "0 0 60%" }}>
-          <p className="text-[10px] font-semibold text-muted-foreground text-center mb-2">
+          <p className="text-[10px] font-semibold text-muted-foreground text-center mb-1">
             Participação % por categoria e dia
             {filters.praca !== "__all__" && ` — ${filters.praca}`}
           </p>
+          <p className="text-[9px] text-muted-foreground text-center mb-2">
+            Percentual representa quanto cada categoria contribui no total vendido do dia (a soma por dia fecha em 100%).
+          </p>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={stackedData} margin={{ top: 5, right: 10, left: 5, bottom: 10 }}>
+            <BarChart data={stackedData} margin={{ top: 12, right: 10, left: 5, bottom: 10 }} barCategoryGap="24%">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--foreground))" }} interval={0} />
               <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={30}
@@ -922,7 +933,7 @@ export default function WeeklyComparison() {
         >
           <div className="px-2 py-1.5" />
           <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
-            Seção / Grupo / Produto
+            Seção / Grupo / Subgrupo / Produto
             {activeFilterCount > 0 && (
               <span className="ml-2 text-[8px] text-primary font-normal">
                 {sectionMetrics.length} seção(ões) filtrada(s)
