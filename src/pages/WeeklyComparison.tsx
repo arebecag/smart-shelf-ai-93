@@ -470,7 +470,7 @@ export default function WeeklyComparison() {
                   "px-2 py-1.5 text-center border-b border-border",
                   isWeekend ? "bg-red-50 dark:bg-red-950/20" : "bg-blue-50 dark:bg-blue-950/20"
                 )}>
-                  <span className="text-[10px] font-bold leading-tight block" style={{ color: barColor }}>{fullDay}</span>
+                  <span className="text-[10px] font-bold leading-tight block text-foreground">{fullDay}</span>
                 </div>
                 <div className="divide-y divide-border/40">
                   {items.slice(0, 9).map((item) => {
@@ -480,20 +480,22 @@ export default function WeeklyComparison() {
                         key={item.section}
                         onClick={() => setSelectedSection(selectedSection === item.section ? null : item.section)}
                         className={cn(
-                          "w-full px-1.5 py-1 flex items-center gap-1 hover:bg-muted/40 transition-colors text-left",
+                          "w-full px-1.5 py-1 flex flex-col gap-0.5 hover:bg-muted/40 transition-colors text-left",
                           selectedSection === item.section && "bg-muted/60"
                         )}
                       >
-                        <span className="text-[8.5px] text-muted-foreground w-14 shrink-0 leading-tight truncate">
+                        <span className="text-[8.5px] font-semibold text-foreground leading-tight truncate w-full">
                           {item.section}
                         </span>
-                        <div className="flex-1 flex items-center gap-1 min-w-0">
-                          <div className="flex-1 h-3 bg-muted/50 rounded-sm overflow-hidden">
-                            <div className="h-full rounded-sm transition-all" style={{ width: `${pct}%`, background: barColor }} />
+                        <div className="w-full h-4 bg-muted/40 rounded-sm overflow-hidden relative">
+                          <div
+                            className="h-full rounded-sm transition-all flex items-center justify-end pr-1"
+                            style={{ width: `${Math.max(pct, 18)}%`, background: barColor }}
+                          >
+                            <span className="text-[7.5px] font-bold text-white leading-none tabular-nums whitespace-nowrap">
+                              {fmtM(item.revenue)}
+                            </span>
                           </div>
-                          <span className="text-[8px] font-bold shrink-0 tabular-nums" style={{ color: barColor }}>
-                            {fmtM(item.revenue)}
-                          </span>
                         </div>
                       </button>
                     );
