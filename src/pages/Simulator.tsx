@@ -145,7 +145,7 @@ export default function Simulator() {
       setSelectedProduct(queue[0].product);
       setProposedPrice(queue[0].proposedPrice.toFixed(2));
     }
-  }, [queue]);
+  }, [queue, selectedProduct]);
 
   const searchResults = useMemo(() => {
     if (searchQuery.length < 2) return [];
@@ -182,6 +182,11 @@ export default function Simulator() {
   const queueIds = useMemo(() => new Set(queue.map(e => e.product.id)), [queue]);
   const smartUpsell = useMemo(() => selectedProduct ? buildSmartUpselling(selectedProduct, queueIds) : [], [selectedProduct, queueIds]);
   const similaritySuggestions = useMemo(() => selectedProduct ? findBasketSimilarity(selectedProduct) : [], [selectedProduct]);
+  const crossSellHighlights = useMemo(() => crossSell.slice(0, 4).map(item => ({
+    ...item,
+    potential: Math.max(3, Math.round((item.sales / 90) + (item.margin * 25))),
+    reason: item.margin > 0.23 ? "Margem forte para combo" : "Alta recorrência com cesta complementar",
+  })), [crossSell]);
 
   const priceChanged = selectedProduct ? parsedPrice !== selectedProduct.price : false;
   const marginOk = metrics ? metrics.newMargin >= 0.15 : true;
@@ -561,27 +566,30 @@ export default function Simulator() {
             )}
 
             {/* Cross-selling */}
-            {crossSell.length > 0 && (
+            {crossSellHighlights.length > 0 && (
               <Card>
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <ShoppingBag className="h-4 w-4 text-primary" />
-                    Cross-Selling
-                    <span className="text-[10px] text-muted-foreground font-normal">— produtos complementares para o tabloide</span>
+                    Cross-Selling estratégico
+                    <span className="text-[10px] text-muted-foreground font-normal">— sugestões complementares prontas para a cesta</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {crossSell.slice(0, 6).map(cs => (
-                      <div
+                  <div className="grid sm:grid-cols-2 gap-2.5">
+                    {crossSellHighlights.map(cs => (
+                      <button
                         key={cs.id}
-                        className="rounded-xl border border-border p-2.5 cursor-pointer hover:border-primary/40 transition-colors bg-card"
+                        className="rounded-xl border border-border p-3 text-left hover:border-primary/40 hover:bg-primary/5 transition-colors"
                         onClick={() => handleSelectProduct(cs)}
                       >
-                        <img src={cs.imageUrl} className="w-8 h-8 object-contain mx-auto mb-1" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                        <p className="text-[10px] font-medium capitalize text-center truncate">{cs.name.split(" ").slice(0, 3).join(" ")}</p>
-                        <p className="text-[10px] text-primary font-bold text-center">R$ {cs.price.toFixed(2)}</p>
-                      </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold capitalize truncate">{cs.name}</p>
+                          <Badge variant="outline" className="text-[10px]">+{cs.potential}%</Badge>
+                        </div>
+                        <p className="text-[11px] text-primary font-bold mt-1">R$ {cs.price.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{cs.reason}</p>
+                      </button>
                     ))}
                   </div>
                 </CardContent>
@@ -599,7 +607,7 @@ export default function Simulator() {
                 <CardContent className="px-4 pb-4 space-y-3">
                   {smartUpsell.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Target className="h-3.5 w-3.5 text-primary" /> Upselling sugerido</p>
+                      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Target className="h-3.5 w-3.5 text-primary" /> Upselling inteligente</p>
                       <div className="grid sm:grid-cols-2 gap-2">
                         {smartUpsell.map(item => (
                           <button key={item.id} onClick={() => handleSelectProduct(item)} className="text-left rounded-lg border border-border p-2 hover:border-primary/40 transition-colors">
@@ -612,7 +620,7 @@ export default function Simulator() {
                   )}
                   {similaritySuggestions.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-primary" /> Perfil de similaridade</p>
+                      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-primary" /> Similaridade de perfil de compra</p>
                       <div className="space-y-2">
                         {similaritySuggestions.map(({ product, score }) => (
                           <div key={product.id} className="rounded-lg border border-border p-2 flex items-center justify-between gap-2">

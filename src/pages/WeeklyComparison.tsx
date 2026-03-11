@@ -14,6 +14,7 @@ import { Send, Zap, Tag, Sparkles, ChevronDown, ChevronRight, X } from "lucide-r
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 // ── Constants ────────────────────────────────────────────────
 const DAYS_FULL  = ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"];
@@ -157,8 +158,8 @@ function FilterSelect({
   label: string; options: string[]; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-blue-300/40 bg-blue-950/90 px-1.5 py-1 shadow-sm">
-      <p className="text-[9px] font-semibold text-blue-100 leading-none mb-1">{label}</p>
+    <div className="rounded-md border border-border/70 bg-card/95 px-1.5 py-1">
+      <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">{label}</p>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           className={cn(
@@ -450,6 +451,8 @@ export default function WeeklyComparison() {
   });
   const [activeSections, setActiveSections] = useState<string[]>(Object.keys(SECTION_TO_GROUPS));
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [customDateStart, setCustomDateStart] = useState("");
+  const [customDateEnd, setCustomDateEnd] = useState("");
 
   const setFilter = (key: keyof Filters) => (val: string) =>
     setFilters(prev => ({ ...prev, [key]: val }));
@@ -617,7 +620,7 @@ export default function WeeklyComparison() {
   };
 
   // ── Active filter badge count ─────────────────────────────
-  const activeFilterCount = Object.values(filters).filter(v => v !== "__all__").length;
+  const activeFilterCount = Object.values(filters).filter(v => v !== "__all__").length + (customDateStart ? 1 : 0) + (customDateEnd ? 1 : 0);
 
   const resetFilters = () => {
     setFilters({
@@ -625,13 +628,15 @@ export default function WeeklyComparison() {
       praca:"__all__",diaSemana:"__all__",fornecedor:"__all__",anoMes:"__all__",ofertas:"__all__",
     });
     setActiveSections(Object.keys(SECTION_TO_GROUPS));
+    setCustomDateStart("");
+    setCustomDateEnd("");
   };
 
   return (
     <div className="flex flex-col bg-background min-h-0">
 
       {/* ══ FILTROS ═══════════════════════════════════════════ */}
-      <div className="border-b border-blue-900 bg-blue-900/95 px-3 py-1.5 flex items-center gap-2 flex-wrap">
+      <div className="border-b border-border bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-slate-950 px-3 py-2 flex items-end gap-2 flex-wrap">
         <FilterSelect label="Depto"       options={Object.keys(DEPTO_TO_SECTIONS)}              value={filters.depto}       onChange={setFilter("depto")} />
         <FilterSelect label="Seção"       options={Object.keys(SECTION_TO_GROUPS)}              value={filters.secao}       onChange={v => { setFilter("secao")(v); if (v !== "__all__") setActiveSections([v]); else setActiveSections(Object.keys(SECTION_TO_GROUPS)); }} />
         <FilterSelect label="Grupo"       options={mockProductGroups.map(g => g.name)}          value={filters.grupo}       onChange={setFilter("grupo")} />
@@ -642,6 +647,14 @@ export default function WeeklyComparison() {
         <FilterSelect label="Fornecedor"  options={[...new Set(Object.values(FORNECEDORES_BY_SECTION))]} value={filters.fornecedor} onChange={setFilter("fornecedor")} />
         <FilterSelect label="Ano e Mês"   options={["Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25"]} value={filters.anoMes} onChange={setFilter("anoMes")} />
         <FilterSelect label="Ofertas"     options={["Sim","Não"]}                               value={filters.ofertas}     onChange={setFilter("ofertas")} />
+        <div className="rounded-md border border-border/70 bg-card/95 px-2 py-1 min-w-[220px]">
+          <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">Período personalizado</p>
+          <div className="flex items-center gap-1.5">
+            <Input type="date" value={customDateStart} onChange={e => setCustomDateStart(e.target.value)} className="h-6 text-[10px] px-1.5" />
+            <span className="text-[9px] text-muted-foreground">até</span>
+            <Input type="date" value={customDateEnd} onChange={e => setCustomDateEnd(e.target.value)} className="h-6 text-[10px] px-1.5" />
+          </div>
+        </div>
         {activeFilterCount > 0 && (
           <button
             onClick={resetFilters}
@@ -666,6 +679,14 @@ export default function WeeklyComparison() {
               </button>
             </span>
           ) : null)}
+          {(customDateStart || customDateEnd) && (
+            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded text-[8.5px] text-primary font-medium">
+              Período: {customDateStart || "..."} → {customDateEnd || "..."}
+              <button onClick={() => { setCustomDateStart(""); setCustomDateEnd(""); }} className="hover:text-destructive">
+                <X className="h-2 w-2" />
+              </button>
+            </span>
+          )}
         </div>
       )}
 
