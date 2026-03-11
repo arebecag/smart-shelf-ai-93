@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, Cell
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, Cell, LabelList
 } from "recharts";
 import { mockProductGroups } from "@/data/mockData";
 import { useApprovals } from "@/contexts/ApprovalsContext";
