@@ -95,27 +95,22 @@ function getSectionRevenue(section: string, dayShort: string): number {
   return Math.round(base * mult * boosted);
 }
 
+// X = days, each section is a key with its faturamento for that day
 function buildAreaData() {
-  return Object.keys(PRODUCT_SECTION_MAP).map(section => {
-    const groupIds = PRODUCT_SECTION_MAP[section];
-    let totalSales = 0, totalMargin = 0, totalVol = 0;
-    for (const gid of groupIds) {
-      const group = mockProductGroups.find(g => g.id === gid);
-      if (group) {
-        for (const p of group.products) {
-          totalSales += p.sales * p.price;
-          totalMargin += p.sales * p.price * p.margin;
-          totalVol += p.sales;
-        }
-      }
+  return DAYS_SHORT.map(day => {
+    const row: Record<string, any> = { day };
+    for (const section of Object.keys(PRODUCT_SECTION_MAP)) {
+      row[section] = getSectionRevenue(section, day);
     }
-    return {
-      section,
-      faturamento: Math.round(totalSales / 80),
-      volume: Math.round(totalVol / 10),
-      rentabilidade: Math.round(totalMargin / 80),
-    };
+    return row;
   });
+}
+
+// For the "% vs Monday" custom dot label
+function calcPctVsMon(dayRevenue: number, monRevenue: number): string {
+  if (!monRevenue) return "";
+  const pct = Math.round(((dayRevenue - monRevenue) / monRevenue) * 100);
+  return pct >= 0 ? `+${pct}%` : `${pct}%`;
 }
 
 function buildAllSectionMetrics() {
