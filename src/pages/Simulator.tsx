@@ -185,9 +185,16 @@ export default function Simulator() {
 
   const priceChanged = selectedProduct ? parsedPrice !== selectedProduct.price : false;
   const marginOk = metrics ? metrics.newMargin >= 0.15 : true;
+  const minimumPrice = metrics ? (metrics.cost / 0.85) : 0;
 
   const handleSubmit = () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct || Number.isNaN(parsedPrice) || parsedPrice <= 0) {
+      toast({
+        title: "Preço inválido",
+        description: "Informe um preço válido para continuar.",
+      });
+      return;
+    }
     addToSimulator(selectedProduct);
     updateProposedPrice(selectedProduct.id, parsedPrice);
     submitForApproval(selectedProduct.id, notes);
@@ -229,6 +236,9 @@ export default function Simulator() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
+              {searchQuery.length >= 2 && searchResults.length === 0 && (
+                <p className="text-xs text-muted-foreground px-1 py-2">Nenhum produto encontrado para "{searchQuery}".</p>
+              )}
               {searchResults.length > 0 && (
                 <div className="border border-border rounded-xl overflow-hidden">
                   {searchResults.map(p => (
@@ -369,9 +379,23 @@ export default function Simulator() {
                     <p className="text-[10px] text-muted-foreground mt-1">
                       Custo: R$ {metrics.cost.toFixed(2)}
                     </p>
-                    <p className="text-sm font-extrabold text-amber-600 mt-0.5">
-                      Preço mínimo (15% margem): R$ {(metrics.cost / 0.85).toFixed(2)}
+                    <p className="text-sm font-extrabold text-cyan-600 mt-0.5">
+                      Preço mínimo (15% margem): R$ {minimumPrice.toFixed(2)}
                     </p>
+                    <div className="flex gap-2 mt-2">
+                      <Button type="button" variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => {
+                        setProposedPrice(minimumPrice.toFixed(2));
+                        updateProposedPrice(selectedProduct.id, minimumPrice);
+                      }}>
+                        Usar preço mínimo
+                      </Button>
+                      <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => {
+                        setProposedPrice(selectedProduct.price.toFixed(2));
+                        updateProposedPrice(selectedProduct.id, selectedProduct.price);
+                      }}>
+                        Voltar ao preço atual
+                      </Button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className={`rounded-xl p-2.5 border text-center ${!marginOk && priceChanged ? "border-destructive/40 bg-destructive/5" : "border-border bg-muted/20"}`}>

@@ -157,8 +157,8 @@ function FilterSelect({
   label: string; options: string[]; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-border/80 bg-slate-50 dark:bg-slate-900/60 px-1.5 py-1">
-      <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">{label}</p>
+    <div className="rounded-md border border-blue-300/40 bg-blue-950/90 px-1.5 py-1 shadow-sm">
+      <p className="text-[9px] font-semibold text-blue-100 leading-none mb-1">{label}</p>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           className={cn(
@@ -631,7 +631,7 @@ export default function WeeklyComparison() {
     <div className="flex flex-col bg-background min-h-0">
 
       {/* ══ FILTROS ═══════════════════════════════════════════ */}
-      <div className="border-b border-border bg-muted/20 px-3 py-1.5 flex items-center gap-2 flex-wrap">
+      <div className="border-b border-blue-900 bg-blue-900/95 px-3 py-1.5 flex items-center gap-2 flex-wrap">
         <FilterSelect label="Depto"       options={Object.keys(DEPTO_TO_SECTIONS)}              value={filters.depto}       onChange={setFilter("depto")} />
         <FilterSelect label="Seção"       options={Object.keys(SECTION_TO_GROUPS)}              value={filters.secao}       onChange={v => { setFilter("secao")(v); if (v !== "__all__") setActiveSections([v]); else setActiveSections(Object.keys(SECTION_TO_GROUPS)); }} />
         <FilterSelect label="Grupo"       options={mockProductGroups.map(g => g.name)}          value={filters.grupo}       onChange={setFilter("grupo")} />
@@ -651,7 +651,7 @@ export default function WeeklyComparison() {
             Limpar ({activeFilterCount})
           </button>
         )}
-        <span className="ml-auto text-[10px] font-mono text-muted-foreground shrink-0">{todayStr}</span>
+        <span className="ml-auto text-[10px] font-mono text-blue-100/90 shrink-0">{todayStr}</span>
       </div>
 
       {/* ── Active filter chips ── */}
