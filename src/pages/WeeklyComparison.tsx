@@ -718,10 +718,10 @@ export default function WeeklyComparison() {
   };
 
   return (
-    <div className="flex flex-col bg-background min-h-0" style={{ fontSize: "1.08em" }}>
+    <div className="flex flex-col bg-background min-h-0">
 
       {/* ══ FILTROS ═══════════════════════════════════════════ */}
-      <div className="border-b border-border bg-slate-100/70 dark:bg-slate-900/70 px-3 py-2.5 flex items-end gap-2 flex-wrap">
+      <div className="border-b border-border/80 bg-muted/50 dark:bg-muted/20 px-4 py-3 flex items-end gap-2 flex-wrap shadow-sm">
         <FilterSelect label="Depto"       options={Object.keys(DEPTO_TO_SECTIONS)}              value={filters.depto}       onChange={setFilter("depto")} />
         <FilterSelect label="Seção"       options={Object.keys(SECTION_TO_GROUPS)}              value={filters.secao}       onChange={v => { setFilter("secao")(v); if (v !== "__all__") setActiveSections([v]); else setActiveSections(Object.keys(SECTION_TO_GROUPS)); }} />
         <FilterSelect label="Grupo"       options={mockProductGroups.map(g => g.name)}          value={filters.grupo}       onChange={setFilter("grupo")} />
@@ -732,25 +732,26 @@ export default function WeeklyComparison() {
         <FilterSelect label="Fornecedor"  options={[...new Set(Object.values(FORNECEDORES_BY_SECTION))]} value={filters.fornecedor} onChange={setFilter("fornecedor")} />
         <FilterSelect label="Ano e Mês"   options={["Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25"]} value={filters.anoMes} onChange={setFilter("anoMes")} />
         <FilterSelect label="Ofertas"     options={["Sim","Não"]}                               value={filters.ofertas}     onChange={setFilter("ofertas")} />
-        <div className="rounded-md border border-border/60 bg-transparent px-2 py-1 min-w-[220px]">
-          <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">Período personalizado</p>
+        <div className="rounded-md border border-border/60 bg-card/80 px-2 py-1.5 shadow-sm min-w-[240px]">
+          <p className="text-[9.5px] font-semibold text-muted-foreground leading-none mb-1.5">Período personalizado</p>
           <div className="flex items-center gap-1.5">
-            <Input type="date" value={customDateStart} onChange={e => setCustomDateStart(e.target.value)} className="h-6 text-[10px] px-1.5" />
-            <span className="text-[9px] text-muted-foreground">até</span>
-            <Input type="date" value={customDateEnd} onChange={e => setCustomDateEnd(e.target.value)} className="h-6 text-[10px] px-1.5" />
+            <Input type="date" value={customDateStart} onChange={e => setCustomDateStart(e.target.value)} className="h-7 text-[11px] px-2" />
+            <span className="text-[10px] text-muted-foreground">até</span>
+            <Input type="date" value={customDateEnd} onChange={e => setCustomDateEnd(e.target.value)} className="h-7 text-[11px] px-2" />
           </div>
         </div>
         {activeFilterCount > 0 && (
           <button
             onClick={resetFilters}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-[9px] font-semibold hover:bg-primary/20 transition-colors"
+            className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-[11px] font-semibold hover:bg-primary/20 transition-colors"
           >
-            <X className="h-2.5 w-2.5" />
+            <X className="h-3 w-3" />
             Limpar ({activeFilterCount})
           </button>
         )}
-        <span className="ml-auto text-[10px] font-mono text-blue-100/90 shrink-0">{todayStr}</span>
+        <span className="ml-auto text-[11px] font-mono text-muted-foreground shrink-0">{todayStr}</span>
       </div>
+
 
       {/* ── Active filter chips ── */}
       {activeFilterCount > 0 && (
