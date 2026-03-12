@@ -158,21 +158,21 @@ function FilterSelect({
   label: string; options: string[]; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-border/60 bg-transparent px-1.5 py-1">
-      <p className="text-[9px] font-semibold text-muted-foreground leading-none mb-1">{label}</p>
+    <div className="rounded-md border border-border/60 bg-card/80 px-2 py-1.5 shadow-sm">
+      <p className="text-[9.5px] font-semibold text-muted-foreground leading-none mb-1.5">{label}</p>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           className={cn(
-            "h-6 text-[10px] px-2 py-0 min-w-[96px] max-w-[140px] border-border bg-background transition-colors",
+            "h-7 text-[11px] px-2 py-0 min-w-[100px] max-w-[150px] border-border bg-background transition-colors",
             value !== "__all__" && "border-primary text-primary bg-primary/5"
           )}
         >
           <SelectValue placeholder="Todos" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all__" className="text-[10px]">Todos</SelectItem>
+          <SelectItem value="__all__" className="text-[11px]">Todos</SelectItem>
           {options.map(o => (
-            <SelectItem key={o} value={o} className="text-[10px]">{o}</SelectItem>
+            <SelectItem key={o} value={o} className="text-[11px]">{o}</SelectItem>
           ))}
         </SelectContent>
       </Select>
