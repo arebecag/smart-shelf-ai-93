@@ -828,14 +828,16 @@ export default function WeeklyComparison() {
                   <XAxis dataKey="day" tick={{ fontSize: 12, fill: "hsl(var(--foreground))", fontWeight: 600 }} interval={0} axisLine={false} tickLine={false} />
 
                   <YAxis
-                    tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                    width={48}
-                    tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : v}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    width={56} axisLine={false} tickLine={false}
+                    tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)}
                   />
                   <Tooltip
-                    contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
+                    contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:12, boxShadow:"0 4px 16px rgba(0,0,0,.08)" }}
                     formatter={(v: any, name: string) => [fmtFull(v), name]}
+                    cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
                   />
+
                   {visibleSections.map((sec, i) => {
                     if (!effectiveActive.includes(sec)) return null;
                     const color = SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`;
