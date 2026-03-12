@@ -943,12 +943,12 @@ export default function WeeklyComparison() {
 
           {selectedSection && (
             <button onClick={() => setSelectedSection(null)}
-              className="ml-auto text-[10px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border hover:bg-muted transition-colors">
+              className="ml-auto text-[11px] text-muted-foreground hover:text-foreground px-3 py-1 rounded border border-border hover:bg-muted transition-colors">
               ✕ Todos
             </button>
           )}
         </div>
-        <div className="flex-1 grid grid-cols-5 divide-x divide-border overflow-hidden" style={{ minHeight: 280 }}>
+        <div className="flex-1 grid grid-cols-5 divide-x divide-border overflow-hidden" style={{ minHeight: 320 }}>
           {[
             { key:"byFat",       label:"Faturamento",      color:"text-blue-600",   fn:(p:Product)=>fmtFull(p.sales*p.price)    },
             { key:"byVol",       label:"Volume",           color:"text-orange-500", fn:(p:Product)=>fmtVol(p.sales)              },
@@ -957,27 +957,28 @@ export default function WeeklyComparison() {
             { key:"noCampaign",  label:"TOP s/ Campanha",  color:"text-orange-500", fn:(p:Product)=>fmtFull(p.sales*p.price*p.margin) },
           ].map(({ key, label, color, fn }) => (
             <div key={key} className="flex flex-col overflow-hidden">
-              <div className="px-2 py-1.5 border-b border-border text-center bg-muted/20">
-                <span className={cn("text-[9.5px] font-bold", color)}>{label}</span>
+              <div className="px-2 py-2 border-b border-border text-center bg-muted/20">
+                <span className={cn("text-[11px] font-bold", color)}>{label}</span>
               </div>
               <div className="flex-1 overflow-y-auto divide-y divide-border/40">
                 {(panelProducts[key as keyof typeof panelProducts] as Product[]).slice(0, 12).map(p => (
-                  <div key={p.id} className="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-muted/30">
+                  <div key={p.id} className="px-2 py-2 flex items-center justify-between gap-1.5 hover:bg-muted/30">
                     <div className="min-w-0">
-                      <p className={cn("text-[9.5px] font-semibold leading-tight truncate", color)}>{short(p.name, 18)}</p>
-                      <p className="text-[8.5px] text-muted-foreground">{fn(p)}</p>
+                      <p className={cn("text-[11px] font-semibold leading-tight truncate", color)}>{short(p.name, 20)}</p>
+                      <p className="text-[10px] text-muted-foreground">{fn(p)}</p>
                     </div>
                     <ActionBtns product={p} onSuggest={handleSuggest} onSimulate={handleSimulate}
                       isApproved={isApproved} isInSimulator={isInSimulator} />
                   </div>
                 ))}
                 {(panelProducts[key as keyof typeof panelProducts] as Product[]).length === 0 && (
-                  <p className="text-[9px] text-muted-foreground p-3 text-center">Sem dados</p>
+                  <p className="text-[11px] text-muted-foreground p-3 text-center">Sem dados</p>
                 )}
               </div>
             </div>
           ))}
         </div>
+
       </div>
 
       {/* ══ BLOCO 4: Gráficos de participação ══════════════════ */}
