@@ -183,7 +183,7 @@ function FilterSelect({
 // ── MiniBar ───────────────────────────────────────────────────
 function MiniBar({ pct, color }: { pct: number; color: string }) {
   return (
-    <div className="h-1.5 bg-muted rounded-sm overflow-hidden mt-0.5">
+    <div className="h-2 bg-muted rounded-sm overflow-hidden mt-0.5">
       <div className="h-full rounded-sm transition-all" style={{ width: `${Math.max(pct, 2)}%`, background: color }} />
     </div>
   );
@@ -195,32 +195,32 @@ function ActionBtns({ product, onSuggest, onSimulate, isApproved, isInSimulator 
   isApproved: (id: string) => boolean; isInSimulator: (id: string) => boolean;
 }) {
   return (
-    <div className="flex gap-0.5 flex-shrink-0">
+    <div className="flex gap-1 flex-shrink-0">
       <button
         onClick={e => { e.stopPropagation(); onSuggest(product); }}
         disabled={isApproved(product.id)}
         title="Sugerir"
         className={cn(
-          "w-5 h-5 rounded flex items-center justify-center border transition-colors",
+          "w-6 h-6 rounded flex items-center justify-center border transition-colors",
           isApproved(product.id)
             ? "border-green-300 text-green-600 bg-green-50 cursor-default"
             : "border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
         )}
       >
-        {isApproved(product.id) ? "✓" : <Send className="h-2.5 w-2.5" />}
+        {isApproved(product.id) ? "✓" : <Send className="h-3 w-3" />}
       </button>
       <button
         onClick={e => { e.stopPropagation(); onSimulate(product); }}
         disabled={isInSimulator(product.id)}
         title="Simular"
         className={cn(
-          "w-5 h-5 rounded flex items-center justify-center border transition-colors",
+          "w-6 h-6 rounded flex items-center justify-center border transition-colors",
           isInSimulator(product.id)
             ? "border-violet-300 text-violet-600 bg-violet-50 cursor-default"
             : "border-violet-300 text-violet-600 hover:bg-violet-600 hover:text-white"
         )}
       >
-        {isInSimulator(product.id) ? "✓" : <Zap className="h-2.5 w-2.5" />}
+        {isInSimulator(product.id) ? "✓" : <Zap className="h-3 w-3" />}
       </button>
     </div>
   );
