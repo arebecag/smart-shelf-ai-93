@@ -451,46 +451,47 @@ function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isAppro
   }, [r.section]);
 
   const allProds = useMemo(() => groups.flatMap(g => g.products), [groups]);
-  const subMax = {
+  const subMax = useMemo(() => ({
     fat:  Math.max(...allProds.map(p => p.sales * p.price), 1),
     vol:  Math.max(...allProds.map(p => p.sales), 1),
     rent: Math.max(...allProds.map(p => p.sales * p.price * p.margin), 1),
-  };
+  }), [allProds]);
+
+  const sectionColor = SECTION_COLORS[r.section] ?? "hsl(var(--primary))";
 
   return (
     <>
       <div
         className="grid hover:bg-muted/30 transition-colors cursor-pointer border-b border-border/40 select-none"
-        style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+        style={{ gridTemplateColumns: "32px 1fr 180px 120px 180px 96px 72px" }}
         onClick={() => setExpanded(e => !e)}
       >
-        <div className="flex items-center justify-center py-1.5 pl-2">
+        <div className="flex items-center justify-center py-2.5 pl-2">
           {expanded
-            ? <ChevronDown className="h-3.5 w-3.5 text-primary" />
-            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+            ? <ChevronDown className="h-4 w-4 text-primary" />
+            : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </div>
-        <div className="px-2 py-1.5 flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-sm flex-shrink-0"
-            style={{ background: SECTION_COLORS[r.section] ?? "hsl(var(--primary))" }} />
-          <span className={cn("text-[10px] font-semibold", expanded ? "text-primary" : "text-foreground")}>
+        <div className="px-2 py-2.5 flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: sectionColor }} />
+          <span className={cn("text-[12px] font-bold", expanded ? "text-primary" : "text-foreground")}>
             {r.section}
           </span>
-          <span className="text-[8.5px] text-muted-foreground">({allProds.length})</span>
+          <span className="text-[10px] text-muted-foreground">({allProds.length})</span>
         </div>
-        <div className="px-2 py-1.5">
-          <span className="text-[9px] text-blue-600 font-semibold block text-right leading-none">{fmtFull(r.fat)}</span>
+        <div className="px-2 py-2.5">
+          <span className="text-[11px] text-blue-600 font-semibold block text-right leading-none">{fmtFull(r.fat)}</span>
           <MiniBar pct={Math.round((r.fat / maxFat) * 100)} color="#3b82f6" />
         </div>
-        <div className="px-2 py-1.5">
-          <span className="text-[9px] text-orange-500 font-semibold block text-right leading-none">{fmtVol(r.vol)}</span>
+        <div className="px-2 py-2.5">
+          <span className="text-[11px] text-orange-500 font-semibold block text-right leading-none">{fmtVol(r.vol)}</span>
           <MiniBar pct={Math.round((r.vol / maxVol) * 100)} color="#f97316" />
         </div>
-        <div className="px-2 py-1.5">
-          <span className="text-[9px] text-green-700 font-semibold block text-right leading-none">{fmtFull(r.rent)}</span>
+        <div className="px-2 py-2.5">
+          <span className="text-[11px] text-green-700 font-semibold block text-right leading-none">{fmtFull(r.rent)}</span>
           <MiniBar pct={Math.round((r.rent / maxRent) * 100)} color="#22c55e" />
         </div>
-        <div className="px-2 py-1.5 flex items-center justify-end">
-          <span className="text-[9px] text-purple-600 font-semibold">{(r.margem * 100).toFixed(2)}%</span>
+        <div className="px-2 py-2.5 flex items-center justify-end">
+          <span className="text-[11px] text-purple-600 font-semibold">{(r.margem * 100).toFixed(2)}%</span>
         </div>
         <div />
       </div>
@@ -504,7 +505,7 @@ function SectionRow({ r, maxFat, maxVol, maxRent, onSuggest, onSimulate, isAppro
               isApproved={isApproved} isInSimulator={isInSimulator}
             />
           )) : (
-            <p className="py-3 text-center text-[9px] text-muted-foreground">Sem grupos</p>
+            <p className="py-4 text-center text-[11px] text-muted-foreground">Sem grupos</p>
           )}
         </div>
       )}
