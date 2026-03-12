@@ -31,6 +31,7 @@ const App = () => (
               <MainLayout>
                 <Routes>
                   <Route path="/" element={<Navigate to="/semanal" replace />} />
+
                   <Route path="/sugestao" element={<Suggestions />} />
                   <Route path="/semanal" element={<WeeklyComparison />} />
                   <Route path="/simulador" element={<Simulator />} />
