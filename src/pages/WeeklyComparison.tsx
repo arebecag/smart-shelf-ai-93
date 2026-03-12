@@ -897,9 +897,9 @@ export default function WeeklyComparison() {
             const maxVal    = items[0]?.revenue ?? 1;
             return (
               <div key={day} className="flex flex-col">
-                <div className={cn("px-2 py-1.5 text-center border-b border-border",
+                <div className={cn("px-2 py-2 text-center border-b border-border",
                   isWeekend ? "bg-red-50 dark:bg-red-950/20" : "bg-blue-50 dark:bg-blue-950/20")}>
-                  <span className="text-[10px] font-bold leading-tight block text-foreground">{fullDay}</span>
+                  <span className="text-[11px] font-bold leading-tight block text-foreground">{fullDay}</span>
                 </div>
                 <div className="divide-y divide-border/40">
                   {items.slice(0, 9).map(item => {
@@ -909,17 +909,17 @@ export default function WeeklyComparison() {
                         key={item.section}
                         onClick={() => setSelectedSection(selectedSection === item.section ? null : item.section)}
                         className={cn(
-                          "w-full px-1.5 py-1 flex flex-col gap-0.5 hover:bg-muted/40 transition-colors text-left",
+                          "w-full px-2 py-1.5 flex flex-col gap-0.5 hover:bg-muted/40 transition-colors text-left",
                           selectedSection === item.section && "bg-muted/60"
                         )}
                       >
-                        <span className="text-[8.5px] font-semibold text-foreground leading-tight truncate w-full">
+                        <span className="text-[10px] font-semibold text-foreground leading-tight truncate w-full">
                           {item.section}
                         </span>
-                        <div className="w-full h-4 bg-muted/40 rounded-sm overflow-hidden relative">
-                          <div className="h-full rounded-sm transition-all flex items-center justify-end pr-1"
+                        <div className="w-full h-5 bg-muted/40 rounded-sm overflow-hidden relative">
+                          <div className="h-full rounded-sm transition-all flex items-center justify-end pr-1.5"
                             style={{ width: `${Math.max(pct, 18)}%`, background: barColor }}>
-                            <span className="text-[7.5px] font-bold text-white leading-none tabular-nums whitespace-nowrap">
+                            <span className="text-[9px] font-bold text-white leading-none tabular-nums whitespace-nowrap">
                               {fmtM(item.revenue)} · {pct}%
                             </span>
                           </div>
@@ -935,11 +935,12 @@ export default function WeeklyComparison() {
       </div>
 
       {/* ══ BLOCO 3: Painel de produtos 5 colunas ════════════════ */}
-      <div className="border-b border-border flex flex-col" style={{ minHeight: 320 }}>
-        <div className="px-3 py-1.5 border-b border-border bg-muted/20 flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-muted-foreground">
+      <div className="border-b border-border flex flex-col" style={{ minHeight: 360 }}>
+        <div className="px-4 py-2 border-b border-border bg-muted/20 flex items-center gap-2">
+          <span className="text-[12px] font-semibold text-foreground">
             {selectedSection ? `Produtos — ${selectedSection}` : "TOP Produtos (Todos)"}
           </span>
+
           {selectedSection && (
             <button onClick={() => setSelectedSection(null)}
               className="ml-auto text-[10px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border hover:bg-muted transition-colors">
