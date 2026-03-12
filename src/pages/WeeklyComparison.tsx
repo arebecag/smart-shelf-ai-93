@@ -231,19 +231,19 @@ function RankingPanel({ title, color, items }: {
   title: string; color: string; items: { label: string; value: string }[];
 }) {
   return (
-    <div className="flex flex-col border border-border rounded overflow-hidden h-full">
-      <div className="px-2 py-1 border-b border-border bg-muted/30">
-        <span className="text-[9px] font-bold uppercase" style={{ color }}>{title}</span>
+    <div className="flex flex-col border border-border rounded-lg overflow-hidden h-full">
+      <div className="px-3 py-1.5 border-b border-border bg-muted/30">
+        <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color }}>{title}</span>
       </div>
       <div className="flex-1 overflow-y-auto divide-y divide-border/40">
         {items.slice(0, 6).map((item, i) => (
-          <div key={i} className="px-2 py-1 flex items-center justify-between gap-1">
-            <span className="text-[9px] font-semibold truncate" style={{ color }}>{item.label}</span>
-            <span className="text-[9px] text-muted-foreground font-mono shrink-0">{item.value}</span>
+          <div key={i} className="px-3 py-1.5 flex items-center justify-between gap-2">
+            <span className="text-[10px] font-medium truncate text-foreground">{item.label}</span>
+            <span className="text-[10px] text-muted-foreground font-mono shrink-0">{item.value}</span>
           </div>
         ))}
         {items.length === 0 && (
-          <p className="text-[9px] text-muted-foreground p-2 text-center">Sem dados</p>
+          <p className="text-[10px] text-muted-foreground p-3 text-center">Sem dados</p>
         )}
       </div>
     </div>
