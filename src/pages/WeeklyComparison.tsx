@@ -823,9 +823,10 @@ export default function WeeklyComparison() {
           <div className="flex-1 p-3">
             {areaData.length > 0 && visibleSections.length > 0 ? (
               <ResponsiveContainer width="100%" height={272}>
-                <LineChart data={areaData} margin={{ top: 22, right: 16, left: 0, bottom: 4 }}>
+                <LineChart data={areaData} margin={{ top: 28, right: 20, left: 4, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--foreground))", fontWeight: 600 }} interval={0} />
+                  <XAxis dataKey="day" tick={{ fontSize: 12, fill: "hsl(var(--foreground))", fontWeight: 600 }} interval={0} axisLine={false} tickLine={false} />
+
                   <YAxis
                     tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
                     width={48}
