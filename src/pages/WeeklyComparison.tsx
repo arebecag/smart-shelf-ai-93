@@ -251,45 +251,106 @@ function RankingPanel({ title, color, items }: {
 }
 
 // ── ProductLeafRow ────────────────────────────────────────────
-function ProductLeafRow({ p, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator }: {
+function ProductLeafRow({ p, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator, depth = 3 }: {
   p: Product; maxFat: number; maxVol: number; maxRent: number;
   onSuggest: (p: Product) => void; onSimulate: (p: Product) => void;
   isApproved: (id: string) => boolean; isInSimulator: (id: string) => boolean;
+  depth?: number;
 }) {
   const fat  = p.sales * p.price;
   const rent = fat * p.margin;
+  const paddingLeft = depth === 3 ? "pl-14" : "pl-20";
   return (
     <div
       className="grid items-center hover:bg-primary/5 transition-colors border-b border-border/20"
-      style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+      style={{ gridTemplateColumns: "32px 1fr 180px 120px 180px 96px 72px" }}
     >
       <div />
-      <div className="py-1.5 min-w-0 flex items-center gap-1.5 pl-12">
-        <span className="w-1 h-1 rounded-full bg-muted-foreground/40 flex-shrink-0" />
+      <div className={cn("py-2 min-w-0 flex items-center gap-2", paddingLeft)}>
+        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" />
         <div className="min-w-0">
-          <p className="text-[9.5px] font-medium text-foreground leading-tight truncate">{p.name}</p>
-          <p className="text-[8px] text-muted-foreground">R$ {p.price?.toFixed(2) ?? "—"}</p>
+          <p className="text-[11px] font-medium text-foreground leading-tight truncate">{p.name}</p>
+          <p className="text-[10px] text-muted-foreground">R$ {p.price?.toFixed(2) ?? "—"}</p>
         </div>
       </div>
-      <div className="px-2 py-1.5">
-        <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
+      <div className="px-2 py-2">
+        <span className="text-[10px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
         <MiniBar pct={Math.round((fat / maxFat) * 100)} color="#3b82f6" />
       </div>
-      <div className="px-2 py-1.5">
-        <span className="text-[9px] text-orange-500 font-mono block text-right leading-none">{fmtVol(p.sales)}</span>
+      <div className="px-2 py-2">
+        <span className="text-[10px] text-orange-500 font-mono block text-right leading-none">{fmtVol(p.sales)}</span>
         <MiniBar pct={Math.round((p.sales / maxVol) * 100)} color="#f97316" />
       </div>
-      <div className="px-2 py-1.5">
-        <span className="text-[9px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
+      <div className="px-2 py-2">
+        <span className="text-[10px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
         <MiniBar pct={Math.round((rent / maxRent) * 100)} color="#22c55e" />
       </div>
-      <div className="px-2 py-1.5 text-right">
-        <span className="text-[9px] text-purple-600 font-mono">{(p.margin * 100).toFixed(2)}%</span>
+      <div className="px-2 py-2 text-right">
+        <span className="text-[10px] text-purple-600 font-mono">{(p.margin * 100).toFixed(2)}%</span>
       </div>
-      <div className="px-2 py-1.5 flex items-center justify-center">
+      <div className="px-2 py-2 flex items-center justify-center">
         <ActionBtns product={p} onSuggest={onSuggest} onSimulate={onSimulate} isApproved={isApproved} isInSimulator={isInSimulator} />
       </div>
     </div>
+  );
+}
+
+// ── SubgroupRow ───────────────────────────────────────────────
+function SubgroupRow({ name, products, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApproved, isInSimulator }: {
+  name: string; products: Product[];
+  maxFat: number; maxVol: number; maxRent: number;
+  onSuggest: (p: Product) => void; onSimulate: (p: Product) => void;
+  isApproved: (id: string) => boolean; isInSimulator: (id: string) => boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const fat  = products.reduce((s, p) => s + p.sales * p.price, 0);
+  const vol  = products.reduce((s, p) => s + p.sales, 0);
+  const rent = products.reduce((s, p) => s + p.sales * p.price * p.margin, 0);
+  const avgM = products.length ? products.reduce((s, p) => s + p.margin, 0) / products.length : 0;
+
+  return (
+    <>
+      <div
+        className="grid items-center hover:bg-blue-50/40 dark:hover:bg-blue-950/10 cursor-pointer transition-colors border-b border-border/20 bg-muted/10 select-none"
+        style={{ gridTemplateColumns: "32px 1fr 180px 120px 180px 96px 72px" }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="flex items-center justify-center py-2">
+          {open
+            ? <ChevronDown className="h-3 w-3 text-blue-500" />
+            : <ChevronRight className="h-3 w-3 text-muted-foreground/60" />}
+        </div>
+        <div className="py-2 min-w-0 flex items-center gap-2 pl-10">
+          <span className="w-1.5 h-4 rounded-sm bg-blue-400/60 flex-shrink-0" />
+          <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-400 truncate">{name}</span>
+          <span className="text-[9.5px] text-muted-foreground shrink-0">({products.length})</span>
+        </div>
+        <div className="px-2 py-2">
+          <span className="text-[10px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
+          <MiniBar pct={Math.round((fat / maxFat) * 100)} color="#93c5fd" />
+        </div>
+        <div className="px-2 py-2">
+          <span className="text-[10px] text-orange-500 font-mono block text-right leading-none">{fmtVol(vol)}</span>
+          <MiniBar pct={Math.round((vol / maxVol) * 100)} color="#fdba74" />
+        </div>
+        <div className="px-2 py-2">
+          <span className="text-[10px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
+          <MiniBar pct={Math.round((rent / maxRent) * 100)} color="#86efac" />
+        </div>
+        <div className="px-2 py-2 text-right">
+          <span className="text-[10px] text-purple-600 font-mono">{(avgM * 100).toFixed(2)}%</span>
+        </div>
+        <div />
+      </div>
+      {open && products.map(p => (
+        <ProductLeafRow
+          key={p.id} p={p} depth={4}
+          maxFat={maxFat} maxVol={maxVol} maxRent={maxRent}
+          onSuggest={onSuggest} onSimulate={onSimulate}
+          isApproved={isApproved} isInSimulator={isInSimulator}
+        />
+      ))}
+    </>
   );
 }
 
@@ -314,71 +375,62 @@ function GroupRow({ group, maxFat, maxVol, maxRent, onSuggest, onSimulate, isApp
     rent: Math.max(...group.products.map(p => p.sales * p.price * p.margin), 1),
   }), [group.products]);
 
+  // Build subgroups: split products into meaningful subgroups by name prefix
   const subgroups = useMemo(() => {
     const buckets = new Map<string, Product[]>();
-    group.products.forEach((p, idx) => {
-      const first = p.name.split(" ")[0] || "Subgrupo";
-      const key = `${first} ${idx % 2 === 0 ? "A" : "B"}`;
+    group.products.forEach((p) => {
+      const words = p.name.split(" ");
+      // Use first 2 words as subgroup key if possible
+      const key = words.length >= 2 ? `${words[0]} ${words[1]}` : words[0] || "Subgrupo";
       const arr = buckets.get(key) || [];
       arr.push(p);
       buckets.set(key, arr);
     });
-    return Array.from(buckets.entries()).slice(0, 3);
+    return Array.from(buckets.entries());
   }, [group.products]);
 
   return (
     <>
       <div
         className="grid items-center hover:bg-muted/40 cursor-pointer transition-colors border-b border-border/30 select-none"
-        style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+        style={{ gridTemplateColumns: "32px 1fr 180px 120px 180px 96px 72px" }}
         onClick={() => setOpen(o => !o)}
       >
-        <div className="flex items-center justify-center py-1.5 pl-2">
+        <div className="flex items-center justify-center py-2 pl-2">
           {open
-            ? <ChevronDown className="h-3 w-3 text-primary" />
-            : <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+            ? <ChevronDown className="h-3.5 w-3.5 text-primary" />
+            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
         </div>
-        <div className="py-1.5 min-w-0 flex items-center gap-1 pl-5">
-          <span className="text-[9.5px] font-semibold text-foreground/80 truncate">{group.name}</span>
-          <span className="text-[8px] text-muted-foreground shrink-0">({group.products.length})</span>
-          
+        <div className="py-2 min-w-0 flex items-center gap-2 pl-5">
+          <span className="text-[11px] font-bold text-foreground/80 truncate">{group.name}</span>
+          <span className="text-[9.5px] text-muted-foreground shrink-0">({group.products.length})</span>
         </div>
-        <div className="px-2 py-1.5">
-          <span className="text-[9px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
+        <div className="px-2 py-2">
+          <span className="text-[10px] text-blue-600 font-mono block text-right leading-none">{fmtFull(fat)}</span>
           <MiniBar pct={Math.round((fat / maxFat) * 100)} color="#60a5fa" />
         </div>
-        <div className="px-2 py-1.5">
-          <span className="text-[9px] text-orange-500 font-mono block text-right leading-none">{fmtVol(vol)}</span>
+        <div className="px-2 py-2">
+          <span className="text-[10px] text-orange-500 font-mono block text-right leading-none">{fmtVol(vol)}</span>
           <MiniBar pct={Math.round((vol / maxVol) * 100)} color="#fdba74" />
         </div>
-        <div className="px-2 py-1.5">
-          <span className="text-[9px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
+        <div className="px-2 py-2">
+          <span className="text-[10px] text-green-700 font-mono block text-right leading-none">{fmtFull(rent)}</span>
           <MiniBar pct={Math.round((rent / maxRent) * 100)} color="#86efac" />
         </div>
-        <div className="px-2 py-1.5 text-right">
-          <span className="text-[9px] text-purple-600 font-mono">{(avgM * 100).toFixed(2)}%</span>
+        <div className="px-2 py-2 text-right">
+          <span className="text-[10px] text-purple-600 font-mono">{(avgM * 100).toFixed(2)}%</span>
         </div>
         <div />
       </div>
-      {open && subgroups.map(([subgroupName, subgroupProducts]) => (
-        <div key={subgroupName}>
-          <div className="grid items-center bg-muted/20 border-b border-border/20" style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}>
-            <div />
-            <div className="py-1.5 min-w-0 flex items-center gap-1 pl-10">
-              <span className="text-[10px] font-semibold text-primary truncate">Subgrupo: {subgroupName}</span>
-              <span className="text-[9px] text-muted-foreground">({subgroupProducts.length})</span>
-            </div>
-            <div /><div /><div /><div /><div />
-          </div>
-          {subgroupProducts.map(p => (
-            <ProductLeafRow
-              key={p.id} p={p}
-              maxFat={subMax.fat} maxVol={subMax.vol} maxRent={subMax.rent}
-              onSuggest={onSuggest} onSimulate={onSimulate}
-              isApproved={isApproved} isInSimulator={isInSimulator}
-            />
-          ))}
-        </div>
+      {open && subgroups.map(([subName, subProds]) => (
+        <SubgroupRow
+          key={subName}
+          name={subName}
+          products={subProds}
+          maxFat={subMax.fat} maxVol={subMax.vol} maxRent={subMax.rent}
+          onSuggest={onSuggest} onSimulate={onSimulate}
+          isApproved={isApproved} isInSimulator={isInSimulator}
+        />
       ))}
     </>
   );
