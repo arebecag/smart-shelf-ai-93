@@ -777,15 +777,15 @@ export default function WeeklyComparison() {
       )}
 
       {/* ══ BLOCO 1: Line Chart + Rankings ══════════════════════ */}
-      <div className="border-b border-border flex" style={{ minHeight: 290 }}>
+      <div className="border-b border-border flex" style={{ minHeight: 340 }}>
         <div className="flex flex-col border-r border-border" style={{ flex: "0 0 65%" }}>
           {/* Pills */}
-          <div className="px-3 py-1.5 border-b border-border bg-muted/20 flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-semibold text-muted-foreground shrink-0">
+          <div className="px-4 py-2 border-b border-border bg-muted/20 flex items-center gap-2 flex-wrap">
+            <span className="text-[12px] font-semibold text-foreground shrink-0">
               Faturamento por dia da semana
               {filters.praca !== "__all__" && <span className="text-primary ml-1">— {filters.praca}</span>}
             </span>
-            <div className="flex items-center gap-1 flex-wrap ml-2">
+            <div className="flex items-center gap-1.5 flex-wrap ml-2">
               {visibleSections.map(sec => {
                 const isActive = effectiveActive.includes(sec);
                 const color = SECTION_COLORS[sec] ?? "#6b7280";
@@ -797,7 +797,7 @@ export default function WeeklyComparison() {
                         ? prev.length > 1 ? prev.filter(s => s !== sec) : visibleSections
                         : [...prev, sec]
                     )}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-semibold border transition-all"
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-semibold border transition-all"
                     style={{
                       borderColor: isActive ? color : "hsl(var(--border))",
                       background: isActive ? `${color}22` : "transparent",
@@ -805,7 +805,7 @@ export default function WeeklyComparison() {
                       opacity: isActive ? 1 : 0.55,
                     }}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    <span className="w-2 h-2 rounded-full flex-shrink-0"
                       style={{ background: isActive ? color : "hsl(var(--muted-foreground))" }} />
                     {sec}
                   </button>
@@ -814,15 +814,15 @@ export default function WeeklyComparison() {
               {visibleSections.length > 1 && (
                 <button
                   onClick={() => setActiveSections(visibleSections)}
-                  className="px-1.5 py-0.5 rounded-full text-[8.5px] font-semibold border border-border text-muted-foreground hover:bg-muted transition-colors"
+                  className="px-2 py-1 rounded-full text-[11px] font-semibold border border-border text-muted-foreground hover:bg-muted transition-colors"
                 >Todos</button>
               )}
             </div>
           </div>
           {/* Chart */}
-          <div className="flex-1 p-2">
+          <div className="flex-1 p-3">
             {areaData.length > 0 && visibleSections.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={272}>
                 <LineChart data={areaData} margin={{ top: 22, right: 16, left: 0, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--foreground))", fontWeight: 600 }} interval={0} />
