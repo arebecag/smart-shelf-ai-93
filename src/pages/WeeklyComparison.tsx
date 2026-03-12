@@ -977,54 +977,94 @@ export default function WeeklyComparison() {
       </div>
 
       {/* ══ BLOCO 4: Gráficos de participação ══════════════════ */}
-      <div className="flex border-b border-border">
-        <div className="border-r border-border p-3" style={{ flex: "0 0 60%" }}>
-          <p className="text-[10px] font-semibold text-muted-foreground text-center mb-1">
-            Participação por categoria (top 6) e dia
-            {filters.praca !== "__all__" && ` — ${filters.praca}`}
+      <div className="grid grid-cols-2 border-b border-border gap-0">
+        {/* Chart 1: Participação por categoria e dia */}
+        <div className="border-r border-border p-4">
+          <p className="text-[12px] font-semibold text-foreground mb-1">
+            Participação por categoria e dia
+            {filters.praca !== "__all__" && <span className="text-primary ml-1">— {filters.praca}</span>}
           </p>
-          <p className="text-[9px] text-muted-foreground text-center mb-2">
-            Percentual de participação no dia. Visual otimizado para reduzir ruído e facilitar leitura.
-          </p>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stackedData} margin={{ top: 8, right: 12, left: 8, bottom: 12 }} barCategoryGap="34%">
-              <CartesianGrid strokeDasharray="2 4" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--foreground))" }} interval={0} />
-              <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={30}
-                tickFormatter={v => `${v}%`} domain={[0, 100]} />
-              <Tooltip
-                contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
-                formatter={(v, name) => [`${v}%`, name]}
+          <p className="text-[11px] text-muted-foreground mb-4">% do faturamento por seção em cada dia da semana</p>
+
+          {/* Legend pills */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {participationSections.map((sec, i) => (
+              <div key={sec} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                  style={{ background: SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)` }} />
+                <span className="text-[11px] text-foreground font-medium">{sec}</span>
+              </div>
+            ))}
+          </div>
+
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={stackedData} margin={{ top: 8, right: 16, left: 4, bottom: 4 }} barCategoryGap="28%">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="day"
+                tick={{ fontSize: 12, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                axisLine={false} tickLine={false} interval={0}
               />
-              <Legend wrapperStyle={{ fontSize: 10 }} iconSize={10} iconType="circle" />
+              <YAxis
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                width={38} tickFormatter={v => `${v}%`} domain={[0, 100]}
+                axisLine={false} tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:12, boxShadow:"0 4px 16px rgba(0,0,0,.08)" }}
+                formatter={(v: any, name: string) => [`${v}%`, name]}
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
+              />
               {participationSections.map((sec, i) => (
-                <Bar key={sec} dataKey={sec} stackId="a"
+                <Bar
+                  key={sec} dataKey={sec} stackId="a"
                   fill={SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
-                  radius={i === visibleSections.length - 1 ? [3, 3, 0, 0] : undefined}
+                  radius={i === participationSections.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                  label={i === participationSections.length - 1 ? undefined : false}
                 />
               ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="p-3 flex-1">
-          <p className="text-[10px] font-semibold text-muted-foreground text-center mb-2">
-            Participação % por praça e categoria
-          </p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={pracaData} margin={{ top: 5, right: 10, left: 5, bottom: 30 }}>
+
+        {/* Chart 2: Participação por praça */}
+        <div className="p-4">
+          <p className="text-[12px] font-semibold text-foreground mb-1">Participação por praça</p>
+          <p className="text-[11px] text-muted-foreground mb-4">% de faturamento por região e categoria</p>
+
+          {/* Legend pills same as above */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {participationSections.map((sec, i) => (
+              <div key={sec} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                  style={{ background: SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)` }} />
+                <span className="text-[11px] text-foreground font-medium">{sec}</span>
+              </div>
+            ))}
+          </div>
+
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={pracaData} margin={{ top: 8, right: 16, left: 4, bottom: 28 }} barCategoryGap="28%">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="praca" tick={{ fontSize: 8, fill: "hsl(var(--foreground))" }}
-                angle={-15} textAnchor="end" interval={0} height={40} />
-              <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                width={30} tickFormatter={v => `${v}%`} />
+              <XAxis dataKey="praca"
+                tick={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                axisLine={false} tickLine={false} interval={0}
+                angle={-12} textAnchor="end" height={44}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                width={38} tickFormatter={v => `${v}%`} domain={[0, 100]}
+                axisLine={false} tickLine={false}
+              />
               <Tooltip
-                contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:11 }}
-                formatter={(v, name) => [`${v}%`, name]}
+                contentStyle={{ background:"hsl(var(--card))", border:"1px solid hsl(var(--border))", borderRadius:8, fontSize:12, boxShadow:"0 4px 16px rgba(0,0,0,.08)" }}
+                formatter={(v: any, name: string) => [`${v}%`, name]}
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
               />
               {participationSections.map((sec, i) => (
-                <Bar key={sec} dataKey={sec} stackId="b"
+                <Bar
+                  key={sec} dataKey={sec} stackId="b"
                   fill={SECTION_COLORS[sec] ?? `hsl(${(i * 47) % 360} 65% 52%)`}
-                  radius={i === visibleSections.length - 1 ? [3, 3, 0, 0] : undefined}
+                  radius={i === participationSections.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
                 />
               ))}
             </BarChart>
@@ -1032,26 +1072,26 @@ export default function WeeklyComparison() {
         </div>
       </div>
 
-      {/* ══ BLOCO 5: Tabela expandível Seção → Grupo → Produto ═ */}
+      {/* ══ BLOCO 5: Tabela expandível Seção → Grupo → Subgrupo → Produto ═ */}
       <div className="border-b border-border">
         <div
           className="grid bg-muted/60 border-b border-border sticky top-0 z-10"
-          style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+          style={{ gridTemplateColumns: "32px 1fr 180px 120px 180px 96px 72px" }}
         >
-          <div className="px-2 py-1.5" />
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
+          <div className="px-2 py-3" />
+          <div className="px-3 py-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
             Seção / Grupo / Subgrupo / Produto
             {activeFilterCount > 0 && (
-              <span className="ml-2 text-[8px] text-primary font-normal">
-                {sectionMetrics.length} seção(ões) filtrada(s)
+              <span className="ml-2 text-[10px] text-primary font-normal">
+                {sectionMetrics.length} seção(ões)
               </span>
             )}
           </div>
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-blue-600 uppercase text-right tracking-wide">Faturamento</div>
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-orange-500 uppercase text-right tracking-wide">Volume</div>
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-green-700 uppercase text-right leading-tight tracking-wide">Rentab. c/ Sellout</div>
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-purple-600 uppercase text-right tracking-wide">Margem Sellout</div>
-          <div className="px-2 py-1.5 text-[9.5px] font-bold text-muted-foreground uppercase text-center tracking-wide">Ação</div>
+          <div className="px-2 py-3 text-[11px] font-bold text-blue-600 uppercase text-right tracking-wide">Faturamento</div>
+          <div className="px-2 py-3 text-[11px] font-bold text-orange-500 uppercase text-right tracking-wide">Volume</div>
+          <div className="px-2 py-3 text-[11px] font-bold text-green-700 uppercase text-right leading-tight tracking-wide">Rentab. c/ Sellout</div>
+          <div className="px-2 py-3 text-[11px] font-bold text-purple-600 uppercase text-right tracking-wide">Margem</div>
+          <div className="px-2 py-3 text-[11px] font-bold text-muted-foreground uppercase text-center tracking-wide">Ação</div>
         </div>
 
         {sectionMetrics.map(r => (
@@ -1064,28 +1104,28 @@ export default function WeeklyComparison() {
         ))}
 
         {sectionMetrics.length === 0 && (
-          <div className="py-8 text-center text-muted-foreground text-sm">
+          <div className="py-10 text-center text-muted-foreground">
             Nenhuma seção encontrada para os filtros selecionados.
-            <button onClick={resetFilters} className="ml-2 text-primary underline text-xs">Limpar filtros</button>
+            <button onClick={resetFilters} className="ml-2 text-primary underline text-sm">Limpar filtros</button>
           </div>
         )}
 
         {/* Totais */}
         <div
-          className="grid bg-muted/60 border-t border-border"
-          style={{ gridTemplateColumns: "28px 1fr 170px 110px 170px 90px 64px" }}
+          className="grid bg-muted/60 border-t-2 border-border"
+          style={{ gridTemplateColumns: "32px 1fr 180px 120px 180px 96px 72px" }}
         >
-          <div /><div className="px-3 py-2 text-[10px] font-bold text-foreground">Total</div>
-          <div className="px-2 py-2 text-[9.5px] text-blue-700 font-bold text-right">
+          <div /><div className="px-3 py-2.5 text-[12px] font-bold text-foreground">Total</div>
+          <div className="px-2 py-2.5 text-[11px] text-blue-700 font-bold text-right">
             {fmtFull(sectionMetrics.reduce((s, r) => s + r.fat, 0))}
           </div>
-          <div className="px-2 py-2 text-[9.5px] text-orange-600 font-bold text-right">
+          <div className="px-2 py-2.5 text-[11px] text-orange-600 font-bold text-right">
             {fmtVol(sectionMetrics.reduce((s, r) => s + r.vol, 0))}
           </div>
-          <div className="px-2 py-2 text-[9.5px] text-green-800 font-bold text-right">
+          <div className="px-2 py-2.5 text-[11px] text-green-800 font-bold text-right">
             {fmtFull(sectionMetrics.reduce((s, r) => s + r.rent, 0))}
           </div>
-          <div className="px-2 py-2 text-[9.5px] text-purple-700 font-bold text-right">
+          <div className="px-2 py-2.5 text-[11px] text-purple-700 font-bold text-right">
             {sectionMetrics.length > 0
               ? `${(sectionMetrics.reduce((s, r) => s + r.margem, 0) / sectionMetrics.length * 100).toFixed(2)}%`
               : "—"}
@@ -1097,3 +1137,4 @@ export default function WeeklyComparison() {
     </div>
   );
 }
+
