@@ -131,10 +131,24 @@ export default function CampaignPerformance() {
 
   const { approveProduct, rejectProduct, isApproved, isRejected, getApprovalStatus, removeApproval } = useApprovals();
 
-  const filteredCampaigns = useMemo(() =>
-    CAMPAIGNS.filter(c => campaignType === 'Todos' || c.type === campaignType),
-    [campaignType]
-  );
+  const filteredCampaigns = useMemo(() => {
+    let list = CAMPAIGNS.filter(c => campaignType === 'Todos' || c.type === campaignType);
+    if (selectedDate) {
+      // Show campaigns from same month (previous year)
+      list = list.filter(c => {
+        const cDate = parse(c.date, 'yyyy-MM-dd', new Date());
+        return cDate.getMonth() === selectedDate.getMonth();
+      });
+    }
+    return list;
+  }, [campaignType, selectedDate]);
+
+  // When date is selected, auto-select first matching campaign
+  const effectiveCampaign = useMemo(() => {
+    if (selectedCampaign) return selectedCampaign;
+    if (selectedDate && filteredCampaigns.length > 0) return filteredCampaigns[0].id;
+    return null;
+  }, [selectedCampaign, selectedDate, filteredCampaigns]);
 
   const performanceData = useMemo(() => {
     let data = generatePerformanceData(selectedCampaign);
