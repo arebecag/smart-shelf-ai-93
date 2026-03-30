@@ -398,6 +398,24 @@ export default function CampaignPerformance() {
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-muted-foreground">Filtros:</span>
             </div>
+            {/* Date picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("h-8 w-[180px] justify-start text-left text-xs bg-card/80", !selectedDate && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Filtrar por data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(d) => { setSelectedDate(d); setSelectedCampaign(null); }}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
             <Select value={campaignType} onValueChange={v => { setCampaignType(v); setSelectedCampaign(null); }}>
               <SelectTrigger className="h-8 w-[120px] text-xs bg-card/80"><SelectValue /></SelectTrigger>
               <SelectContent>
