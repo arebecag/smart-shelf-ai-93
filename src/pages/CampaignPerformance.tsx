@@ -593,7 +593,7 @@ export default function CampaignPerformance() {
 
   const clearAll = () => {
     setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos');
-    setSelectedCampaign(null); setDateFrom(undefined); setDateTo(undefined);
+    setSelectedCampaign(null); setDateFrom(undefined); setDateTo(undefined); setTopN(10);
   };
 
   const SortHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
