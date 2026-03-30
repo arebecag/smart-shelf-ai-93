@@ -20,6 +20,7 @@ const PRIMARY_TABS = [
 ];
 
 const SECONDARY_LINKS = [
+  { icon: Megaphone, label: "Padrão Campanha", path: "/campanha" },
   { icon: Monitor, label: "Apresentação TV", path: "/tv" },
   { icon: BarChart3, label: "Estatísticas", path: "/estatisticas" },
   { icon: History, label: "Histórico", path: "/historico" },
