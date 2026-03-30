@@ -409,7 +409,7 @@ export default function CampaignPerformance() {
                                 </TableCell>
                                 <TableCell className="py-1.5 px-2">
                                   <button onClick={() => toggleStar(p.id)} className="hover:scale-110 transition-transform">
-                                    <Star className={`h-4 w-4 ${starredProducts.has(p.id) ? 'fill-yellow-400 text-yellow-500' : 'text-muted-foreground/30 hover:text-yellow-400'}`} />
+                                    <Star className={`h-4 w-4 ${starredProducts.has(p.id) ? 'fill-amber-400 text-amber-500' : 'text-muted-foreground/30 hover:text-amber-400'}`} />
                                   </button>
                                 </TableCell>
                               </TableRow>
