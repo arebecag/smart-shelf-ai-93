@@ -415,7 +415,7 @@ export default function CampaignPerformance() {
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input placeholder="Buscar produto..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-8 pl-8 text-xs bg-card/80" />
             </div>
-            {(searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || selectedCampaign) && (
+            {(searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || selectedDate) && (
               <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"
                 onClick={() => { setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos'); setSelectedCampaign(null); }}>
                 <X className="h-3 w-3" /> Limpar
@@ -439,16 +439,16 @@ export default function CampaignPerformance() {
                 {filteredCampaigns.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => setSelectedCampaign(selectedCampaign === c.id ? null : c.id)}
+                    onClick={() => setSelectedCampaign(effectiveCampaign === c.id ? null : c.id)}
                     className={cn(
                       "w-full text-left p-2.5 rounded-lg transition-all text-xs border",
-                      selectedCampaign === c.id
+                      effectiveCampaign === c.id
                         ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20'
                         : 'border-transparent hover:bg-muted/60'
                     )}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={selectedCampaign === c.id ? 'text-primary' : 'text-muted-foreground'}>
+                      <span className={effectiveCampaign === c.id ? 'text-primary' : 'text-muted-foreground'}>
                         {typeIcon(c.type)}
                       </span>
                       <span className="font-medium text-foreground truncate flex-1">{c.name}</span>
@@ -477,7 +477,7 @@ export default function CampaignPerformance() {
                     }
                     <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens</Badge>
                   </CardTitle>
-                  {selectedCampaign && (
+                  {effectiveCampaign && (
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                       <Info className="h-3 w-3" />
                       Aprove ou reprove produtos para a próxima campanha
