@@ -609,16 +609,8 @@ export default function CampaignPerformance() {
     return <Newspaper className="h-3.5 w-3.5" />;
   };
 
-  const topStats = useMemo(() => {
-    const total = performanceData.length;
-    const totalFat = performanceData.reduce((s, p) => s + p.faturamento, 0);
-    const growing = performanceData.filter(p => p.crescimento > 0).length;
-    const avgMargin = total > 0 ? performanceData.reduce((s, p) => s + p.margin, 0) / total : 0;
-    return { total, totalFat, growing, avgMargin };
-  }, [performanceData]);
-
   const selectedCampaignObj = CAMPAIGNS.find(c => c.id === effectiveCampaign);
-  const hasFilters = searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || dateFrom || dateTo;
+  const hasFilters = searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || dateFrom || dateTo || topN !== 10;
 
   return (
     <div className="h-full w-full overflow-auto bg-muted/30">
