@@ -13,6 +13,7 @@ import Simulator from "./pages/Simulator";
 import TVPresentation from "./pages/TVPresentation";
 import Statistics from "./pages/Statistics";
 import History from "./pages/History";
+import CampaignPerformance from "./pages/CampaignPerformance";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
@@ -38,6 +39,7 @@ const App = () => (
                   <Route path="/tv" element={<TVPresentation />} />
                   <Route path="/estatisticas" element={<Statistics />} />
                   <Route path="/historico" element={<History />} />
+                  <Route path="/campanha" element={<CampaignPerformance />} />
                   <Route path="/configuracoes" element={<Settings />} />
                   <Route path="/ajuda" element={<Help />} />
                   {/* Legacy redirects */}

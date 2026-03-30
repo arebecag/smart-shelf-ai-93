@@ -23,6 +23,7 @@ import {
   Sparkles,
   CalendarDays,
   Zap,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoCondor from "@/assets/logo-condor.png";
@@ -31,7 +32,7 @@ import { useSimulator } from "@/contexts/SimulatorContext";
 
 // ─── Workflow steps ──────────────────────────────────────────────────────────
 const STEPS = [
-  { step: 1, short: "1", label: "Descoberta",  urls: ["/", "/semanal", "/buscar"] },
+  { step: 1, short: "1", label: "Descoberta",  urls: ["/", "/semanal", "/buscar", "/campanha"] },
   { step: 2, short: "2", label: "Simulação",   urls: ["/simulador", "/comparar", "/assistente"] },
   { step: 3, short: "3", label: "Aprovação",   urls: ["/aprovacoes", "/favoritos"] },
   { step: 4, short: "4", label: "Publicação",  urls: ["/tv"] },
@@ -50,6 +51,7 @@ const useMenuGroups = () => {
   const descoberta: MenuItem[] = [
     { title: "Dashboard",           url: "/",         icon: LayoutDashboard },
     { title: "Comparativo Semanal", url: "/semanal",  icon: CalendarDays },
+    { title: "Padrão Campanha",     url: "/campanha", icon: Megaphone },
     { title: "Buscar Produtos",     url: "/buscar",   icon: Search },
   ];
 
