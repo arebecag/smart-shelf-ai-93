@@ -5,7 +5,7 @@ import { useApprovals } from "@/contexts/ApprovalsContext";
 import { useSimulator } from "@/contexts/SimulatorContext";
 import {
   Monitor, Settings, HelpCircle, History, BarChart3,
-  ChevronDown, Menu, X, Star
+  ChevronDown, Menu, X, Megaphone,
 } from "lucide-react";
 import logoCondor from "@/assets/logo-condor.png";
 
@@ -20,6 +20,7 @@ const PRIMARY_TABS = [
 ];
 
 const SECONDARY_LINKS = [
+  { icon: Megaphone, label: "Padrão Campanha", path: "/campanha" },
   { icon: Monitor, label: "Apresentação TV", path: "/tv" },
   { icon: BarChart3, label: "Estatísticas", path: "/estatisticas" },
   { icon: History, label: "Histórico", path: "/historico" },
@@ -87,7 +88,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
           {/* Secondary links — desktop */}
           <div className="hidden md:flex items-center gap-1 ml-auto">
-            {SECONDARY_LINKS.slice(0, 3).map(link => (
+            {SECONDARY_LINKS.slice(0, 4).map(link => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -115,7 +116,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               </button>
               {secondaryOpen && (
                 <div className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-xl shadow-lg py-1 z-50">
-                  {SECONDARY_LINKS.slice(3).map(link => (
+                  {SECONDARY_LINKS.slice(4).map(link => (
                     <Link
                       key={link.path}
                       to={link.path}
