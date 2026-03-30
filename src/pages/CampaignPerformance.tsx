@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { format, parse, isSameMonth } from 'date-fns';
+import { format, parse, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,23 +12,72 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import {
   ChevronDown, ChevronRight, Search, Filter, TrendingUp, TrendingDown,
-  Tv, Radio, Newspaper, Eye, Star, ArrowUpDown, X, Calendar, Target,
+  Tv, Radio, Newspaper, Eye, ArrowUpDown, X, Calendar, Target,
   ShoppingCart, DollarSign, ThumbsUp, ThumbsDown, CheckCircle2, XCircle,
-  BarChart2, Sparkles, ExternalLink, Info, CalendarIcon,
+  BarChart2, ExternalLink, Info, CalendarIcon, Maximize2,
 } from 'lucide-react';
 import {
   cervejaProducts, refrigeranteProducts, açougueProducts, padariaProducts,
   laticinioProducts, energeticoProducts, friosProducts, congeladosProducts,
   hortifrutiProducts, merceariaProducts, aguaProducts, sucoProducts,
 } from '@/data/mockData';
-import { Product } from '@/types/product';
+import { Product, Competitor, GlobalSegmentData } from '@/types/product';
 import { useApprovals } from '@/contexts/ApprovalsContext';
 import { cn } from '@/lib/utils';
+
+// ── Extended competitor data (mock) ──
+const EXTRA_COMPETITORS: Competitor[] = [
+  { name: 'Giassi Supermercados', location: 'Joinville - SC', price: 0 },
+  { name: 'Atacadão', location: 'Curitiba - PR', price: 0 },
+  { name: 'Big Hipermercado', location: 'Curitiba - PR', price: 0 },
+  { name: 'Angeloni', location: 'Florianópolis - SC', price: 0 },
+  { name: 'Fort Atacadista', location: 'Itajaí - SC', price: 0 },
+  { name: 'Muffato', location: 'Londrina - PR', price: 0 },
+  { name: 'Super Bom', location: 'Ponta Grossa - PR', price: 0 },
+  { name: 'Festval', location: 'Curitiba - PR', price: 0 },
+  { name: 'Superpão', location: 'Maringá - PR', price: 0 },
+  { name: 'Cidade Canção', location: 'Maringá - PR', price: 0 },
+  { name: 'Bistek Supermercados', location: 'Criciúma - SC', price: 0 },
+  { name: 'Koch Hipermercado', location: 'Blumenau - SC', price: 0 },
+  { name: 'Barreiros Supermercado', location: 'Curitiba - PR', price: 0 },
+  { name: 'Walmart', location: 'Curitiba - PR', price: 0 },
+  { name: 'Carrefour', location: 'São José dos Pinhais - PR', price: 0 },
+];
+
+const EXTRA_GLOBAL_SEGMENTS: GlobalSegmentData[] = [
+  { competitor: 'Giassi', lastCampaign: 'TV Ofertas Verão', campaignDate: 'Jan/2025', reach: '850K', investment: 'R$ 120K' },
+  { competitor: 'Atacadão', lastCampaign: 'Rádio Preço Baixo', campaignDate: 'Fev/2025', reach: '1.2M', investment: 'R$ 280K' },
+  { competitor: 'Angeloni', lastCampaign: 'TV Qualidade', campaignDate: 'Mar/2025', reach: '600K', investment: 'R$ 95K' },
+  { competitor: 'Fort Atacadista', lastCampaign: 'Jornal Semanal', campaignDate: 'Abr/2025', reach: '400K', investment: 'R$ 55K' },
+  { competitor: 'Muffato', lastCampaign: 'TV Super Oferta', campaignDate: 'Mai/2025', reach: '950K', investment: 'R$ 200K' },
+  { competitor: 'Festval', lastCampaign: 'Rádio Gourmet', campaignDate: 'Jun/2025', reach: '300K', investment: 'R$ 45K' },
+  { competitor: 'Koch', lastCampaign: 'TV Aniversário', campaignDate: 'Jul/2025', reach: '550K', investment: 'R$ 150K' },
+  { competitor: 'Bistek', lastCampaign: 'Jornal Quinzenal', campaignDate: 'Ago/2025', reach: '350K', investment: 'R$ 60K' },
+];
+
+// Generate extended competitors for a product
+const getExtendedCompetitors = (product: Product): Competitor[] => {
+  const existing = product.prixsia.competitors;
+  const extra = EXTRA_COMPETITORS
+    .filter(ec => !existing.some(e => e.name === ec.name))
+    .map((ec, i) => ({
+      ...ec,
+      price: product.price * (0.82 + Math.sin(i * 1.3) * 0.15 + 0.08),
+    }));
+  return [...existing, ...extra];
+};
+
+const getExtendedGlobalSegments = (product: Product): GlobalSegmentData[] => {
+  return [...product.globalSegments, ...EXTRA_GLOBAL_SEGMENTS.filter(
+    eg => !product.globalSegments.some(g => g.competitor === eg.competitor)
+  )];
+};
 
 // ── Historical campaigns ──
 const CAMPAIGNS = [
@@ -63,7 +112,6 @@ const ALL_SECTIONS: { name: string; products: Product[] }[] = [
   { name: 'Sucos', products: sucoProducts },
 ];
 
-// Pre-assign products to campaigns deterministically
 const allProds = ALL_SECTIONS.flatMap(s => s.products);
 CAMPAIGNS.forEach((c, ci) => {
   c.productIds = allProds
@@ -85,7 +133,6 @@ const generatePerformanceData = (campaignId: string | null): PerformanceProduct[
   const campaign = CAMPAIGNS.find(c => c.id === campaignId);
 
   if (campaign) {
-    // Show products that WERE in this campaign
     return allProducts
       .filter(p => campaign.productIds.includes(p.id))
       .map((p, i) => ({
@@ -97,7 +144,6 @@ const generatePerformanceData = (campaignId: string | null): PerformanceProduct[
       .sort((a, b) => b.faturamento - a.faturamento);
   }
 
-  // Default: products that sold well WITHOUT being in campaigns
   return allProducts
     .filter(p => p.sales > 800)
     .sort((a, b) => b.sales * b.price - a.sales * a.price)
@@ -115,8 +161,328 @@ const fmtPrice = (v: number) => `R$ ${v.toFixed(2)}`;
 type SortField = 'faturamento' | 'sales' | 'margin' | 'crescimento' | 'price';
 type SortDir = 'asc' | 'desc';
 
+// ═══════════════════════════════════════════════════════════════
+// Product Detail Modal
+// ═══════════════════════════════════════════════════════════════
+function ProductDetailModal({ product, open, onClose }: { product: Product | null; open: boolean; onClose: () => void }) {
+  const [compSearchPrixsia, setCompSearchPrixsia] = useState('');
+  const [compSearchGlobal, setCompSearchGlobal] = useState('');
+  const [compSearchShopping, setCompSearchShopping] = useState('');
+  const { approveProduct, rejectProduct, isApproved, isRejected, getApprovalStatus, removeApproval } = useApprovals();
+  const [showReject, setShowReject] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+
+  if (!product) return null;
+
+  const allCompetitors = getExtendedCompetitors(product);
+  const allGlobalSegs = getExtendedGlobalSegments(product);
+
+  const filteredPrixsia = compSearchPrixsia
+    ? allCompetitors.filter(c => c.name.toLowerCase().includes(compSearchPrixsia.toLowerCase()))
+    : allCompetitors.slice(0, 5);
+
+  const filteredGlobal = compSearchGlobal
+    ? allGlobalSegs.filter(g => g.competitor.toLowerCase().includes(compSearchGlobal.toLowerCase()))
+    : allGlobalSegs.slice(0, 5);
+
+  // Mock shopping competitors
+  const shoppingCompetitors = allCompetitors.slice(0, 10).map((c, i) => ({
+    name: c.name,
+    adTitle: `${product.name} - Oferta ${c.name}`,
+    adPrice: product.price * (0.85 + i * 0.03),
+    date: `${String((i % 28) + 1).padStart(2, '0')}/03/2025`,
+    link: product.shoppingBrasil.link,
+  }));
+  const filteredShopping = compSearchShopping
+    ? shoppingCompetitors.filter(c => c.name.toLowerCase().includes(compSearchShopping.toLowerCase()))
+    : shoppingCompetitors.slice(0, 5);
+
+  const approvalStatus = getApprovalStatus(product.id);
+
+  const handleReject = () => {
+    if (rejectReason.trim()) {
+      rejectProduct(product, rejectReason);
+      setShowReject(false);
+      setRejectReason('');
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-[900px] max-h-[90vh] overflow-hidden flex flex-col p-0">
+        {/* Header */}
+        <div className="p-5 pb-3 border-b border-border/40">
+          <DialogHeader>
+            <DialogTitle className="text-lg flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <ShoppingCart className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <span className="text-foreground">{product.name}</span>
+                <p className="text-xs text-muted-foreground font-normal mt-0.5">Cód: {product.id}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Product KPIs */}
+          <div className="grid grid-cols-5 gap-2 mt-3">
+            {[
+              { label: 'Preço', value: fmtPrice(product.price) },
+              { label: 'Estoque', value: product.stock.toLocaleString('pt-BR') },
+              { label: 'Margem', value: `${(product.margin * 100).toFixed(1)}%` },
+              { label: 'Vendas', value: product.sales.toLocaleString('pt-BR') },
+              { label: 'Faturamento', value: fmt(product.sales * product.price) },
+            ].map(k => (
+              <div key={k.label} className="bg-muted/50 rounded-lg p-2 text-center">
+                <p className="text-[10px] text-muted-foreground">{k.label}</p>
+                <p className="text-sm font-bold text-foreground">{k.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Approve / Reject */}
+          <div className="flex items-center gap-2 mt-3">
+            {approvalStatus ? (
+              <div className={cn(
+                "flex-1 flex items-center justify-between p-2 rounded-lg text-sm",
+                isApproved(product.id) ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"
+              )}>
+                <div className="flex items-center gap-2">
+                  {isApproved(product.id)
+                    ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="font-medium text-emerald-700">Aprovado para campanha</span></>
+                    : <><XCircle className="h-4 w-4 text-red-600" /><div><span className="font-medium text-red-700">Reprovado</span>{approvalStatus.reason && <p className="text-xs text-red-500">{approvalStatus.reason}</p>}</div></>
+                  }
+                </div>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => removeApproval(product.id)}>Desfazer</Button>
+              </div>
+            ) : showReject ? (
+              <div className="flex-1 space-y-2">
+                <Textarea placeholder="Motivo da reprovação..." value={rejectReason} onChange={e => setRejectReason(e.target.value)} className="min-h-[60px] text-sm" />
+                <div className="flex gap-2">
+                  <Button size="sm" variant="destructive" onClick={handleReject} disabled={!rejectReason.trim()}>Confirmar Reprovação</Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setShowReject(false); setRejectReason(''); }}>Cancelar</Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Button size="sm" variant="outline" className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50" onClick={() => approveProduct(product)}>
+                  <ThumbsUp className="h-3.5 w-3.5 mr-1.5" /> Aprovar p/ Campanha
+                </Button>
+                <Button size="sm" variant="outline" className="flex-1 border-red-300 text-red-700 hover:bg-red-50" onClick={() => setShowReject(true)}>
+                  <ThumbsDown className="h-3.5 w-3.5 mr-1.5" /> Reprovar
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Tabs content */}
+        <ScrollArea className="flex-1 overflow-auto">
+          <div className="p-5 pt-3">
+            <Tabs defaultValue="prixsia" className="w-full">
+              <TabsList className="w-full grid grid-cols-4 bg-muted/60 p-0.5 h-9">
+                <TabsTrigger value="nielsen" className="text-xs gap-1.5"><BarChart2 className="h-3.5 w-3.5" />Nielsen</TabsTrigger>
+                <TabsTrigger value="prixsia" className="text-xs gap-1.5"><TrendingUp className="h-3.5 w-3.5" />Prixsia</TabsTrigger>
+                <TabsTrigger value="shopping" className="text-xs gap-1.5"><ShoppingCart className="h-3.5 w-3.5" />Shopping BR</TabsTrigger>
+                <TabsTrigger value="global" className="text-xs gap-1.5"><Tv className="h-3.5 w-3.5" />Global Seg.</TabsTrigger>
+              </TabsList>
+
+              {/* Nielsen */}
+              <TabsContent value="nielsen" className="mt-3">
+                <Card className="border-border/30">
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {[
+                        { label: 'Share de Mercado', value: `${product.nielsen.marketShare}%` },
+                        { label: 'Core Segment', value: product.nielsen.coreSegment },
+                        { label: 'Penetração', value: `${product.nielsen.penetration}%` },
+                        { label: 'Ranking Regional', value: `${product.nielsen.regionalRanking}º` },
+                      ].map(item => (
+                        <div key={item.label} className="flex justify-between bg-muted/30 rounded-lg p-3">
+                          <span className="text-muted-foreground">{item.label}</span>
+                          <span className="font-bold text-foreground">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Prixsia */}
+              <TabsContent value="prixsia" className="mt-3 space-y-3">
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { label: 'Mínimo', val: product.prixsia.minPrice, color: 'text-emerald-600' },
+                    { label: 'Média', val: product.prixsia.avgPrice, color: 'text-foreground' },
+                    { label: 'Mediana', val: product.prixsia.medianPrice, color: 'text-foreground' },
+                    { label: 'Máximo', val: product.prixsia.maxPrice, color: 'text-red-500' },
+                  ].map(v => (
+                    <div key={v.label} className="bg-muted/40 rounded-lg p-3 text-center border border-border/20">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">{v.label}</p>
+                      <p className={cn("text-sm font-bold", v.color)}>{fmtPrice(v.val)}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <Card className="border-border/30">
+                  <CardHeader className="p-3 pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xs font-semibold">Top 5 Concorrentes Prixsia</CardTitle>
+                      <div className="relative w-[220px]">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar concorrente..."
+                          value={compSearchPrixsia}
+                          onChange={e => setCompSearchPrixsia(e.target.value)}
+                          className="h-7 pl-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="space-y-1.5">
+                      {filteredPrixsia.map((comp, idx) => {
+                        const diff = ((comp.price - product.price) / product.price) * 100;
+                        return (
+                          <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-lg p-2.5 border border-border/20 hover:bg-muted/40 transition-colors">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-foreground truncate">{comp.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{comp.location}</p>
+                            </div>
+                            <div className="text-right ml-3">
+                              <p className="text-xs font-bold text-foreground">{fmtPrice(comp.price)}</p>
+                              <p className={cn("text-[10px] font-medium", diff < 0 ? "text-emerald-600" : diff > 0 ? "text-red-500" : "text-muted-foreground")}>
+                                {diff > 0 ? '+' : ''}{diff.toFixed(1)}% vs nosso
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {filteredPrixsia.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">Nenhum concorrente encontrado</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Shopping Brasil */}
+              <TabsContent value="shopping" className="mt-3 space-y-3">
+                <Card className="border-border/30">
+                  <CardContent className="p-3">
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-3">
+                      <div className="bg-muted/30 rounded-lg p-2.5">
+                        <span className="text-muted-foreground">Título:</span>
+                        <p className="font-medium text-foreground mt-0.5">{product.shoppingBrasil.title}</p>
+                      </div>
+                      <div className="bg-muted/30 rounded-lg p-2.5">
+                        <span className="text-muted-foreground">Preço Anúncio:</span>
+                        <p className="font-bold text-primary mt-0.5">{fmtPrice(product.shoppingBrasil.adPrice)}</p>
+                      </div>
+                      <div className="bg-muted/30 rounded-lg p-2.5">
+                        <span className="text-muted-foreground">Data Início:</span>
+                        <p className="font-medium text-foreground mt-0.5">{product.shoppingBrasil.startDate}</p>
+                      </div>
+                      <div className="bg-muted/30 rounded-lg p-2.5 flex items-center gap-2">
+                        <ExternalLink className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <a href={product.shoppingBrasil.link} target="_blank" rel="noopener noreferrer" className="text-primary underline text-xs truncate">
+                          Ver anúncio
+                        </a>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/30">
+                  <CardHeader className="p-3 pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xs font-semibold">Top 5 Anúncios Concorrentes</CardTitle>
+                      <div className="relative w-[220px]">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar concorrente..."
+                          value={compSearchShopping}
+                          onChange={e => setCompSearchShopping(e.target.value)}
+                          className="h-7 pl-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="space-y-1.5">
+                      {filteredShopping.map((comp, idx) => {
+                        const diff = ((comp.adPrice - product.price) / product.price) * 100;
+                        return (
+                          <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-lg p-2.5 border border-border/20 hover:bg-muted/40 transition-colors">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-foreground truncate">{comp.name}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{comp.adTitle}</p>
+                              <p className="text-[10px] text-muted-foreground">{comp.date}</p>
+                            </div>
+                            <div className="text-right ml-3">
+                              <p className="text-xs font-bold text-foreground">{fmtPrice(comp.adPrice)}</p>
+                              <p className={cn("text-[10px] font-medium", diff < 0 ? "text-emerald-600" : "text-red-500")}>
+                                {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {filteredShopping.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">Nenhum concorrente encontrado</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Global Segmentos */}
+              <TabsContent value="global" className="mt-3 space-y-3">
+                <Card className="border-border/30">
+                  <CardHeader className="p-3 pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xs font-semibold">Top 5 Concorrentes — Mídia e Campanhas</CardTitle>
+                      <div className="relative w-[220px]">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar concorrente..."
+                          value={compSearchGlobal}
+                          onChange={e => setCompSearchGlobal(e.target.value)}
+                          className="h-7 pl-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="space-y-1.5">
+                      {filteredGlobal.map((seg, idx) => (
+                        <div key={idx} className="bg-muted/20 rounded-lg p-3 border border-border/20 hover:bg-muted/40 transition-colors">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-foreground">{seg.competitor}</span>
+                            <Badge variant="outline" className="text-[9px]">{seg.campaignDate}</Badge>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">Campanha: <span className="font-medium text-foreground">{seg.lastCampaign}</span></p>
+                          <div className="flex gap-6 mt-1 text-[11px] text-muted-foreground">
+                            <span>Alcance: <span className="font-medium text-foreground">{seg.reach}</span></span>
+                            <span>Investimento: <span className="font-medium text-foreground">{seg.investment}</span></span>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredGlobal.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">Nenhum concorrente encontrado</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Main Page
+// ═══════════════════════════════════════════════════════════════
 export default function CampaignPerformance() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignType, setCampaignType] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,7 +490,7 @@ export default function CampaignPerformance() {
   const [sortField, setSortField] = useState<SortField>('faturamento');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
+  const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<Product | null>(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -133,22 +499,23 @@ export default function CampaignPerformance() {
 
   const filteredCampaigns = useMemo(() => {
     let list = CAMPAIGNS.filter(c => campaignType === 'Todos' || c.type === campaignType);
-    if (selectedDate) {
-      // Show campaigns from same month (previous year)
+    if (dateFrom || dateTo) {
       list = list.filter(c => {
         const cDate = parse(c.date, 'yyyy-MM-dd', new Date());
-        return cDate.getMonth() === selectedDate.getMonth();
+        if (dateFrom && dateTo) return isWithinInterval(cDate, { start: dateFrom, end: dateTo });
+        if (dateFrom) return cDate >= dateFrom;
+        if (dateTo) return cDate <= dateTo;
+        return true;
       });
     }
     return list;
-  }, [campaignType, selectedDate]);
+  }, [campaignType, dateFrom, dateTo]);
 
-  // When date is selected, auto-select first matching campaign
   const effectiveCampaign = useMemo(() => {
     if (selectedCampaign) return selectedCampaign;
-    if (selectedDate && filteredCampaigns.length > 0) return filteredCampaigns[0].id;
+    if ((dateFrom || dateTo) && filteredCampaigns.length > 0) return filteredCampaigns[0].id;
     return null;
-  }, [selectedCampaign, selectedDate, filteredCampaigns]);
+  }, [selectedCampaign, dateFrom, dateTo, filteredCampaigns]);
 
   const performanceData = useMemo(() => {
     let data = generatePerformanceData(effectiveCampaign);
@@ -204,6 +571,11 @@ export default function CampaignPerformance() {
     }
   };
 
+  const clearAll = () => {
+    setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos');
+    setSelectedCampaign(null); setDateFrom(undefined); setDateTo(undefined);
+  };
+
   const SortHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <button onClick={() => toggleSort(field)} className="flex items-center gap-1 hover:text-foreground transition-colors">
       {children}
@@ -226,128 +598,7 @@ export default function CampaignPerformance() {
   }, [performanceData]);
 
   const selectedCampaignObj = CAMPAIGNS.find(c => c.id === effectiveCampaign);
-
-  // ── Product detail panel ──
-  const ProductDetailPanel = ({ product }: { product: Product }) => (
-    <div className="bg-muted/30 border border-border/40 rounded-lg p-4 space-y-4">
-      {/* Approve/Reject */}
-      <div className="flex items-center gap-2">
-        {getApprovalStatus(product.id) ? (
-          <div className={cn(
-            "flex-1 flex items-center justify-between p-2.5 rounded-lg",
-            isApproved(product.id) ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"
-          )}>
-            <div className="flex items-center gap-2">
-              {isApproved(product.id)
-                ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-sm font-medium text-emerald-700">Aprovado para campanha</span></>
-                : <><XCircle className="h-4 w-4 text-red-600" /><div><span className="text-sm font-medium text-red-700">Reprovado</span>{getApprovalStatus(product.id)?.reason && <p className="text-xs text-red-500">{getApprovalStatus(product.id)?.reason}</p>}</div></>
-              }
-            </div>
-            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => removeApproval(product.id)}>Desfazer</Button>
-          </div>
-        ) : (
-          <>
-            <Button size="sm" variant="outline" className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50" onClick={() => approveProduct(product)}>
-              <ThumbsUp className="h-3.5 w-3.5 mr-1.5" /> Aprovar p/ Campanha
-            </Button>
-            <Button size="sm" variant="outline" className="flex-1 border-red-300 text-red-700 hover:bg-red-50" onClick={() => { setRejectTarget(product); setShowRejectDialog(true); }}>
-              <ThumbsDown className="h-3.5 w-3.5 mr-1.5" /> Reprovar
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Tabs: Nielsen / Prixsia / Shopping Brasil / Global Segmentos */}
-      <Tabs defaultValue="nielsen" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 bg-muted/60 p-0.5 h-8">
-          <TabsTrigger value="nielsen" className="text-[11px] gap-1 h-7"><BarChart2 className="h-3 w-3" />Nielsen</TabsTrigger>
-          <TabsTrigger value="prixsia" className="text-[11px] gap-1 h-7"><TrendingUp className="h-3 w-3" />Prixsia</TabsTrigger>
-          <TabsTrigger value="shopping" className="text-[11px] gap-1 h-7"><ShoppingCart className="h-3 w-3" />Shopping BR</TabsTrigger>
-          <TabsTrigger value="global" className="text-[11px] gap-1 h-7"><Tv className="h-3 w-3" />Global Seg.</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="nielsen" className="mt-2 bg-card rounded-lg p-3 border border-border/30">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Share de Mercado:</span><span className="font-semibold">{product.nielsen.marketShare}%</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Core Segment:</span><span className="font-semibold">{product.nielsen.coreSegment}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Penetração:</span><span className="font-semibold">{product.nielsen.penetration}%</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Ranking Regional:</span><span className="font-semibold">{product.nielsen.regionalRanking}º</span></div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="prixsia" className="mt-2 bg-card rounded-lg p-3 border border-border/30 space-y-3">
-          <div className="grid grid-cols-4 gap-2 text-xs">
-            {[
-              { label: 'Mínimo', val: product.prixsia.minPrice },
-              { label: 'Média', val: product.prixsia.avgPrice },
-              { label: 'Mediana', val: product.prixsia.medianPrice },
-              { label: 'Máximo', val: product.prixsia.maxPrice },
-            ].map(v => (
-              <div key={v.label} className="bg-muted/50 rounded-md p-2 text-center">
-                <p className="text-muted-foreground text-[10px]">{v.label}</p>
-                <p className="font-bold text-foreground">{fmtPrice(v.val)}</p>
-              </div>
-            ))}
-          </div>
-          <div>
-            <p className="text-xs font-semibold mb-1.5">Concorrentes Prixsia</p>
-            <div className="grid grid-cols-3 gap-2">
-              {product.prixsia.competitors.map((comp, idx) => {
-                const diff = ((comp.price - product.price) / product.price) * 100;
-                return (
-                  <div key={idx} className="bg-muted/40 rounded-md p-2 text-xs border border-border/30">
-                    <p className="font-semibold text-foreground truncate">{comp.name}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{comp.location}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="font-bold text-foreground">{fmtPrice(comp.price)}</span>
-                      <span className={cn("text-[10px] font-medium", diff > 0 ? "text-emerald-600" : "text-red-500")}>
-                        ({diff > 0 ? '+' : ''}{diff.toFixed(1)}%)
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="shopping" className="mt-2 bg-card rounded-lg p-3 border border-border/30">
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <ExternalLink className="h-3.5 w-3.5 text-primary" />
-              <a href={product.shoppingBrasil.link} target="_blank" rel="noopener noreferrer" className="text-primary underline text-xs truncate">
-                {product.shoppingBrasil.link}
-              </a>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div><span className="text-muted-foreground">Título:</span> <span className="font-medium">{product.shoppingBrasil.title}</span></div>
-              <div><span className="text-muted-foreground">Preço Anúncio:</span> <span className="font-bold text-primary">{fmtPrice(product.shoppingBrasil.adPrice)}</span></div>
-              <div><span className="text-muted-foreground">Data Início:</span> <span className="font-medium">{product.shoppingBrasil.startDate}</span></div>
-              <div><span className="text-muted-foreground">Detalhe:</span> <span className="font-medium">{product.shoppingBrasil.detail}</span></div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="global" className="mt-2 bg-card rounded-lg p-3 border border-border/30">
-          <div className="space-y-2">
-            {product.globalSegments.map((seg, idx) => (
-              <div key={idx} className="bg-muted/30 rounded-md p-2.5 text-xs border border-border/20">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-foreground">{seg.competitor}</span>
-                  <Badge variant="outline" className="text-[9px]">{seg.campaignDate}</Badge>
-                </div>
-                <p className="text-muted-foreground">Campanha: <span className="font-medium text-foreground">{seg.lastCampaign}</span></p>
-                <div className="flex gap-4 mt-1 text-muted-foreground">
-                  <span>Alcance: <span className="font-medium text-foreground">{seg.reach}</span></span>
-                  <span>Investimento: <span className="font-medium text-foreground">{seg.investment}</span></span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+  const hasFilters = searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || dateFrom || dateTo;
 
   return (
     <div className="h-full w-full overflow-auto bg-muted/30">
@@ -360,9 +611,9 @@ export default function CampaignPerformance() {
             <p className="text-sm text-muted-foreground">
               {selectedCampaignObj
                 ? <>Produtos da campanha <span className="font-semibold text-primary">{selectedCampaignObj.name}</span> • {selectedCampaignObj.period}</>
-                : selectedDate
-                  ? <>Campanhas do mês <span className="font-semibold text-primary">{format(selectedDate, 'MMMM', { locale: ptBR })}</span> (ano anterior) • {filteredCampaigns.length} encontradas</>
-                  : 'Selecione uma data ou campanha para ver os produtos • Use a data para buscar campanhas do ano passado'
+                : (dateFrom || dateTo)
+                  ? <>Campanhas no período {dateFrom ? format(dateFrom, 'dd/MM/yy') : '...'} — {dateTo ? format(dateTo, 'dd/MM/yy') : '...'} • {filteredCampaigns.length} encontradas</>
+                  : 'Selecione um período ou campanha para ver os produtos do ano anterior'
               }
             </p>
           </div>
@@ -400,30 +651,42 @@ export default function CampaignPerformance() {
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-muted-foreground">Filtros:</span>
             </div>
-            {/* Date picker */}
+
+            {/* Date FROM */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("h-8 w-[180px] justify-start text-left text-xs bg-card/80", !selectedDate && "text-muted-foreground")}>
+                <Button variant="outline" className={cn("h-8 w-[150px] justify-start text-left text-xs bg-card/80", !dateFrom && "text-muted-foreground")}>
                   <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Filtrar por data"}
+                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Data início"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(d) => { setSelectedDate(d); setSelectedCampaign(null); }}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
+                <CalendarComponent mode="single" selected={dateFrom} onSelect={d => { setDateFrom(d); setSelectedCampaign(null); }} initialFocus className="p-3 pointer-events-auto" />
               </PopoverContent>
             </Popover>
+
+            {/* Date TO */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("h-8 w-[150px] justify-start text-left text-xs bg-card/80", !dateTo && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {dateTo ? format(dateTo, "dd/MM/yyyy") : "Data fim"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent mode="single" selected={dateTo} onSelect={d => { setDateTo(d); setSelectedCampaign(null); }} initialFocus className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+
+            {/* Campaign type */}
             <Select value={campaignType} onValueChange={v => { setCampaignType(v); setSelectedCampaign(null); }}>
-              <SelectTrigger className="h-8 w-[120px] text-xs bg-card/80"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-8 w-[130px] text-xs bg-card/80"><SelectValue placeholder="Campanha" /></SelectTrigger>
               <SelectContent>
-                {CAMPAIGN_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                {CAMPAIGN_TYPES.map(t => <SelectItem key={t} value={t}>{t === 'Todos' ? 'Todas Campanhas' : t}</SelectItem>)}
               </SelectContent>
             </Select>
+
+            {/* Section */}
             <Select value={selectedSection} onValueChange={setSelectedSection}>
               <SelectTrigger className="h-8 w-[140px] text-xs bg-card/80"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -431,13 +694,15 @@ export default function CampaignPerformance() {
                 {ALL_SECTIONS.map(s => <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="relative flex-1 min-w-[200px]">
+
+            {/* Search */}
+            <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input placeholder="Buscar produto..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-8 pl-8 text-xs bg-card/80" />
             </div>
-            {(searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || selectedDate) && (
-              <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"
-                onClick={() => { setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos'); setSelectedCampaign(null); setSelectedDate(undefined); }}>
+
+            {hasFilters && (
+              <Button variant="ghost" size="sm" className="h-8 text-xs gap-1" onClick={clearAll}>
                 <X className="h-3 w-3" /> Limpar
               </Button>
             )}
@@ -453,13 +718,18 @@ export default function CampaignPerformance() {
                   <Calendar className="h-4 w-4 text-primary" />
                   Campanhas Anteriores
                 </CardTitle>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Clique para ver os produtos da campanha</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  {filteredCampaigns.length} campanhas {(dateFrom || dateTo) ? 'no período' : 'disponíveis'}
+                </p>
               </CardHeader>
               <CardContent className="p-2 max-h-[650px] overflow-auto space-y-1">
+                {filteredCampaigns.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-6">Nenhuma campanha encontrada neste período</p>
+                )}
                 {filteredCampaigns.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => { setSelectedCampaign(effectiveCampaign === c.id ? null : c.id); setSelectedDate(undefined); }}
+                    onClick={() => { setSelectedCampaign(effectiveCampaign === c.id ? null : c.id); }}
                     className={cn(
                       "w-full text-left p-2.5 rounded-lg transition-all text-xs border",
                       effectiveCampaign === c.id
@@ -491,18 +761,16 @@ export default function CampaignPerformance() {
               <CardHeader className="p-3 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    {selectedCampaign
+                    {effectiveCampaign
                       ? <><Tv className="h-4 w-4 text-primary" /> Produtos da Campanha</>
-                      : <><TrendingUp className="h-4 w-4 text-chart-4" /> Produtos Performance Fora de Campanha</>
+                      : <><TrendingUp className="h-4 w-4 text-chart-4" /> Produtos Performance</>
                     }
                     <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens</Badge>
                   </CardTitle>
-                  {effectiveCampaign && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <Info className="h-3 w-3" />
-                      Aprove ou reprove produtos para a próxima campanha
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <Maximize2 className="h-3 w-3" />
+                    Clique no produto para abrir detalhes
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
@@ -550,114 +818,92 @@ export default function CampaignPerformance() {
                           {expandedSections.has(group.section) && group.products.map(p => {
                             const bestComp = p.prixsia.competitors[0];
                             const priceDiff = bestComp ? ((p.price - bestComp.price) / p.price) * 100 : 0;
-                            const isExpanded = expandedProduct === p.id;
                             const approved = isApproved(p.id);
                             const rejected = isRejected(p.id);
 
                             return (
-                              <React.Fragment key={p.id}>
-                                <TableRow
-                                  className={cn(
-                                    "hover:bg-muted/20 border-b border-border/20 cursor-pointer transition-colors",
-                                    isExpanded && "bg-primary/5",
-                                    approved && "bg-emerald-50/50",
-                                    rejected && "bg-red-50/50",
-                                  )}
-                                  onClick={() => setExpandedProduct(isExpanded ? null : p.id)}
-                                >
-                                  <TableCell className="px-2 py-1.5">
-                                    {isExpanded
-                                      ? <ChevronDown className="h-3.5 w-3.5 text-primary" />
-                                      : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />}
-                                  </TableCell>
-                                  <TableCell className="py-1.5">
-                                    <div className="flex items-center gap-2">
-                                      {(approved || rejected) && (
-                                        approved
-                                          ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                                          : <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
-                                      )}
-                                      <div>
-                                        <p className="text-xs font-medium text-foreground leading-tight">{p.name}</p>
-                                        <p className="text-[10px] text-muted-foreground">Cód: {p.id}</p>
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="py-1.5">
-                                    <span className="text-[10px] text-muted-foreground">{p.section}</span>
-                                  </TableCell>
-                                  <TableCell className="text-right py-1.5">
-                                    <span className="text-xs font-medium text-foreground">{fmtPrice(p.price)}</span>
-                                  </TableCell>
-                                  <TableCell className="text-right py-1.5">
-                                    <span className="text-xs font-bold text-foreground">{fmt(p.faturamento)}</span>
-                                  </TableCell>
-                                  <TableCell className="text-right py-1.5">
-                                    <span className="text-xs text-foreground">{p.sales.toLocaleString('pt-BR')}</span>
-                                  </TableCell>
-                                  <TableCell className="text-right py-1.5">
-                                    <span className={cn("text-xs font-medium", p.margin >= 0.25 ? 'text-emerald-600' : p.margin >= 0.20 ? 'text-foreground' : 'text-amber-600')}>
-                                      {(p.margin * 100).toFixed(1)}%
-                                    </span>
-                                  </TableCell>
-                                  <TableCell className="text-right py-1.5">
-                                    <span className={cn("text-xs font-medium inline-flex items-center gap-0.5", p.crescimento > 0 ? 'text-emerald-600' : 'text-red-500')}>
-                                      {p.crescimento > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                      {p.crescimento > 0 ? '+' : ''}{p.crescimento.toFixed(1)}%
-                                    </span>
-                                  </TableCell>
-                                  <TableCell className="py-1.5">
-                                    {bestComp && (
-                                      <div className="text-xs">
-                                        <p className="font-medium text-foreground">{bestComp.name}</p>
-                                        <p className={cn("text-[10px]", priceDiff > 0 ? 'text-red-500' : 'text-emerald-600')}>
-                                          {fmtPrice(bestComp.price)} ({priceDiff > 0 ? '+' : ''}{priceDiff.toFixed(1)}%)
-                                        </p>
-                                      </div>
+                              <TableRow
+                                key={p.id}
+                                className={cn(
+                                  "hover:bg-muted/30 border-b border-border/20 cursor-pointer transition-colors",
+                                  approved && "bg-emerald-50/50",
+                                  rejected && "bg-red-50/50",
+                                )}
+                                onClick={() => setModalProduct(p)}
+                              >
+                                <TableCell className="px-2 py-1.5">
+                                  <Maximize2 className="h-3 w-3 text-muted-foreground/30" />
+                                </TableCell>
+                                <TableCell className="py-1.5">
+                                  <div className="flex items-center gap-2">
+                                    {(approved || rejected) && (
+                                      approved
+                                        ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                        : <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
                                     )}
-                                  </TableCell>
-                                  <TableCell className="py-1.5 px-2 text-center" onClick={e => e.stopPropagation()}>
-                                    {!getApprovalStatus(p.id) ? (
-                                      <div className="flex gap-1 justify-center">
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <button className="p-1 rounded hover:bg-emerald-100 transition-colors" onClick={() => approveProduct(p)}>
-                                              <ThumbsUp className="h-3.5 w-3.5 text-emerald-600" />
-                                            </button>
-                                          </TooltipTrigger>
-                                          <TooltipContent className="text-xs">Aprovar</TooltipContent>
-                                        </Tooltip>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <button className="p-1 rounded hover:bg-red-100 transition-colors" onClick={() => { setRejectTarget(p); setShowRejectDialog(true); }}>
-                                              <ThumbsDown className="h-3.5 w-3.5 text-red-500" />
-                                            </button>
-                                          </TooltipTrigger>
-                                          <TooltipContent className="text-xs">Reprovar</TooltipContent>
-                                        </Tooltip>
-                                      </div>
-                                    ) : (
+                                    <div>
+                                      <p className="text-xs font-medium text-foreground leading-tight">{p.name}</p>
+                                      <p className="text-[10px] text-muted-foreground">Cód: {p.id}</p>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-1.5"><span className="text-[10px] text-muted-foreground">{p.section}</span></TableCell>
+                                <TableCell className="text-right py-1.5"><span className="text-xs font-medium text-foreground">{fmtPrice(p.price)}</span></TableCell>
+                                <TableCell className="text-right py-1.5"><span className="text-xs font-bold text-foreground">{fmt(p.faturamento)}</span></TableCell>
+                                <TableCell className="text-right py-1.5"><span className="text-xs text-foreground">{p.sales.toLocaleString('pt-BR')}</span></TableCell>
+                                <TableCell className="text-right py-1.5">
+                                  <span className={cn("text-xs font-medium", p.margin >= 0.25 ? 'text-emerald-600' : p.margin >= 0.20 ? 'text-foreground' : 'text-amber-600')}>
+                                    {(p.margin * 100).toFixed(1)}%
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-right py-1.5">
+                                  <span className={cn("text-xs font-medium inline-flex items-center gap-0.5", p.crescimento > 0 ? 'text-emerald-600' : 'text-red-500')}>
+                                    {p.crescimento > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                    {p.crescimento > 0 ? '+' : ''}{p.crescimento.toFixed(1)}%
+                                  </span>
+                                </TableCell>
+                                <TableCell className="py-1.5">
+                                  {bestComp && (
+                                    <div className="text-xs">
+                                      <p className="font-medium text-foreground">{bestComp.name}</p>
+                                      <p className={cn("text-[10px]", priceDiff > 0 ? 'text-red-500' : 'text-emerald-600')}>
+                                        {fmtPrice(bestComp.price)} ({priceDiff > 0 ? '+' : ''}{priceDiff.toFixed(1)}%)
+                                      </p>
+                                    </div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="py-1.5 px-2 text-center" onClick={e => e.stopPropagation()}>
+                                  {!getApprovalStatus(p.id) ? (
+                                    <div className="flex gap-1 justify-center">
                                       <Tooltip>
                                         <TooltipTrigger asChild>
-                                          <button className="p-1 rounded hover:bg-muted transition-colors" onClick={() => removeApproval(p.id)}>
-                                            <X className="h-3.5 w-3.5 text-muted-foreground" />
+                                          <button className="p-1 rounded hover:bg-emerald-100 transition-colors" onClick={() => approveProduct(p)}>
+                                            <ThumbsUp className="h-3.5 w-3.5 text-emerald-600" />
                                           </button>
                                         </TooltipTrigger>
-                                        <TooltipContent className="text-xs">Desfazer</TooltipContent>
+                                        <TooltipContent className="text-xs">Aprovar</TooltipContent>
                                       </Tooltip>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-
-                                {/* Expanded detail row */}
-                                {isExpanded && (
-                                  <TableRow className="hover:bg-transparent">
-                                    <TableCell colSpan={10} className="p-3 bg-muted/10">
-                                      <ProductDetailPanel product={p} />
-                                    </TableCell>
-                                  </TableRow>
-                                )}
-                              </React.Fragment>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button className="p-1 rounded hover:bg-red-100 transition-colors" onClick={() => { setRejectTarget(p); setShowRejectDialog(true); }}>
+                                            <ThumbsDown className="h-3.5 w-3.5 text-red-500" />
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="text-xs">Reprovar</TooltipContent>
+                                      </Tooltip>
+                                    </div>
+                                  ) : (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button className="p-1 rounded hover:bg-muted transition-colors" onClick={() => removeApproval(p.id)}>
+                                          <X className="h-3.5 w-3.5 text-muted-foreground" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="text-xs">Desfazer</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </TableCell>
+                              </TableRow>
                             );
                           })}
                         </React.Fragment>
@@ -671,6 +917,9 @@ export default function CampaignPerformance() {
         </div>
       </div>
 
+      {/* Product Detail Modal */}
+      <ProductDetailModal product={modalProduct} open={!!modalProduct} onClose={() => setModalProduct(null)} />
+
       {/* Reject Dialog */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent>
@@ -680,16 +929,11 @@ export default function CampaignPerformance() {
               Reprovar Produto
             </DialogTitle>
             <DialogDescription>
-              Informe o motivo da reprovação de "{rejectTarget?.name}"
+              Informe o motivo da reprovação de &quot;{rejectTarget?.name}&quot;
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Textarea
-              placeholder="Digite o motivo da reprovação..."
-              value={rejectReason}
-              onChange={e => setRejectReason(e.target.value)}
-              className="min-h-[100px]"
-            />
+            <Textarea placeholder="Digite o motivo da reprovação..." value={rejectReason} onChange={e => setRejectReason(e.target.value)} className="min-h-[100px]" />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowRejectDialog(false); setRejectTarget(null); setRejectReason(''); }}>Cancelar</Button>
