@@ -5,7 +5,7 @@ import { useApprovals } from "@/contexts/ApprovalsContext";
 import { useSimulator } from "@/contexts/SimulatorContext";
 import {
   Monitor, Settings, HelpCircle, History, BarChart3,
-  ChevronDown, Menu, X, Star
+  ChevronDown, Menu, X, Megaphone,
 } from "lucide-react";
 import logoCondor from "@/assets/logo-condor.png";
 
