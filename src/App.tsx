@@ -39,6 +39,7 @@ const App = () => (
                   <Route path="/tv" element={<TVPresentation />} />
                   <Route path="/estatisticas" element={<Statistics />} />
                   <Route path="/historico" element={<History />} />
+                  <Route path="/campanha" element={<CampaignPerformance />} />
                   <Route path="/configuracoes" element={<Settings />} />
                   <Route path="/ajuda" element={<Help />} />
                   {/* Legacy redirects */}

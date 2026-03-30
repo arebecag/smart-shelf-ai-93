@@ -23,6 +23,7 @@ import {
   Sparkles,
   CalendarDays,
   Zap,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoCondor from "@/assets/logo-condor.png";
