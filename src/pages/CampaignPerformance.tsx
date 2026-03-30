@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { format, parse, isSameMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
@@ -15,7 +19,7 @@ import {
   ChevronDown, ChevronRight, Search, Filter, TrendingUp, TrendingDown,
   Tv, Radio, Newspaper, Eye, Star, ArrowUpDown, X, Calendar, Target,
   ShoppingCart, DollarSign, ThumbsUp, ThumbsDown, CheckCircle2, XCircle,
-  BarChart2, Sparkles, ExternalLink, Info,
+  BarChart2, Sparkles, ExternalLink, Info, CalendarIcon,
 } from 'lucide-react';
 import {
   cervejaProducts, refrigeranteProducts, açougueProducts, padariaProducts,
@@ -112,6 +116,7 @@ type SortField = 'faturamento' | 'sales' | 'margin' | 'crescimento' | 'price';
 type SortDir = 'asc' | 'desc';
 
 export default function CampaignPerformance() {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignType, setCampaignType] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,13 +131,27 @@ export default function CampaignPerformance() {
 
   const { approveProduct, rejectProduct, isApproved, isRejected, getApprovalStatus, removeApproval } = useApprovals();
 
-  const filteredCampaigns = useMemo(() =>
-    CAMPAIGNS.filter(c => campaignType === 'Todos' || c.type === campaignType),
-    [campaignType]
-  );
+  const filteredCampaigns = useMemo(() => {
+    let list = CAMPAIGNS.filter(c => campaignType === 'Todos' || c.type === campaignType);
+    if (selectedDate) {
+      // Show campaigns from same month (previous year)
+      list = list.filter(c => {
+        const cDate = parse(c.date, 'yyyy-MM-dd', new Date());
+        return cDate.getMonth() === selectedDate.getMonth();
+      });
+    }
+    return list;
+  }, [campaignType, selectedDate]);
+
+  // When date is selected, auto-select first matching campaign
+  const effectiveCampaign = useMemo(() => {
+    if (selectedCampaign) return selectedCampaign;
+    if (selectedDate && filteredCampaigns.length > 0) return filteredCampaigns[0].id;
+    return null;
+  }, [selectedCampaign, selectedDate, filteredCampaigns]);
 
   const performanceData = useMemo(() => {
-    let data = generatePerformanceData(selectedCampaign);
+    let data = generatePerformanceData(effectiveCampaign);
     if (selectedSection !== 'Todas') data = data.filter(p => p.section === selectedSection);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -144,7 +163,7 @@ export default function CampaignPerformance() {
       return sortDir === 'desc' ? vb - va : va - vb;
     });
     return data;
-  }, [selectedCampaign, selectedSection, searchQuery, sortField, sortDir]);
+  }, [effectiveCampaign, selectedSection, searchQuery, sortField, sortDir]);
 
   const groupedData = useMemo(() => {
     const map = new Map<string, PerformanceProduct[]>();
@@ -206,7 +225,7 @@ export default function CampaignPerformance() {
     return { total, totalFat, growing, avgMargin };
   }, [performanceData]);
 
-  const selectedCampaignObj = CAMPAIGNS.find(c => c.id === selectedCampaign);
+  const selectedCampaignObj = CAMPAIGNS.find(c => c.id === effectiveCampaign);
 
   // ── Product detail panel ──
   const ProductDetailPanel = ({ product }: { product: Product }) => (
@@ -341,7 +360,9 @@ export default function CampaignPerformance() {
             <p className="text-sm text-muted-foreground">
               {selectedCampaignObj
                 ? <>Produtos da campanha <span className="font-semibold text-primary">{selectedCampaignObj.name}</span> • {selectedCampaignObj.period}</>
-                : 'Selecione uma campanha para ver seus produtos ou veja os destaques fora de campanha'
+                : selectedDate
+                  ? <>Campanhas do mês <span className="font-semibold text-primary">{format(selectedDate, 'MMMM', { locale: ptBR })}</span> (ano anterior) • {filteredCampaigns.length} encontradas</>
+                  : 'Selecione uma data ou campanha para ver os produtos • Use a data para buscar campanhas do ano passado'
               }
             </p>
           </div>
@@ -353,7 +374,7 @@ export default function CampaignPerformance() {
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: selectedCampaign ? 'Produtos na Campanha' : 'Produtos Identificados', value: topStats.total, icon: ShoppingCart, color: 'text-chart-1' },
+            { label: effectiveCampaign ? 'Produtos na Campanha' : 'Produtos Identificados', value: topStats.total, icon: ShoppingCart, color: 'text-chart-1' },
             { label: 'Faturamento Total', value: fmt(topStats.totalFat), icon: DollarSign, color: 'text-chart-2' },
             { label: 'Em Crescimento', value: `${topStats.growing} produtos`, icon: TrendingUp, color: 'text-chart-4' },
             { label: 'Margem Média', value: `${(topStats.avgMargin * 100).toFixed(1)}%`, icon: Target, color: 'text-chart-5' },
@@ -379,6 +400,24 @@ export default function CampaignPerformance() {
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-muted-foreground">Filtros:</span>
             </div>
+            {/* Date picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("h-8 w-[180px] justify-start text-left text-xs bg-card/80", !selectedDate && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Filtrar por data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(d) => { setSelectedDate(d); setSelectedCampaign(null); }}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
             <Select value={campaignType} onValueChange={v => { setCampaignType(v); setSelectedCampaign(null); }}>
               <SelectTrigger className="h-8 w-[120px] text-xs bg-card/80"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -396,9 +435,9 @@ export default function CampaignPerformance() {
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input placeholder="Buscar produto..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-8 pl-8 text-xs bg-card/80" />
             </div>
-            {(searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || selectedCampaign) && (
+            {(searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || selectedDate) && (
               <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"
-                onClick={() => { setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos'); setSelectedCampaign(null); }}>
+                onClick={() => { setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos'); setSelectedCampaign(null); setSelectedDate(undefined); }}>
                 <X className="h-3 w-3" /> Limpar
               </Button>
             )}
@@ -420,16 +459,16 @@ export default function CampaignPerformance() {
                 {filteredCampaigns.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => setSelectedCampaign(selectedCampaign === c.id ? null : c.id)}
+                    onClick={() => { setSelectedCampaign(effectiveCampaign === c.id ? null : c.id); setSelectedDate(undefined); }}
                     className={cn(
                       "w-full text-left p-2.5 rounded-lg transition-all text-xs border",
-                      selectedCampaign === c.id
+                      effectiveCampaign === c.id
                         ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20'
                         : 'border-transparent hover:bg-muted/60'
                     )}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={selectedCampaign === c.id ? 'text-primary' : 'text-muted-foreground'}>
+                      <span className={effectiveCampaign === c.id ? 'text-primary' : 'text-muted-foreground'}>
                         {typeIcon(c.type)}
                       </span>
                       <span className="font-medium text-foreground truncate flex-1">{c.name}</span>
@@ -458,7 +497,7 @@ export default function CampaignPerformance() {
                     }
                     <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens</Badge>
                   </CardTitle>
-                  {selectedCampaign && (
+                  {effectiveCampaign && (
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                       <Info className="h-3 w-3" />
                       Aprove ou reprove produtos para a próxima campanha
