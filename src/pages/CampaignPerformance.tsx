@@ -487,6 +487,7 @@ export default function CampaignPerformance() {
   const [campaignType, setCampaignType] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSection, setSelectedSection] = useState('Todas');
+  const [topN, setTopN] = useState<number>(10);
   const [sortField, setSortField] = useState<SortField>('faturamento');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
