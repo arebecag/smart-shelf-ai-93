@@ -435,7 +435,7 @@ export default function CampaignPerformance() {
             </div>
             {(searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || selectedDate) && (
               <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"
-                onClick={() => { setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos'); setSelectedCampaign(null); }}>
+                onClick={() => { setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos'); setSelectedCampaign(null); setSelectedDate(undefined); }}>
                 <X className="h-3 w-3" /> Limpar
               </Button>
             )}
