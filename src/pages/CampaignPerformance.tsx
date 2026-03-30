@@ -116,6 +116,7 @@ type SortField = 'faturamento' | 'sales' | 'margin' | 'crescimento' | 'price';
 type SortDir = 'asc' | 'desc';
 
 export default function CampaignPerformance() {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [campaignType, setCampaignType] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
