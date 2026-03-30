@@ -88,7 +88,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
           {/* Secondary links — desktop */}
           <div className="hidden md:flex items-center gap-1 ml-auto">
-            {SECONDARY_LINKS.slice(0, 3).map(link => (
+            {SECONDARY_LINKS.slice(0, 4).map(link => (
               <Link
                 key={link.path}
                 to={link.path}
