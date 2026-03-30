@@ -14,7 +14,6 @@ import {
   cervejaProducts, refrigeranteProducts, açougueProducts, padariaProducts,
   laticinioProducts, energeticoProducts, friosProducts, congeladosProducts,
   hortifrutiProducts, merceariaProducts, aguaProducts, sucoProducts,
-  tabloids
 } from '@/data/mockData';
 import { Product } from '@/types/product';
 

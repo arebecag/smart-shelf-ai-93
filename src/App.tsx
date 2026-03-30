@@ -13,6 +13,7 @@ import Simulator from "./pages/Simulator";
 import TVPresentation from "./pages/TVPresentation";
 import Statistics from "./pages/Statistics";
 import History from "./pages/History";
+import CampaignPerformance from "./pages/CampaignPerformance";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
