@@ -530,8 +530,27 @@ export default function CampaignPerformance() {
       const vb = b[sortField] as number;
       return sortDir === 'desc' ? vb - va : va - vb;
     });
+    // Apply topN limit per section
+    if (topN > 0) {
+      const sectionMap = new Map<string, PerformanceProduct[]>();
+      data.forEach(p => {
+        const arr = sectionMap.get(p.section) || [];
+        arr.push(p);
+        sectionMap.set(p.section, arr);
+      });
+      data = [];
+      sectionMap.forEach(products => {
+        data.push(...products.slice(0, topN));
+      });
+      // Re-sort after slicing
+      data.sort((a, b) => {
+        const va = a[sortField] as number;
+        const vb = b[sortField] as number;
+        return sortDir === 'desc' ? vb - va : va - vb;
+      });
+    }
     return data;
-  }, [effectiveCampaign, selectedSection, searchQuery, sortField, sortDir]);
+  }, [effectiveCampaign, selectedSection, searchQuery, sortField, sortDir, topN]);
 
   const groupedData = useMemo(() => {
     const map = new Map<string, PerformanceProduct[]>();
