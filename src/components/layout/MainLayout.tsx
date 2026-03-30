@@ -116,7 +116,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               </button>
               {secondaryOpen && (
                 <div className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-xl shadow-lg py-1 z-50">
-                  {SECONDARY_LINKS.slice(3).map(link => (
+                  {SECONDARY_LINKS.slice(4).map(link => (
                     <Link
                       key={link.path}
                       to={link.path}
