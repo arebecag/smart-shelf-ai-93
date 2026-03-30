@@ -457,7 +457,7 @@ export default function CampaignPerformance() {
                 {filteredCampaigns.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => setSelectedCampaign(effectiveCampaign === c.id ? null : c.id)}
+                    onClick={() => { setSelectedCampaign(effectiveCampaign === c.id ? null : c.id); setSelectedDate(undefined); }}
                     className={cn(
                       "w-full text-left p-2.5 rounded-lg transition-all text-xs border",
                       effectiveCampaign === c.id
