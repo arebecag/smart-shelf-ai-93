@@ -151,7 +151,7 @@ export default function CampaignPerformance() {
   }, [selectedCampaign, selectedDate, filteredCampaigns]);
 
   const performanceData = useMemo(() => {
-    let data = generatePerformanceData(selectedCampaign);
+    let data = generatePerformanceData(effectiveCampaign);
     if (selectedSection !== 'Todas') data = data.filter(p => p.section === selectedSection);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -163,7 +163,7 @@ export default function CampaignPerformance() {
       return sortDir === 'desc' ? vb - va : va - vb;
     });
     return data;
-  }, [selectedCampaign, selectedSection, searchQuery, sortField, sortDir]);
+  }, [effectiveCampaign, selectedSection, searchQuery, sortField, sortDir]);
 
   const groupedData = useMemo(() => {
     const map = new Map<string, PerformanceProduct[]>();
@@ -225,7 +225,7 @@ export default function CampaignPerformance() {
     return { total, totalFat, growing, avgMargin };
   }, [performanceData]);
 
-  const selectedCampaignObj = CAMPAIGNS.find(c => c.id === selectedCampaign);
+  const selectedCampaignObj = CAMPAIGNS.find(c => c.id === effectiveCampaign);
 
   // ── Product detail panel ──
   const ProductDetailPanel = ({ product }: { product: Product }) => (
@@ -372,7 +372,7 @@ export default function CampaignPerformance() {
         {/* KPI Cards */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: selectedCampaign ? 'Produtos na Campanha' : 'Produtos Identificados', value: topStats.total, icon: ShoppingCart, color: 'text-chart-1' },
+            { label: effectiveCampaign ? 'Produtos na Campanha' : 'Produtos Identificados', value: topStats.total, icon: ShoppingCart, color: 'text-chart-1' },
             { label: 'Faturamento Total', value: fmt(topStats.totalFat), icon: DollarSign, color: 'text-chart-2' },
             { label: 'Em Crescimento', value: `${topStats.growing} produtos`, icon: TrendingUp, color: 'text-chart-4' },
             { label: 'Margem Média', value: `${(topStats.avgMargin * 100).toFixed(1)}%`, icon: Target, color: 'text-chart-5' },
