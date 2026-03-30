@@ -686,6 +686,14 @@ export default function CampaignPerformance() {
               </SelectContent>
             </Select>
 
+            {/* Top N */}
+            <Select value={String(topN)} onValueChange={v => setTopN(Number(v))}>
+              <SelectTrigger className="h-8 w-[130px] text-xs bg-card/80"><SelectValue placeholder="Top produtos" /></SelectTrigger>
+              <SelectContent>
+                {[5, 10, 15, 20, 30].map(n => <SelectItem key={n} value={String(n)}>Top {n} por seção</SelectItem>)}
+              </SelectContent>
+            </Select>
+
             {/* Search */}
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
