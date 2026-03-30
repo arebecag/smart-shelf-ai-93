@@ -360,7 +360,9 @@ export default function CampaignPerformance() {
             <p className="text-sm text-muted-foreground">
               {selectedCampaignObj
                 ? <>Produtos da campanha <span className="font-semibold text-primary">{selectedCampaignObj.name}</span> • {selectedCampaignObj.period}</>
-                : 'Selecione uma campanha para ver seus produtos ou veja os destaques fora de campanha'
+                : selectedDate
+                  ? <>Campanhas do mês <span className="font-semibold text-primary">{format(selectedDate, 'MMMM', { locale: ptBR })}</span> (ano anterior) • {filteredCampaigns.length} encontradas</>
+                  : 'Selecione uma data ou campanha para ver os produtos • Use a data para buscar campanhas do ano passado'
               }
             </p>
           </div>
