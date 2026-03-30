@@ -51,6 +51,7 @@ const useMenuGroups = () => {
   const descoberta: MenuItem[] = [
     { title: "Dashboard",           url: "/",         icon: LayoutDashboard },
     { title: "Comparativo Semanal", url: "/semanal",  icon: CalendarDays },
+    { title: "Padrão Campanha",     url: "/campanha", icon: Megaphone },
     { title: "Buscar Produtos",     url: "/buscar",   icon: Search },
   ];
 
