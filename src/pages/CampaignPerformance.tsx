@@ -487,6 +487,7 @@ export default function CampaignPerformance() {
   const [campaignType, setCampaignType] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSection, setSelectedSection] = useState('Todas');
+  const [topN, setTopN] = useState<number>(10);
   const [sortField, setSortField] = useState<SortField>('faturamento');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
@@ -529,8 +530,27 @@ export default function CampaignPerformance() {
       const vb = b[sortField] as number;
       return sortDir === 'desc' ? vb - va : va - vb;
     });
+    // Apply topN limit per section
+    if (topN > 0) {
+      const sectionMap = new Map<string, PerformanceProduct[]>();
+      data.forEach(p => {
+        const arr = sectionMap.get(p.section) || [];
+        arr.push(p);
+        sectionMap.set(p.section, arr);
+      });
+      data = [];
+      sectionMap.forEach(products => {
+        data.push(...products.slice(0, topN));
+      });
+      // Re-sort after slicing
+      data.sort((a, b) => {
+        const va = a[sortField] as number;
+        const vb = b[sortField] as number;
+        return sortDir === 'desc' ? vb - va : va - vb;
+      });
+    }
     return data;
-  }, [effectiveCampaign, selectedSection, searchQuery, sortField, sortDir]);
+  }, [effectiveCampaign, selectedSection, searchQuery, sortField, sortDir, topN]);
 
   const groupedData = useMemo(() => {
     const map = new Map<string, PerformanceProduct[]>();
@@ -573,7 +593,7 @@ export default function CampaignPerformance() {
 
   const clearAll = () => {
     setSearchQuery(''); setSelectedSection('Todas'); setCampaignType('Todos');
-    setSelectedCampaign(null); setDateFrom(undefined); setDateTo(undefined);
+    setSelectedCampaign(null); setDateFrom(undefined); setDateTo(undefined); setTopN(10);
   };
 
   const SortHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
@@ -589,16 +609,8 @@ export default function CampaignPerformance() {
     return <Newspaper className="h-3.5 w-3.5" />;
   };
 
-  const topStats = useMemo(() => {
-    const total = performanceData.length;
-    const totalFat = performanceData.reduce((s, p) => s + p.faturamento, 0);
-    const growing = performanceData.filter(p => p.crescimento > 0).length;
-    const avgMargin = total > 0 ? performanceData.reduce((s, p) => s + p.margin, 0) / total : 0;
-    return { total, totalFat, growing, avgMargin };
-  }, [performanceData]);
-
   const selectedCampaignObj = CAMPAIGNS.find(c => c.id === effectiveCampaign);
-  const hasFilters = searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || dateFrom || dateTo;
+  const hasFilters = searchQuery || selectedSection !== 'Todas' || campaignType !== 'Todos' || effectiveCampaign || dateFrom || dateTo || topN !== 10;
 
   return (
     <div className="h-full w-full overflow-auto bg-muted/30">
@@ -622,27 +634,6 @@ export default function CampaignPerformance() {
           </Badge>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-4 gap-3">
-          {[
-            { label: effectiveCampaign ? 'Produtos na Campanha' : 'Produtos Identificados', value: topStats.total, icon: ShoppingCart, color: 'text-chart-1' },
-            { label: 'Faturamento Total', value: fmt(topStats.totalFat), icon: DollarSign, color: 'text-chart-2' },
-            { label: 'Em Crescimento', value: `${topStats.growing} produtos`, icon: TrendingUp, color: 'text-chart-4' },
-            { label: 'Margem Média', value: `${(topStats.avgMargin * 100).toFixed(1)}%`, icon: Target, color: 'text-chart-5' },
-          ].map(kpi => (
-            <Card key={kpi.label} className="border-border/50">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-muted/80 ${kpi.color}`}>
-                  <kpi.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                  <p className="text-lg font-bold text-foreground">{kpi.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Filters */}
         <Card className="border-border/40 bg-muted/40">
@@ -692,6 +683,14 @@ export default function CampaignPerformance() {
               <SelectContent>
                 <SelectItem value="Todas">Todas Seções</SelectItem>
                 {ALL_SECTIONS.map(s => <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {/* Top N */}
+            <Select value={String(topN)} onValueChange={v => setTopN(Number(v))}>
+              <SelectTrigger className="h-8 w-[130px] text-xs bg-card/80"><SelectValue placeholder="Top produtos" /></SelectTrigger>
+              <SelectContent>
+                {[5, 10, 15, 20, 30].map(n => <SelectItem key={n} value={String(n)}>Top {n} por seção</SelectItem>)}
               </SelectContent>
             </Select>
 
@@ -765,7 +764,7 @@ export default function CampaignPerformance() {
                       ? <><Tv className="h-4 w-4 text-primary" /> Produtos da Campanha</>
                       : <><TrendingUp className="h-4 w-4 text-chart-4" /> Produtos Performance</>
                     }
-                    <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens • Top {topN} por faturamento</Badge>
                   </CardTitle>
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                     <Maximize2 className="h-3 w-3" />
