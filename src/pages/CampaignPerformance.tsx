@@ -20,8 +20,6 @@ import {
   Tv, Radio, Newspaper, Eye, Star, ArrowUpDown, X, Calendar, Target,
   ShoppingCart, DollarSign, ThumbsUp, ThumbsDown, CheckCircle2, XCircle,
   BarChart2, Sparkles, ExternalLink, Info, CalendarIcon,
-  ShoppingCart, DollarSign, ThumbsUp, ThumbsDown, CheckCircle2, XCircle,
-  BarChart2, Sparkles, ExternalLink, Info,
 } from 'lucide-react';
 import {
   cervejaProducts, refrigeranteProducts, açougueProducts, padariaProducts,
