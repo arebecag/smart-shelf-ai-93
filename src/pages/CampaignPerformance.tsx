@@ -634,27 +634,6 @@ export default function CampaignPerformance() {
           </Badge>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-4 gap-3">
-          {[
-            { label: effectiveCampaign ? 'Produtos na Campanha' : 'Produtos Identificados', value: topStats.total, icon: ShoppingCart, color: 'text-chart-1' },
-            { label: 'Faturamento Total', value: fmt(topStats.totalFat), icon: DollarSign, color: 'text-chart-2' },
-            { label: 'Em Crescimento', value: `${topStats.growing} produtos`, icon: TrendingUp, color: 'text-chart-4' },
-            { label: 'Margem Média', value: `${(topStats.avgMargin * 100).toFixed(1)}%`, icon: Target, color: 'text-chart-5' },
-          ].map(kpi => (
-            <Card key={kpi.label} className="border-border/50">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-muted/80 ${kpi.color}`}>
-                  <kpi.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                  <p className="text-lg font-bold text-foreground">{kpi.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Filters */}
         <Card className="border-border/40 bg-muted/40">
