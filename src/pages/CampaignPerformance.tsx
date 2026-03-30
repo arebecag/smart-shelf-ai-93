@@ -764,7 +764,7 @@ export default function CampaignPerformance() {
                       ? <><Tv className="h-4 w-4 text-primary" /> Produtos da Campanha</>
                       : <><TrendingUp className="h-4 w-4 text-chart-4" /> Produtos Performance</>
                     }
-                    <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{performanceData.length} itens • Top {topN} por faturamento</Badge>
                   </CardTitle>
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                     <Maximize2 className="h-3 w-3" />
